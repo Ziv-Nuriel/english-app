@@ -1,0 +1,379 @@
+<title>Question Words Drill</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f6f3ec;
+    --ink: #2b2a28;
+    --ink-soft: #6b6558;
+    --rule: #d8d2c4;
+    --card: #fffefb;
+    --accent: #1f6f78;
+    --accent-soft: #e3eeee;
+    --highlight: #d99a2b;
+    --correct: #2f7d4f;
+    --correct-bg: #e3f2e6;
+    --wrong: #b3432b;
+    --wrong-bg: #fbe8e3;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1c1b18;
+      --ink: #ece7dc;
+      --ink-soft: #a49c8a;
+      --rule: #3a382f;
+      --card: #23221e;
+      --accent: #6bc2cb;
+      --accent-soft: #1e3336;
+      --highlight: #e8b23d;
+      --correct: #7bc99a;
+      --correct-bg: #1c3324;
+      --wrong: #e08a6c;
+      --wrong-bg: #3a2019;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1c1b18;
+    --ink: #ece7dc;
+    --ink-soft: #a49c8a;
+    --rule: #3a382f;
+    --card: #23221e;
+    --accent: #6bc2cb;
+    --accent-soft: #1e3336;
+    --highlight: #e8b23d;
+    --correct: #7bc99a;
+    --correct-bg: #1c3324;
+    --wrong: #e08a6c;
+    --wrong-bg: #3a2019;
+  }
+  :root[data-theme="light"] {
+    --paper: #f6f3ec;
+    --ink: #2b2a28;
+    --ink-soft: #6b6558;
+    --rule: #d8d2c4;
+    --card: #fffefb;
+    --accent: #1f6f78;
+    --accent-soft: #e3eeee;
+    --highlight: #d99a2b;
+    --correct: #2f7d4f;
+    --correct-bg: #e3f2e6;
+    --wrong: #b3432b;
+    --wrong-bg: #fbe8e3;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 3rem 1rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 620px; }
+
+  .masthead {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: .6rem;
+    margin-bottom: .35rem;
+  }
+  .masthead h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    letter-spacing: .01em;
+  }
+  .masthead .level {
+    font-size: .7rem;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .sub {
+    color: var(--ink-soft);
+    font-size: .88rem;
+    margin: .6rem 0 1.75rem;
+    direction: rtl;
+  }
+
+  .progress-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: .4rem;
+    font-size: .8rem;
+    color: var(--ink-soft);
+    font-variant-numeric: tabular-nums;
+  }
+  .progress-row strong { color: var(--ink); font-weight: 700; }
+  .bar {
+    width: 100%;
+    height: 4px;
+    background: var(--rule);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 1.75rem;
+  }
+  .bar-fill {
+    height: 100%;
+    background: var(--highlight);
+    transition: width .35s ease;
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 2rem 1.75rem;
+    position: relative;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 1.75rem; right: 1.75rem;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, var(--rule) 0 6px, transparent 6px 12px);
+  }
+
+  .sentence {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.4rem;
+    line-height: 1.65;
+    margin: .5rem 0 1.75rem;
+  }
+  .blank {
+    display: inline-block;
+    min-width: 84px;
+    border-bottom: 2px solid var(--highlight);
+    text-align: center;
+    font-weight: 700;
+    color: var(--highlight);
+  }
+
+  .options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: .65rem;
+  }
+  .opt {
+    padding: .75rem 1rem;
+    border-radius: 3px;
+    border: 1.5px solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+    text-align: center;
+  }
+  .opt:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+  }
+  .opt:disabled { cursor: default; }
+  .opt.correct {
+    background: var(--correct-bg);
+    border-color: var(--correct);
+    color: var(--correct);
+    font-weight: 700;
+  }
+  .opt.wrong {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+    color: var(--wrong);
+    font-weight: 700;
+  }
+
+  .hint {
+    margin-top: 1.1rem;
+    font-size: .85rem;
+    color: var(--ink-soft);
+    min-height: 1.2em;
+    direction: rtl;
+  }
+
+  .footer-row {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+  }
+  button.next {
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    padding: .65rem 1.35rem;
+    border-radius: 3px;
+    font-size: .9rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .2s;
+  }
+  button.next.show { opacity: 1; pointer-events: auto; }
+  button.next:focus-visible,
+  .opt:focus-visible,
+  button.restart:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .result { text-align: center; }
+  .result .level { display: block; margin-bottom: .5rem; }
+  .score {
+    font-family: Georgia, serif;
+    font-size: 3.2rem;
+    font-weight: 700;
+    color: var(--accent);
+    font-variant-numeric: tabular-nums;
+    margin: .25rem 0;
+  }
+  .result p {
+    color: var(--ink-soft);
+    direction: rtl;
+    font-size: .95rem;
+  }
+  button.restart {
+    margin-top: 1rem;
+    background: transparent;
+    border: 1.5px solid var(--accent);
+    color: var(--accent);
+    padding: .65rem 1.35rem;
+    border-radius: 3px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-fill, button.next { transition: none; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="masthead">
+    <h1>Question Words Drill</h1>
+    <span class="level" id="levelTag">INTERMEDIATE</span>
+  </div>
+  <div class="sub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
+
+  <div class="progress-row">
+    <span>שאלה <strong id="qnum">1</strong> מתוך <strong>15</strong></span>
+    <span>ניקוד: <strong id="scorelive">0</strong></span>
+  </div>
+  <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
+
+  <div class="card" id="quizCard"></div>
+</div>
+
+<script>
+const questions = [
+  { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"] },
+  { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"] },
+  { sentence: "___ were you late for the meeting?", answer: "Why", options: ["Why", "When", "How", "What"] },
+  { sentence: "___ does the movie start?", answer: "When", options: ["When", "Where", "Which", "Who"] },
+  { sentence: "___ many brothers do you have?", answer: "How", options: ["How", "What", "Which", "Why"] },
+  { sentence: "___ old is your grandfather?", answer: "How", options: ["How", "What", "When", "Who"] },
+  { sentence: "___ is that man standing by the door?", answer: "Who", options: ["Who", "What", "Whose", "Which"] },
+  { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"] },
+  { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"] },
+  { sentence: "___ do you usually get to school, by bus or on foot?", answer: "How", options: ["How", "Why", "When", "What"] },
+  { sentence: "___ long does the flight to London take?", answer: "How", options: ["How", "What", "When", "Why"] },
+  { sentence: "___ often do you go to the gym?", answer: "How", options: ["How", "When", "Why", "What"] },
+  { sentence: "___ is the team meeting scheduled for tomorrow?", answer: "When", options: ["When", "Where", "Why", "Which"] },
+  { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"] },
+  { sentence: "___ much does this jacket cost?", answer: "How", options: ["How", "What", "Which", "Why"] }
+];
+
+let current = 0;
+let score = 0;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function render() {
+  const card = document.getElementById("quizCard");
+  document.getElementById("qnum").textContent = current + 1;
+  document.getElementById("scorelive").textContent = score;
+  document.getElementById("barFill").style.width = `${(current / questions.length) * 100}%`;
+
+  if (current >= questions.length) {
+    document.getElementById("levelTag").textContent = "COMPLETE";
+    const verdict = score === questions.length
+      ? "מושלם! שליטה מלאה במילות השאלה."
+      : score >= questions.length * 0.7
+      ? "כל הכבוד, ביצוע טוב מאוד!"
+      : "לא רע — כדאי לחזור על התרגול לחיזוק.";
+    card.innerHTML = `
+      <div class="result">
+        <span class="level">INTERMEDIATE</span>
+        <div>סיימת את התרגול</div>
+        <div class="score">${score} / ${questions.length}</div>
+        <p>${verdict}</p>
+        <button class="restart" onclick="restart()">התחל מחדש</button>
+      </div>`;
+    document.getElementById("barFill").style.width = "100%";
+    return;
+  }
+
+  const q = questions[current];
+  const opts = shuffle(q.options);
+
+  card.innerHTML = `
+    <div class="sentence">${q.sentence.replace("___", '<span class="blank">____</span>')}</div>
+    <div class="options">
+      ${opts.map(o => `<button class="opt" data-value="${o}">${o}</button>`).join("")}
+    </div>
+    <div class="hint" id="hint"></div>
+    <div class="footer-row"><button class="next" id="nextBtn">הבא →</button></div>
+  `;
+
+  card.querySelectorAll(".opt").forEach(btn => {
+    btn.addEventListener("click", () => selectAnswer(btn, q.answer));
+  });
+}
+
+function selectAnswer(btn, correctAnswer) {
+  const buttons = document.querySelectorAll(".opt");
+  const isCorrect = btn.dataset.value === correctAnswer;
+
+  buttons.forEach(b => {
+    b.disabled = true;
+    if (b.dataset.value === correctAnswer) b.classList.add("correct");
+    else if (b === btn) b.classList.add("wrong");
+  });
+
+  document.getElementById("hint").textContent = isCorrect
+    ? "נכון!"
+    : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".`;
+
+  if (isCorrect) score++;
+  document.getElementById("scorelive").textContent = score;
+  document.getElementById("nextBtn").classList.add("show");
+  document.getElementById("nextBtn").onclick = () => {
+    current++;
+    render();
+  };
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  document.getElementById("levelTag").textContent = "INTERMEDIATE";
+  render();
+}
+
+render();
+</script>
