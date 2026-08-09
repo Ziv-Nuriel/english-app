@@ -194,7 +194,7 @@
 
   .options {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: .65rem;
   }
   .opt {
@@ -362,6 +362,28 @@ const stages = [
       { sentence: "___ these shoes comfortable?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (comfortable), אין פועל פעולה נוסף." },
       { sentence: "___ these shoes fit you well?", answer: "Do", options: ["Do", "Are"], why: "\"fit\" הוא פועל פעולה, לכן Do." },
       { sentence: "___ you and your brother close in age?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (close), אין פועל פעולה נוסף." }
+    ]
+  },
+  {
+    title: "Is she / Is this / Am I",
+    sub: "בחרו את הפתיח הנכון — Is she / Is this / Am I",
+    legend: "<strong>Am I</strong> – שואלים על עצמכם (הדובר) &nbsp;·&nbsp; <strong>Is she</strong> – שואלים על אישה/בחורה שכבר הוזכרה בהקשר, ולא נמצאת מולכם &nbsp;·&nbsp; <strong>Is this</strong> – מצביעים או מראים על משהו/מישהו שנמצא ממש לפניכם עכשיו",
+    questions: [
+      { sentence: "Emma just got back from her trip. ___ tired?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר על Emma (אישה) שכבר הוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
+      { sentence: "<em>(מצביעים על מחשב נייד על השולחן)</em> ___ yours?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי שנמצא ממש לפניכם, לכן Is this." },
+      { sentence: "I just woke up very late. ___ still on time for the meeting?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם (הדובר), לכן Am I." },
+      { sentence: "<em>(מרימים חולצה כדי להראות)</em> ___ too small for you?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים ומראים על חפץ ספציפי (החולצה), לכן Is this." },
+      { sentence: "My sister loves painting. ___ working on a new piece these days?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר על האחות (אישה) שהוזכרה קודם ואינה נוכחת מולכם, לכן Is she." },
+      { sentence: "___ allowed to park here?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
+      { sentence: "<em>(מראים תמונה של אישה)</em> ___ your mother?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים ומראים על תמונה ספציפית שלפניכם, לכן Is this — למרות שמדובר באישה." },
+      { sentence: "Grandma hasn't called in a while. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בסבתא (אישה) שהוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
+      { sentence: "___ the one who's supposed to bring the cake?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
+      { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." },
+      { sentence: "Lily seems upset today. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בלילי (אישה) שהוזכרה קודם ואינה נוכחת מולכם, לכן Is she." },
+      { sentence: "I think I left the stove on. ___ overreacting?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
+      { sentence: "<em>(מצביעים על כיסא מסוים)</em> ___ taken?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי (הכיסא), לכן Is this." },
+      { sentence: "My aunt just moved abroad. ___ happy with the change?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בדודה (אישה) שהוזכרה קודם ואינה נוכחת מולכם, לכן Is she." },
+      { sentence: "___ dressed appropriately for the interview?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." }
     ]
   }
 ];
