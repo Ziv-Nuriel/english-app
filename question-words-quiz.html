@@ -97,8 +97,45 @@
   .sub {
     color: var(--ink-soft);
     font-size: .88rem;
-    margin: .6rem 0 1.75rem;
+    margin: .6rem 0 1.25rem;
     direction: rtl;
+  }
+
+  .legend {
+    background: var(--accent-soft);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .85rem 1rem;
+    margin-bottom: 1.25rem;
+    font-size: .82rem;
+    line-height: 1.7;
+    color: var(--ink);
+    direction: rtl;
+  }
+  .legend strong { color: var(--accent); }
+
+  .stage-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.5rem;
+  }
+  .stage-tab {
+    padding: .4rem .95rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--rule);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .stage-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .stage-tab.active {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
   }
 
   .progress-row {
@@ -197,6 +234,11 @@
     min-height: 1.2em;
     direction: rtl;
   }
+  .hint .why {
+    display: block;
+    margin-top: .35rem;
+    color: var(--wrong);
+  }
 
   .footer-row {
     margin-top: 1.5rem;
@@ -258,13 +300,17 @@
 
 <div class="wrap">
   <div class="masthead">
-    <h1>Question Words Drill</h1>
-    <span class="level" id="levelTag">INTERMEDIATE</span>
+    <h1 id="stageTitle">Question Words Drill</h1>
+    <span class="level" id="levelTag">STAGE 1 / 2</span>
   </div>
-  <div class="sub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
+  <div class="sub" id="stageSub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
+
+  <div class="stage-tabs" id="stageTabs"></div>
+
+  <div class="legend" id="legend"></div>
 
   <div class="progress-row">
-    <span>שאלה <strong id="qnum">1</strong> מתוך <strong>15</strong></span>
+    <span>שאלה <strong id="qnum">1</strong> מתוך <strong id="qtotal">15</strong></span>
     <span>ניקוד: <strong id="scorelive">0</strong></span>
   </div>
   <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
@@ -273,24 +319,54 @@
 </div>
 
 <script>
-const questions = [
-  { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"] },
-  { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"] },
-  { sentence: "___ were you late for the meeting?", answer: "Why", options: ["Why", "When", "How", "What"] },
-  { sentence: "___ does the movie start?", answer: "When", options: ["When", "Where", "Which", "Who"] },
-  { sentence: "___ many brothers do you have?", answer: "How", options: ["How", "What", "Which", "Why"] },
-  { sentence: "___ old is your grandfather?", answer: "How", options: ["How", "What", "When", "Who"] },
-  { sentence: "___ is that man standing by the door?", answer: "Who", options: ["Who", "What", "Whose", "Which"] },
-  { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"] },
-  { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"] },
-  { sentence: "___ do you usually get to school, by bus or on foot?", answer: "How", options: ["How", "Why", "When", "What"] },
-  { sentence: "___ long does the flight to London take?", answer: "How", options: ["How", "What", "When", "Why"] },
-  { sentence: "___ often do you go to the gym?", answer: "How", options: ["How", "When", "Why", "What"] },
-  { sentence: "___ is the team meeting scheduled for tomorrow?", answer: "When", options: ["When", "Where", "Why", "Which"] },
-  { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"] },
-  { sentence: "___ much does this jacket cost?", answer: "How", options: ["How", "What", "Which", "Why"] }
+const stages = [
+  {
+    title: "Question Words Drill",
+    sub: "השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose",
+    legend: "<strong>What</strong> – מה (דבר) &nbsp;·&nbsp; <strong>Who</strong> – מי (אדם) &nbsp;·&nbsp; <strong>Where</strong> – איפה (מקום) &nbsp;·&nbsp; <strong>When</strong> – מתי (זמן) &nbsp;·&nbsp; <strong>Why</strong> – למה (סיבה) &nbsp;·&nbsp; <strong>How</strong> – איך / כמה (אופן, כמות, גיל, משך, תדירות, מחיר) &nbsp;·&nbsp; <strong>Which</strong> – איזה (בחירה מתוך אפשרויות ידועות) &nbsp;·&nbsp; <strong>Whose</strong> – של מי (בעלות)",
+    questions: [
+      { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"], why: "שואלים על <em>דבר</em> (השם עצמו) ולא על אדם או מקום, לכן What ולא Who." },
+      { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"], why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
+      { sentence: "___ were you late for the meeting?", answer: "Why", options: ["Why", "When", "How", "What"], why: "שואלים על <em>סיבה</em> לאיחור, לכן Why." },
+      { sentence: "___ does the movie start?", answer: "When", options: ["When", "Where", "Which", "Who"], why: "שואלים על <em>זמן</em> ההתחלה, לכן When." },
+      { sentence: "___ many brothers do you have?", answer: "How", options: ["How", "What", "Which", "Why"], why: "\"How many\" משמש לשאלה על <em>כמות</em> (מספר אחים), לכן How." },
+      { sentence: "___ old is your grandfather?", answer: "How", options: ["How", "What", "When", "Who"], why: "\"How old\" הוא ביטוי קבוע לשאלה על <em>גיל</em>, לכן How." },
+      { sentence: "___ is that man standing by the door?", answer: "Who", options: ["Who", "What", "Whose", "Which"], why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
+      { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"], why: "יש שתי אפשרויות ידועות (הספר הזה או ההוא), ולכן משתמשים ב-Which לבחירה מתוך אפשרויות מוגבלות." },
+      { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"], why: "שואלים <em>למי שייך</em> התיק, לכן Whose (בעלות)." },
+      { sentence: "___ do you usually get to school, by bus or on foot?", answer: "How", options: ["How", "Why", "When", "What"], why: "שואלים על <em>אופן/דרך</em> ההגעה, לכן How." },
+      { sentence: "___ long does the flight to London take?", answer: "How", options: ["How", "What", "When", "Why"], why: "\"How long\" משמש לשאלה על <em>משך זמן</em>, לכן How." },
+      { sentence: "___ often do you go to the gym?", answer: "How", options: ["How", "When", "Why", "What"], why: "\"How often\" משמש לשאלה על <em>תדירות</em>, לכן How." },
+      { sentence: "___ is the team meeting scheduled for tomorrow?", answer: "When", options: ["When", "Where", "Why", "Which"], why: "שואלים על <em>זמן</em>, לכן When." },
+      { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." },
+      { sentence: "___ much does this jacket cost?", answer: "How", options: ["How", "What", "Which", "Why"], why: "\"How much\" משמש לשאלה על <em>מחיר/כמות</em>, לכן How." }
+    ]
+  },
+  {
+    title: "Do or Are Drill",
+    sub: "בחרו Do או Are: משתמשים ב-Are לפני שם/תואר/מקום (הפועל to be), וב-Do כשיש פועל פעולה נוסף במשפט",
+    legend: "<strong>Are</strong> – משמש עם הפועל to be, כשאחרי המילה מגיע שם עצם, תואר או ביטוי מקום (בלי פועל פעולה נוסף) &nbsp;·&nbsp; <strong>Do</strong> – משמש כפועל עזר כשיש במשפט <em>פועל פעולה</em> נוסף (like, work, study, need, walk, fit...)",
+    questions: [
+      { sentence: "___ you a teacher?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע שם עצם (a teacher), אין פועל פעולה נוסף במשפט." },
+      { sentence: "___ you like pizza?", answer: "Do", options: ["Do", "Are"], why: "\"like\" הוא פועל פעולה, ולכן צריך את פועל העזר Do." },
+      { sentence: "___ they students at this school?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע שם עצם (students), אין פועל פעולה נוסף." },
+      { sentence: "___ they study English every day?", answer: "Do", options: ["Do", "Are"], why: "\"study\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ you happy with the results?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (happy), אין פועל פעולה נוסף." },
+      { sentence: "___ you work on weekends?", answer: "Do", options: ["Do", "Are"], why: "\"work\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ your parents at home right now?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
+      { sentence: "___ your parents watch the news together?", answer: "Do", options: ["Do", "Are"], why: "\"watch\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ we ready to go?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
+      { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ you tired after the trip?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (tired), אין פועל פעולה נוסף." },
+      { sentence: "___ you usually walk to work?", answer: "Do", options: ["Do", "Are"], why: "\"walk\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ these shoes comfortable?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (comfortable), אין פועל פעולה נוסף." },
+      { sentence: "___ these shoes fit you well?", answer: "Do", options: ["Do", "Are"], why: "\"fit\" הוא פועל פעולה, לכן Do." },
+      { sentence: "___ you and your brother close in age?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (close), אין פועל פעולה נוסף." }
+    ]
+  }
 ];
 
+let stageIndex = 0;
 let current = 0;
 let score = 0;
 
@@ -303,24 +379,64 @@ function shuffle(arr) {
   return a;
 }
 
+function renderTabs() {
+  const tabs = document.getElementById("stageTabs");
+  tabs.innerHTML = stages
+    .map((s, i) => `<button class="stage-tab${i === stageIndex ? " active" : ""}" data-stage="${i}">${i + 1}. ${s.title}</button>`)
+    .join("");
+  tabs.querySelectorAll(".stage-tab").forEach(btn => {
+    btn.addEventListener("click", () => goToStage(Number(btn.dataset.stage)));
+  });
+}
+
+function goToStage(i) {
+  stageIndex = i;
+  current = 0;
+  render();
+}
+
 function render() {
   const card = document.getElementById("quizCard");
+  const stage = stages[stageIndex];
+  renderTabs();
+  document.getElementById("stageTitle").textContent = stage.title;
+  document.getElementById("stageSub").textContent = stage.sub;
+  document.getElementById("legend").innerHTML = stage.legend;
+  document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} / ${stages.length}`;
   document.getElementById("qnum").textContent = current + 1;
+  document.getElementById("qtotal").textContent = stage.questions.length;
   document.getElementById("scorelive").textContent = score;
-  document.getElementById("barFill").style.width = `${(current / questions.length) * 100}%`;
+  document.getElementById("barFill").style.width = `${(current / stage.questions.length) * 100}%`;
 
-  if (current >= questions.length) {
+  if (current >= stage.questions.length) {
+    const isLastStage = stageIndex === stages.length - 1;
+    const totalQuestions = stages.reduce((sum, s) => sum + s.questions.length, 0);
+
+    if (!isLastStage) {
+      document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} COMPLETE`;
+      card.innerHTML = `
+        <div class="result">
+          <span class="level">שלב ${stageIndex + 1} הושלם</span>
+          <div>ניקוד עד כה</div>
+          <div class="score">${score} / ${stage.questions.length}</div>
+          <p>מוכנים לשלב הבא: ${stages[stageIndex + 1].title}</p>
+          <button class="restart" onclick="goToStage(${stageIndex + 1})">לשלב הבא →</button>
+        </div>`;
+      document.getElementById("barFill").style.width = "100%";
+      return;
+    }
+
     document.getElementById("levelTag").textContent = "COMPLETE";
-    const verdict = score === questions.length
-      ? "מושלם! שליטה מלאה במילות השאלה."
-      : score >= questions.length * 0.7
+    const verdict = score === totalQuestions
+      ? "מושלם! שליטה מלאה בשני השלבים."
+      : score >= totalQuestions * 0.7
       ? "כל הכבוד, ביצוע טוב מאוד!"
       : "לא רע — כדאי לחזור על התרגול לחיזוק.";
     card.innerHTML = `
       <div class="result">
         <span class="level">INTERMEDIATE</span>
-        <div>סיימת את התרגול</div>
-        <div class="score">${score} / ${questions.length}</div>
+        <div>סיימת את שני השלבים</div>
+        <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
         <button class="restart" onclick="restart()">התחל מחדש</button>
       </div>`;
@@ -328,7 +444,7 @@ function render() {
     return;
   }
 
-  const q = questions[current];
+  const q = stage.questions[current];
   const opts = shuffle(q.options);
 
   card.innerHTML = `
@@ -341,11 +457,12 @@ function render() {
   `;
 
   card.querySelectorAll(".opt").forEach(btn => {
-    btn.addEventListener("click", () => selectAnswer(btn, q.answer));
+    btn.addEventListener("click", () => selectAnswer(btn, q));
   });
 }
 
-function selectAnswer(btn, correctAnswer) {
+function selectAnswer(btn, q) {
+  const correctAnswer = q.answer;
   const buttons = document.querySelectorAll(".opt");
   const isCorrect = btn.dataset.value === correctAnswer;
 
@@ -355,9 +472,9 @@ function selectAnswer(btn, correctAnswer) {
     else if (b === btn) b.classList.add("wrong");
   });
 
-  document.getElementById("hint").textContent = isCorrect
+  document.getElementById("hint").innerHTML = isCorrect
     ? "נכון!"
-    : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".`;
+    : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".<span class="why">${q.why}</span>`;
 
   if (isCorrect) score++;
   document.getElementById("scorelive").textContent = score;
@@ -369,9 +486,9 @@ function selectAnswer(btn, correctAnswer) {
 }
 
 function restart() {
+  stageIndex = 0;
   current = 0;
   score = 0;
-  document.getElementById("levelTag").textContent = "INTERMEDIATE";
   render();
 }
 
