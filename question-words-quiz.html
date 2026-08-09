@@ -116,6 +116,7 @@
 
   .stage-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: .5rem;
     margin-bottom: 1.5rem;
   }
@@ -334,12 +335,7 @@ const stages = [
       { sentence: "___ is that man standing by the door?", answer: "Who", options: ["Who", "What", "Whose", "Which"], why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
       { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"], why: "יש שתי אפשרויות ידועות (הספר הזה או ההוא), ולכן משתמשים ב-Which לבחירה מתוך אפשרויות מוגבלות." },
       { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"], why: "שואלים <em>למי שייך</em> התיק, לכן Whose (בעלות)." },
-      { sentence: "___ do you usually get to school, by bus or on foot?", answer: "How", options: ["How", "Why", "When", "What"], why: "שואלים על <em>אופן/דרך</em> ההגעה, לכן How." },
-      { sentence: "___ long does the flight to London take?", answer: "How", options: ["How", "What", "When", "Why"], why: "\"How long\" משמש לשאלה על <em>משך זמן</em>, לכן How." },
-      { sentence: "___ often do you go to the gym?", answer: "How", options: ["How", "When", "Why", "What"], why: "\"How often\" משמש לשאלה על <em>תדירות</em>, לכן How." },
-      { sentence: "___ is the team meeting scheduled for tomorrow?", answer: "When", options: ["When", "Where", "Why", "Which"], why: "שואלים על <em>זמן</em>, לכן When." },
-      { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." },
-      { sentence: "___ much does this jacket cost?", answer: "How", options: ["How", "What", "Which", "Why"], why: "\"How much\" משמש לשאלה על <em>מחיר/כמות</em>, לכן How." }
+      { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." }
     ]
   },
   {
@@ -356,12 +352,7 @@ const stages = [
       { sentence: "___ your parents at home right now?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
       { sentence: "___ your parents watch the news together?", answer: "Do", options: ["Do", "Are"], why: "\"watch\" הוא פועל פעולה, לכן Do." },
       { sentence: "___ we ready to go?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
-      { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." },
-      { sentence: "___ you tired after the trip?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (tired), אין פועל פעולה נוסף." },
-      { sentence: "___ you usually walk to work?", answer: "Do", options: ["Do", "Are"], why: "\"walk\" הוא פועל פעולה, לכן Do." },
-      { sentence: "___ these shoes comfortable?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (comfortable), אין פועל פעולה נוסף." },
-      { sentence: "___ these shoes fit you well?", answer: "Do", options: ["Do", "Are"], why: "\"fit\" הוא פועל פעולה, לכן Do." },
-      { sentence: "___ you and your brother close in age?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (close), אין פועל פעולה נוסף." }
+      { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." }
     ]
   },
   {
@@ -378,12 +369,41 @@ const stages = [
       { sentence: "<em>(מראים תמונה של אישה)</em> ___ your mother?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים ומראים על תמונה ספציפית שלפניכם, לכן Is this — למרות שמדובר באישה." },
       { sentence: "Grandma hasn't called in a while. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בסבתא (אישה) שהוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "___ the one who's supposed to bring the cake?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
-      { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." },
-      { sentence: "Lily seems upset today. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בלילי (אישה) שהוזכרה קודם ואינה נוכחת מולכם, לכן Is she." },
-      { sentence: "I think I left the stove on. ___ overreacting?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
-      { sentence: "<em>(מצביעים על כיסא מסוים)</em> ___ taken?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי (הכיסא), לכן Is this." },
-      { sentence: "My aunt just moved abroad. ___ happy with the change?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בדודה (אישה) שהוזכרה קודם ואינה נוכחת מולכם, לכן Is she." },
-      { sentence: "___ dressed appropriately for the interview?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." }
+      { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." }
+    ]
+  },
+  {
+    title: "Did or Do Drill",
+    sub: "בחרו Did או Do: משתמשים ב-Did לשאלות בזמן עבר, וב-Do לשאלות בזמן הווה",
+    legend: "<strong>Did</strong> – פועל עזר לשאלות בזמן עבר (yesterday, last night, already, this morning...) &nbsp;·&nbsp; <strong>Do</strong> – פועל עזר לשאלות בזמן הווה / הרגלים (usually, every day, always...)",
+    questions: [
+      { sentence: "___ you go to the party last night?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last night\" מציינת זמן עבר, לכן Did." },
+      { sentence: "___ you like chocolate?", answer: "Do", options: ["Do", "Did"], why: "השאלה כללית בהווה ולא מציינת זמן עבר, לכן Do." },
+      { sentence: "___ she call you yesterday?", answer: "Did", options: ["Did", "Do"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Did." },
+      { sentence: "___ she work here?", answer: "Do", options: ["Do", "Did"], why: "השאלה כללית בהווה, לכן Do." },
+      { sentence: "___ they finish the exam already?", answer: "Did", options: ["Did", "Do"], why: "המילה \"already\" מציינת שהפעולה כבר קרתה (עבר), לכן Did." },
+      { sentence: "___ they usually walk to school?", answer: "Do", options: ["Do", "Did"], why: "המילה \"usually\" מציינת הרגל בהווה, לכן Do." },
+      { sentence: "___ you see that movie last week?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last week\" מציינת זמן עבר, לכן Did." },
+      { sentence: "___ you know the answer?", answer: "Do", options: ["Do", "Did"], why: "השאלה על מצב נוכחי בהווה, לכן Do." },
+      { sentence: "___ he arrive on time this morning?", answer: "Did", options: ["Did", "Do"], why: "\"this morning\" כאן מתייחס לאירוע שכבר קרה, לכן Did." },
+      { sentence: "___ he play tennis every weekend?", answer: "Do", options: ["Do", "Did"], why: "\"every weekend\" מציין הרגל חוזר בהווה, לכן Do." }
+    ]
+  },
+  {
+    title: "Didn't or Doesn't Drill",
+    sub: "בחרו Didn't או Doesn't: Didn't משמש בכל הגופים בזמן עבר, ו-Doesn't משמש בזמן הווה עם גוף שלישי יחיד (he/she/it)",
+    legend: "<strong>Didn't</strong> – שלילה בזמן עבר, מתאים לכל הגופים (I, you, he, she, we, they) &nbsp;·&nbsp; <strong>Doesn't</strong> – שלילה בזמן הווה, רק עם גוף שלישי יחיד (he / she / it)",
+    questions: [
+      { sentence: "She ___ like spicy food.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
+      { sentence: "She ___ go to work yesterday because she was sick.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't." },
+      { sentence: "They ___ arrive on time this morning.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
+      { sentence: "He ___ drink coffee.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (He), לכן Doesn't." },
+      { sentence: "We ___ finish the assignment last night.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"last night\" מציינת זמן עבר, לכן Didn't." },
+      { sentence: "My brother ___ eat meat.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (My brother = he), לכן Doesn't." },
+      { sentence: "I ___ see you at the meeting yesterday.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't — גם עם I." },
+      { sentence: "The store ___ open on Sundays.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (The store = it), לכן Doesn't." },
+      { sentence: "You ___ call me back last week.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"last week\" מציינת זמן עבר, לכן Didn't — גם עם You." },
+      { sentence: "My dog ___ like loud noises.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." }
     ]
   }
 ];
@@ -391,6 +411,35 @@ const stages = [
 let stageIndex = 0;
 let current = 0;
 let score = 0;
+
+let audioCtx = null;
+function playTone(freqStart, freqEnd, duration, type, gainStart) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(gainStart, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {}
+}
+
+function playCorrectSound() {
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+  notes.forEach((freq, i) => {
+    setTimeout(() => playTone(freq, freq * 1.01, 0.18, "triangle", 0.2), i * 70);
+  });
+}
+
+function playWrongSound() {
+  playTone(220, 110, 0.32, "sawtooth", 0.15);
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -498,7 +547,12 @@ function selectAnswer(btn, q) {
     ? "נכון!"
     : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".<span class="why">${q.why}</span>`;
 
-  if (isCorrect) score++;
+  if (isCorrect) {
+    score++;
+    playCorrectSound();
+  } else {
+    playWrongSound();
+  }
   document.getElementById("scorelive").textContent = score;
   document.getElementById("nextBtn").classList.add("show");
   document.getElementById("nextBtn").onclick = () => {
