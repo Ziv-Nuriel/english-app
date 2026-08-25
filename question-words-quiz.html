@@ -276,6 +276,55 @@
     background: var(--accent-soft);
     border-radius: 4px;
   }
+
+  .dialogue-scenario {
+    font-style: italic;
+    color: var(--ink-soft);
+    direction: rtl;
+    text-align: right;
+    font-size: .92rem;
+    margin: 0 0 1rem;
+    padding-bottom: .75rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .dialogue-log {
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+  .dialogue-log:not(:empty) {
+    margin-bottom: 1rem;
+  }
+  .dialogue-msg {
+    max-width: 80%;
+    padding: .6rem .9rem;
+    border-radius: 14px;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: .95rem;
+    line-height: 1.4;
+    direction: ltr;
+    text-align: left;
+  }
+  .dialogue-msg.you {
+    align-self: flex-end;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-bottom-right-radius: 3px;
+  }
+  .dialogue-msg.them {
+    align-self: flex-start;
+    background: var(--card);
+    border: 1.5px solid var(--rule);
+    border-bottom-left-radius: 3px;
+    margin-bottom: 1rem;
+  }
+  .dialogue-cue {
+    font-size: .85rem;
+    color: var(--ink-soft);
+    direction: rtl;
+    text-align: right;
+    margin-bottom: .6rem;
+  }
   .translate-input {
     width: 100%;
     padding: .75rem 1rem;
@@ -454,6 +503,16 @@ const stages = [
     legend: "<strong>What</strong> – מה (דבר) &nbsp;·&nbsp; <strong>Who</strong> – מי (אדם) &nbsp;·&nbsp; <strong>Where</strong> – איפה (מקום) &nbsp;·&nbsp; <strong>When</strong> – מתי (זמן) &nbsp;·&nbsp; <strong>Why</strong> – למה (סיבה) &nbsp;·&nbsp; <strong>How</strong> – איך / כמה (אופן, כמות, גיל, משך, תדירות, מחיר) &nbsp;·&nbsp; <strong>Which</strong> – איזה (בחירה מתוך אפשרויות ידועות) &nbsp;·&nbsp; <strong>Whose</strong> – של מי (בעלות)",
     mcCount: 10,
     orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "אתם מראיינים מועמד לעבודה. שאלו אותו כל שאלה שתרצו.",
+    dialogueGrammar: "questionWords",
+    dialogueReplies: [
+      "That's a good question — I'd say my last role really shaped how I think about this.",
+      "Honestly, it depends on the day, but I always try to stay curious.",
+      "I've thought about that a lot, actually — feel free to ask me more.",
+      "Good one. Short answer: yes. Long answer: it's a bit more complicated than that.",
+      "I like that you're asking that — most interviewers don't."
+    ],
     questions: [
       { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"], why: "שואלים על <em>דבר</em> (השם עצמו) ולא על אדם או מקום, לכן What ולא Who." },
       { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"], why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
@@ -484,7 +543,12 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Who is that man?", answers: ["מי האיש הזה", "מי זה האיש הזה"], display: "מי האיש הזה?" },
       { type: "translate", direction: "toHebrew", prompt: "How old is your grandfather?", answers: ["בן כמה הסבא שלך", "בת כמה הסבא שלך"], display: "בן כמה הסבא שלך?" },
       { type: "translate", direction: "toHebrew", prompt: "Which book do you want?", answers: ["איזה ספר אתה רוצה", "איזה ספר את רוצה"], display: "איזה ספר אתה רוצה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Where were you born?", answers: ["איפה נולדת"], display: "איפה נולדת?" }
+      { type: "translate", direction: "toHebrew", prompt: "Where were you born?", answers: ["איפה נולדת"], display: "איפה נולדת?" },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול על הניסיון הקודם שלו." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול למה הוא רוצה לעבוד כאן." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול מתי הוא יכול להתחיל." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול איך הוא מתמודד עם לחץ." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת שמעניינת אתכם." }
     ]
   },
   {
@@ -493,6 +557,16 @@ const stages = [
     legend: "<strong>Are</strong> – משמש עם הפועל to be, כשאחרי המילה מגיע שם עצם, תואר או ביטוי מקום (בלי פועל פעולה נוסף) &nbsp;·&nbsp; <strong>Do</strong> – משמש כפועל עזר כשיש במשפט <em>פועל פעולה</em> נוסף (like, work, study, need, walk, fit...)",
     mcCount: 10,
     orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "אתם פוגשים שכן חדש שעבר לבניין. שאלו אותו כל שאלה שתרצו כדי להכיר אותו.",
+    dialogueGrammar: "doAre",
+    dialogueReplies: [
+      "Yes, I just moved in last week from across town.",
+      "That's a great question — the honest answer is, it depends on the day.",
+      "I love that you asked — feel free to ask me something else too.",
+      "Good question! I think you'll find out soon enough.",
+      "Ha, sure — go ahead and ask me anything else."
+    ],
     questions: [
       { sentence: "___ you a teacher?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע שם עצם (a teacher), אין פועל פעולה נוסף במשפט." },
       { sentence: "___ you like pizza?", answer: "Do", options: ["Do", "Are"], why: "\"like\" הוא פועל פעולה, ולכן צריך את פועל העזר Do." },
@@ -523,7 +597,12 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Are your parents at home?", answers: ["ההורים שלך בבית"], display: "ההורים שלך בבית?" },
       { type: "translate", direction: "toHebrew", prompt: "Do these shoes fit you?", answers: ["הנעליים האלה מתאימות לך"], display: "הנעליים האלה מתאימות לך?" },
       { type: "translate", direction: "toHebrew", prompt: "Are you and your brother close in age?", answers: ["אתה ואחיך קרובים בגיל", "את ואחיך קרובים בגיל"], display: "אתה ואחיך קרובים בגיל?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do we need to bring anything?", answers: ["אנחנו צריכים להביא משהו"], display: "אנחנו צריכים להביא משהו?" }
+      { type: "translate", direction: "toHebrew", prompt: "Do we need to bring anything?", answers: ["אנחנו צריכים להביא משהו"], display: "אנחנו צריכים להביא משהו?" },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא חדש בבניין." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא עובד מהבית." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא אוהב בעלי חיים." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא צריך עזרה עם משהו." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת שתרצו." }
     ]
   },
   {
@@ -532,6 +611,16 @@ const stages = [
     legend: "<strong>Am I</strong> – שואלים על עצמכם (הדובר) &nbsp;·&nbsp; <strong>Is she</strong> – שואלים על אישה/בחורה שכבר הוזכרה בהקשר, ולא נמצאת מולכם &nbsp;·&nbsp; <strong>Is this</strong> – מצביעים או מראים על משהו/מישהו שנמצא ממש לפניכם עכשיו",
     mcCount: 10,
     orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "אתם במסיבה. מצביעים ושואלים כל שאלה שתרצו על אנשים וחפצים סביבכם.",
+    dialogueGrammar: "isAmThis",
+    dialogueReplies: [
+      "No, that's my cousin — my sister couldn't make it tonight.",
+      "Yeah, she just texted me — everything's fine.",
+      "Yes, that one's yours — I saved it for you earlier.",
+      "Careful, it's spicier than it looks!",
+      "She just left, so she should be here soon."
+    ],
     questions: [
       { sentence: "Emma just got back from her trip. ___ tired?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר על Emma (אישה) שכבר הוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "<em>(מצביעים על מחשב נייד על השולחן)</em> ___ yours?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי שנמצא ממש לפניכם, לכן Is this." },
@@ -562,7 +651,12 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Is this where you work?", answers: ["כאן אתה עובד", "זה המקום שבו אתה עובד"], display: "כאן אתה עובד?" },
       { type: "translate", direction: "toHebrew", prompt: "Am I supposed to bring the cake?", answers: ["אני אמור להביא את העוגה", "אני אמורה להביא את העוגה"], display: "אני אמור להביא את העוגה?" },
       { type: "translate", direction: "toHebrew", prompt: "Is she still painting?", answers: ["היא עדיין מציירת"], display: "היא עדיין מציירת?" },
-      { type: "translate", direction: "toHebrew", prompt: "Is this too small for you?", answers: ["זה קטן מדי בשבילך"], display: "זה קטן מדי בשבילך?" }
+      { type: "translate", direction: "toHebrew", prompt: "Is this too small for you?", answers: ["זה קטן מדי בשבילך"], display: "זה קטן מדי בשבילך?" },
+      { type: "dialogue", hint: "רעיון: מצביעים על מישהו — אפשר לשאול מי זה." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול על מישהי שהוזכרה קודם ולא נמצאת כאן." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול שאלה על עצמכם." },
+      { type: "dialogue", hint: "רעיון: מצביעים על חפץ — אפשר לשאול עליו." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת." }
     ]
   },
   {
@@ -571,6 +665,16 @@ const stages = [
     legend: "<strong>Did</strong> – פועל עזר לשאלות בזמן עבר (yesterday, last night, already, this morning...) &nbsp;·&nbsp; <strong>Do</strong> – פועל עזר לשאלות בזמן הווה / הרגלים (usually, every day, always...)",
     mcCount: 10,
     orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "אתם נפגשים עם חבר ותיק אחרי הרבה זמן. שאלו אותו כל שאלה שתרצו על העבר ועל ההווה.",
+    dialogueGrammar: "didDo",
+    dialogueReplies: [
+      "Yes, finally — it took an extra year, but I got there.",
+      "No, I actually moved about a year ago.",
+      "I ran into a couple of them last month, actually.",
+      "Not every day anymore, but most weekends.",
+      "Not yet, but I keep meaning to — want to join me sometime?"
+    ],
     questions: [
       { sentence: "___ you go to the party last night?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last night\" מציינת זמן עבר, לכן Did." },
       { sentence: "___ you like chocolate?", answer: "Do", options: ["Do", "Did"], why: "השאלה כללית בהווה ולא מציינת זמן עבר, לכן Do." },
@@ -601,7 +705,12 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Did they finish the exam?", answers: ["הם סיימו את המבחן"], display: "הם סיימו את המבחן?" },
       { type: "translate", direction: "toHebrew", prompt: "Did you see that movie?", answers: ["ראית את הסרט הזה"], display: "ראית את הסרט הזה?" },
       { type: "translate", direction: "toHebrew", prompt: "Do you work here?", answers: ["אתה עובד כאן", "את עובדת כאן"], display: "אתה עובד כאן?" },
-      { type: "translate", direction: "toHebrew", prompt: "Did he play tennis?", answers: ["הוא שיחק טניס"], display: "הוא שיחק טניס?" }
+      { type: "translate", direction: "toHebrew", prompt: "Did he play tennis?", answers: ["הוא שיחק טניס"], display: "הוא שיחק טניס?" },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול על משהו מהעבר (Did)." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול על ההווה שלו (Do)." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול עוד שאלה על העבר." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול עוד שאלה על הרגלים בהווה." },
+      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת." }
     ]
   },
   {
@@ -610,6 +719,16 @@ const stages = [
     legend: "<strong>Didn't</strong> – שלילה בזמן עבר, מתאים לכל הגופים (I, you, he, she, we, they) &nbsp;·&nbsp; <strong>Doesn't</strong> – שלילה בזמן הווה, רק עם גוף שלישי יחיד (he / she / it)",
     mcCount: 10,
     orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "החבר שלכם שואל אתכם כמה שאלות. ענו לו בכל משפט שלילי שתרצו עם Didn't או Doesn't.",
+    dialogueGrammar: "negatives",
+    dialogueReplies: [
+      "Ah, I see — thanks for explaining.",
+      "Got it, that makes sense.",
+      "Oh really? Good to know.",
+      "No worries at all.",
+      "Fair enough!"
+    ],
     questions: [
       { sentence: "She ___ like spicy food.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
       { sentence: "She ___ go to work yesterday because she was sick.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't." },
@@ -640,7 +759,12 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "My brother doesn't eat meat.", answers: ["אחי לא אוכל בשר"], display: "אחי לא אוכל בשר." },
       { type: "translate", direction: "toHebrew", prompt: "I didn't see you at the meeting.", answers: ["לא ראיתי אותך בפגישה"], display: "לא ראיתי אותך בפגישה." },
       { type: "translate", direction: "toHebrew", prompt: "The store doesn't open on Sundays.", answers: ["החנות לא פתוחה בימי ראשון", "החנות לא נפתחת בימי ראשון"], display: "החנות לא פתוחה בימי ראשון." },
-      { type: "translate", direction: "toHebrew", prompt: "You didn't call me back.", answers: ["לא התקשרת אליי בחזרה", "לא התקשרת אליי חזרה"], display: "לא התקשרת אליי בחזרה." }
+      { type: "translate", direction: "toHebrew", prompt: "You didn't call me back.", answers: ["לא התקשרת אליי בחזרה", "לא התקשרת אליי חזרה"], display: "לא התקשרת אליי בחזרה." },
+      { type: "dialogue", theyAsk: "Why didn't you come to the party?" },
+      { type: "dialogue", theyAsk: "Does your brother like spicy food?" },
+      { type: "dialogue", theyAsk: "Did you two finish the project?" },
+      { type: "dialogue", theyAsk: "Is the store open right now?" },
+      { type: "dialogue", theyAsk: "Did she call you back yet?" }
     ]
   }
 ];
@@ -648,6 +772,8 @@ const stages = [
 let stageIndex = 0;
 let current = 0;
 let score = 0;
+let dialogueLog = {};
+let dialogueLastReply = {};
 
 let audioCtx = null;
 function playTone(freqStart, freqEnd, duration, type, gainStart) {
@@ -712,22 +838,14 @@ function render() {
   document.getElementById("legend").innerHTML = stage.legend;
   document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} / ${stages.length}`;
 
-  const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
-  const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
-  renderSubTabs(stage, mcCount, orderCount);
+  const sections = getSections(stage);
+  renderSubTabs(sections);
 
   if (current < stage.questions.length) {
-    let sectionStart, sectionLen;
-    if (current < mcCount) {
-      sectionStart = 0; sectionLen = mcCount;
-    } else if (current < mcCount + orderCount) {
-      sectionStart = mcCount; sectionLen = orderCount;
-    } else {
-      sectionStart = mcCount + orderCount; sectionLen = stage.questions.length - sectionStart;
-    }
-    document.getElementById("qnum").textContent = current - sectionStart + 1;
-    document.getElementById("qtotal").textContent = sectionLen;
-    document.getElementById("barFill").style.width = `${((current - sectionStart) / sectionLen) * 100}%`;
+    const sec = sections.find(s => current >= s.start && current < s.start + s.len) || sections[sections.length - 1];
+    document.getElementById("qnum").textContent = current - sec.start + 1;
+    document.getElementById("qtotal").textContent = sec.len;
+    document.getElementById("barFill").style.width = `${((current - sec.start) / sec.len) * 100}%`;
   } else {
     document.getElementById("qnum").textContent = stage.questions.length;
     document.getElementById("qtotal").textContent = stage.questions.length;
@@ -799,6 +917,23 @@ function render() {
     return;
   }
 
+  if (q.type === "dialogue") {
+    const sec = sections.find(s => s.label === "Dialogue");
+    if (current === sec.start) dialogueLog[stageIndex] = [];
+    const log = dialogueLog[stageIndex] || [];
+    const liveTurn = q.theyAsk ? [{ who: "them", text: q.theyAsk }] : [];
+    card.innerHTML = `
+      <div class="dialogue-scenario">${stage.dialogueScenario}</div>
+      <div class="dialogue-log">${renderDialogueLog(log.concat(liveTurn))}</div>
+      ${q.hint ? `<div class="dialogue-cue">${q.hint}</div>` : ""}
+      <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
+      <div class="hint" id="hint"></div>
+      <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
+    `;
+    renderDialogueQuestion(q, stage);
+    return;
+  }
+
   const opts = shuffle(q.options);
 
   card.innerHTML = `
@@ -815,13 +950,23 @@ function render() {
   });
 }
 
-function renderSubTabs(stage, mcCount, orderCount) {
-  const el = document.getElementById("subTabs");
-  const translateCount = stage.questions.length - mcCount - orderCount;
+function getSections(stage) {
+  const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
+  const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
+  const dialogueCount = typeof stage.dialogueCount === "number" ? stage.dialogueCount : 0;
+  const translateCount = stage.questions.length - mcCount - orderCount - dialogueCount;
 
-  const sections = [{ label: "Regular Questions", start: 0, len: mcCount }];
-  if (orderCount > 0) sections.push({ label: "Word Order", start: mcCount, len: orderCount });
-  if (translateCount > 0) sections.push({ label: "Translation", start: mcCount + orderCount, len: translateCount });
+  const sections = [];
+  let pos = 0;
+  if (mcCount > 0) { sections.push({ label: "Regular Questions", start: pos, len: mcCount }); pos += mcCount; }
+  if (orderCount > 0) { sections.push({ label: "Word Order", start: pos, len: orderCount }); pos += orderCount; }
+  if (translateCount > 0) { sections.push({ label: "Translation", start: pos, len: translateCount }); pos += translateCount; }
+  if (dialogueCount > 0) { sections.push({ label: "Dialogue", start: pos, len: dialogueCount }); pos += dialogueCount; }
+  return sections;
+}
+
+function renderSubTabs(sections) {
+  const el = document.getElementById("subTabs");
 
   if (sections.length < 2) { el.innerHTML = ""; return; }
 
@@ -837,6 +982,147 @@ function renderSubTabs(stage, mcCount, orderCount) {
 function normalizeAnswer(str) {
   return str.trim().toLowerCase().replace(/[?.!,]/g, "").replace(/\s+/g, " ");
 }
+
+function tokenize(str) {
+  return str.trim().toLowerCase().replace(/[’‘]/g, "'").replace(/[?.!,]/g, "").replace(/\s+/g, " ").split(" ").filter(Boolean);
+}
+
+const VERB_LEXICON = new Set(["like","work","works","study","studies","need","needs","walk","walks","fit","fits","live","lives","play","plays","watch","watches","eat","eats","drink","drinks","go","goes","come","comes","want","wants","know","knows","think","thinks","feel","feels","look","looks","sound","sounds","run","runs","call","calls","ask","asks","tell","tells","say","says","see","sees","do","does","make","makes","take","takes","get","gets","give","gives","find","finds","use","uses","try","tries","help","helps","start","starts","stop","stops","finish","finishes","arrive","arrives","leave","leaves","meet","meets","visit","visits","buy","buys","sell","sells","read","reads","write","writes","speak","speaks","talk","talks","listen","listens","hear","hears","understand","understands","remember","remembers","forget","forgets","believe","believes","hope","hopes","wish","wishes","plan","plans","decide","decides","choose","chooses","bring","brings","send","sends","open","opens","close","closes","turn","turns","wait","waits","stay","stays","drive","drives","fly","flies","swim","swims","cook","cooks","clean","cleans","wash","washes","sleep","sleeps","wake","wakes","dance","dances","sing","sings","paint","paints","draw","draws","build","builds","fix","fixes","break","breaks","cut","cuts","pay","pays","spend","spends","save","saves","lose","loses","win","wins","learn","learns","teach","teaches","sit","sits","stand","stands","wear","wears","carry","carries","hold","holds","push","pushes","pull","pulls","throw","throws","enjoy","enjoys","hate","hates","love","loves","prefer","prefers","travel","travels","move","moves","park","parks","ride","rides","practice","practices","exercise","exercises","shop","shops"]);
+
+const IRREGULAR_PAST = { went:"go", saw:"see", did:"do", had:"have", was:"be", were:"be", ate:"eat", wrote:"write", came:"come", took:"take", got:"get", made:"make", said:"say", thought:"think", knew:"know", felt:"feel", left:"leave", met:"meet", ran:"run", sat:"sit", stood:"stand", spoke:"speak", drove:"drive", gave:"give", found:"find", told:"tell", bought:"buy", brought:"bring", understood:"understand", paid:"pay", sent:"send", built:"build", spent:"spend", kept:"keep", slept:"sleep", heard:"hear", held:"hold", won:"win", lost:"lose", chose:"choose", drew:"draw", flew:"fly", grew:"grow", threw:"throw", wore:"wear", broke:"break", forgot:"forget", hid:"hide", rode:"ride", rose:"rise", shook:"shake", stole:"steal", swam:"swim", taught:"teach", tore:"tear", woke:"wake" };
+
+const THIRD_PERSON_TO_BASE = { works:"work", studies:"study", needs:"need", fits:"fit", lives:"live", plays:"play", watches:"watch", eats:"eat", drinks:"drink", goes:"go", comes:"come", wants:"want", knows:"know", thinks:"think", feels:"feel", looks:"look", sounds:"sound", runs:"run", calls:"call", asks:"ask", tells:"tell", says:"say", sees:"see", does:"do", makes:"make", takes:"take", gets:"get", gives:"give", finds:"find", uses:"use", tries:"try", helps:"help", starts:"start", stops:"stop", finishes:"finish", arrives:"arrive", leaves:"leave", meets:"meet", visits:"visit", buys:"buy", sells:"sell", reads:"read", writes:"write", speaks:"speak", talks:"talk", listens:"listen", hears:"hear", understands:"understand", remembers:"remember", forgets:"forget", believes:"believe", hopes:"hope", wishes:"wish", plans:"plan", decides:"decide", chooses:"choose", brings:"bring", sends:"send", opens:"open", closes:"close", turns:"turn", waits:"wait", stays:"stay", drives:"drive", flies:"fly", swims:"swim", cooks:"cook", cleans:"clean", washes:"wash", sleeps:"sleep", wakes:"wake", dances:"dance", sings:"sing", paints:"paint", draws:"draw", builds:"build", fixes:"fix", breaks:"break", cuts:"cut", pays:"pay", spends:"spend", saves:"save", loses:"lose", wins:"win", learns:"learn", teaches:"teach", sits:"sit", stands:"stand", wears:"wear", carries:"carry", holds:"hold", pushes:"push", pulls:"pull", throws:"throw", enjoys:"enjoy", hates:"hate", loves:"love", prefers:"prefer", travels:"travel", moves:"move", parks:"park", rides:"ride", practices:"practice", exercises:"exercise", shops:"shop" };
+
+const QUESTION_WORDS = new Set(["what","where","when","why","how","who","which","whose"]);
+const AUX_WORDS = new Set(["do","does","did","are","is","am","can","could","will","would","should","have","has","was","were"]);
+
+function cap(w) { return w.charAt(0).toUpperCase() + w.slice(1); }
+
+function isVerbLike(word) {
+  if (!word) return false;
+  if (VERB_LEXICON.has(word) || IRREGULAR_PAST[word]) return true;
+  if (word.endsWith("ing") && word.length > 4) return true;
+  if (word.endsWith("ed") && word.length > 3) return true;
+  if (word.endsWith("s") && word.length > 3 && VERB_LEXICON.has(word.slice(0, -1))) return true;
+  return false;
+}
+
+function findAuxIndex(tokens, maxIdx) {
+  for (let i = 0; i <= Math.min(maxIdx, tokens.length - 1); i++) {
+    if (AUX_WORDS.has(tokens[i])) return i;
+  }
+  return -1;
+}
+
+function checkAuxAgreement(tokens, auxIdx) {
+  const aux = tokens[auxIdx];
+  const subject = tokens[auxIdx + 1];
+  if (!subject) return { ok: true };
+  if (["i", "you", "we", "they"].includes(subject)) {
+    if (aux === "does") return { ok: false, note: `"Does" מתאים רק לגוף שלישי יחיד (he/she/it) — עם "${subject}" צריך "Do".` };
+    if (aux === "is" && ["you", "we", "they"].includes(subject)) return { ok: false, note: `"Is" לא מתאים ל-"${subject}" — צריך "Are".` };
+    if (aux === "am" && subject !== "i") return { ok: false, note: `"Am" משמש רק עם "I".` };
+  } else if (["he", "she", "it"].includes(subject)) {
+    if (aux === "do") return { ok: false, note: `עם "${subject}" צריך "Does" ולא "Do".` };
+    if (aux === "are") return { ok: false, note: `עם "${subject}" צריך "Is" ולא "Are".` };
+  }
+  return { ok: true };
+}
+
+const PRONOUNS = new Set(["i", "you", "he", "she", "it", "we", "they"]);
+
+function checkQuestionWords(tokens) {
+  if (!tokens.length) return { ok: false, note: "נסו לכתוב שאלה." };
+  const first = tokens[0];
+  if (QUESTION_WORDS.has(first)) {
+    const auxIdx = findAuxIndex(tokens, 2);
+    if (auxIdx === -1) {
+      if (["who", "what"].includes(first) && !PRONOUNS.has(tokens[1])) return { ok: true };
+      return { ok: false, note: `אחרי "${cap(first)}" צריך פועל עזר (do/does/did/are/is) לפני הנושא — למשל "${cap(first)} do you...?"` };
+    }
+    return checkAuxAgreement(tokens, auxIdx);
+  }
+  if (AUX_WORDS.has(first)) return checkAuxAgreement(tokens, 0);
+  return { ok: false, note: "שאלות באנגלית בדרך כלל מתחילות במילת שאלה (What/Where/Why...) או בפועל עזר (Do/Are/Is...)." };
+}
+
+function checkDoAre(tokens) {
+  const base = checkQuestionWords(tokens);
+  if (!base.ok) return base;
+  const auxIdx = findAuxIndex(tokens, 2);
+  if (auxIdx === -1) return base;
+  const aux = tokens[auxIdx];
+  const subject = tokens[auxIdx + 1];
+  const nextWord = tokens[auxIdx + 2];
+  const thirdPerson = ["he", "she", "it"].includes(subject);
+  if (["do", "does"].includes(aux) && nextWord && !isVerbLike(nextWord) && !AUX_WORDS.has(nextWord)) {
+    return { ok: false, note: `אחרי "${cap(aux)}" בדרך כלל בא פועל פעולה — אם אין כאן פועל פעולה, אולי צריך "${thirdPerson ? "Is" : "Are"}" במקום.` };
+  }
+  if (["are", "is", "am"].includes(aux) && nextWord && isVerbLike(nextWord) && !nextWord.endsWith("ing")) {
+    return { ok: false, note: `אחרי "${cap(aux)}" יש כאן מה שנראה כמו פועל פעולה ("${nextWord}") — אולי צריך "${thirdPerson ? "Does" : "Do"}" במקום.` };
+  }
+  return { ok: true };
+}
+
+function checkDidDo(tokens) {
+  const base = checkQuestionWords(tokens);
+  if (!base.ok) return base;
+  const auxIdx = findAuxIndex(tokens, 2);
+  if (auxIdx === -1) return base;
+  const aux = tokens[auxIdx];
+  const verb = tokens[auxIdx + 2];
+  if (["did", "do", "does"].includes(aux) && verb) {
+    if (IRREGULAR_PAST[verb]) return { ok: false, note: `אחרי "${cap(aux)}" הפועל צריך להיות בצורת הבסיס — "${IRREGULAR_PAST[verb]}" ולא "${verb}".` };
+    if (THIRD_PERSON_TO_BASE[verb]) return { ok: false, note: `אחרי "${cap(aux)}" הפועל נשאר בצורת הבסיס — "${THIRD_PERSON_TO_BASE[verb]}" ולא "${verb}".` };
+    if (verb.endsWith("ed") && verb.length > 3 && !VERB_LEXICON.has(verb)) return { ok: false, note: `אחרי "${cap(aux)}" הפועל נשאר בצורת הבסיס בלי "-ed" בסוף.` };
+  }
+  return { ok: true };
+}
+
+function checkIsAmThis(tokens) {
+  if (!tokens.length) return { ok: false, note: "נסו לכתוב שאלה." };
+  const first = tokens[0];
+  if (!["is", "am"].includes(first)) {
+    if (QUESTION_WORDS.has(first) || AUX_WORDS.has(first)) return { ok: true };
+    return { ok: false, note: 'בשלב הזה מתרגלים שאלות שמתחילות ב-"Is" או "Am" — נסו זאת.' };
+  }
+  const subject = tokens[1];
+  if (first === "am" && subject !== "i") return { ok: false, note: '"Am" משמש רק עם "I" — למשל "Am I...?"' };
+  if (first === "is" && subject === "i") return { ok: false, note: 'עם "I" משתמשים ב-"Am", לא ב-"Is".' };
+  return { ok: true };
+}
+
+function checkNegatives(tokens) {
+  if (!tokens.length) return { ok: false, note: "נסו לכתוב משפט." };
+  const joined = tokens.join(" ");
+  let negIdx = tokens.findIndex(t => t === "didn't" || t === "didnt" || t === "doesn't" || t === "doesnt");
+  let neg = negIdx >= 0 ? tokens[negIdx] : null;
+  let twoWord = false;
+  if (!neg && joined.includes("did not")) { neg = "did not"; negIdx = tokens.indexOf("did"); twoWord = true; }
+  if (!neg && joined.includes("does not")) { neg = "does not"; negIdx = tokens.indexOf("does"); twoWord = true; }
+  if (!neg) return { ok: false, note: `כדי לענות במשפט שלילי צריך "Didn't" (לכל הגופים, עבר) או "Doesn't" (הווה, גוף שלישי יחיד).` };
+  const isDoes = neg.startsWith("doesn") || neg === "does not";
+  const subject = tokens[Math.max(0, negIdx - 1)];
+  if (isDoes && ["i", "you", "we", "they"].includes(subject)) {
+    return { ok: false, note: `"Doesn't" מתאים רק לגוף שלישי יחיד (he/she/it) — עם "${subject}" צריך "Didn't".` };
+  }
+  const verbIdx = negIdx + (twoWord ? 2 : 1);
+  const verb = tokens[verbIdx];
+  if (verb) {
+    if (IRREGULAR_PAST[verb]) return { ok: false, note: `אחרי "${neg}" הפועל צריך להיות בצורת הבסיס — "${IRREGULAR_PAST[verb]}" ולא "${verb}".` };
+    if (THIRD_PERSON_TO_BASE[verb]) return { ok: false, note: `אחרי "${neg}" הפועל נשאר בצורת הבסיס — "${THIRD_PERSON_TO_BASE[verb]}" ולא "${verb}".` };
+    if (verb.endsWith("ed") && verb.length > 3 && !VERB_LEXICON.has(verb)) return { ok: false, note: `אחרי "${neg}" הפועל נשאר בצורת הבסיס בלי "-ed".` };
+  }
+  return { ok: true };
+}
+
+const GRAMMAR_CHECKERS = {
+  questionWords: checkQuestionWords,
+  doAre: checkDoAre,
+  didDo: checkDidDo,
+  isAmThis: checkIsAmThis,
+  negatives: checkNegatives
+};
 
 function renderTranslateQuestion(q) {
   const input = document.getElementById("translateInput");
@@ -857,6 +1143,65 @@ function renderTranslateQuestion(q) {
 
     btn.textContent = "Next →";
     btn.onclick = () => { current++; render(); };
+  }
+
+  btn.onclick = check;
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") check();
+  });
+  input.focus();
+}
+
+function renderDialogueLog(log) {
+  return log.map(m => `<div class="dialogue-msg ${m.who}">${m.text}</div>`).join("");
+}
+
+function formatUserLine(raw, isStatement) {
+  let t = raw.trim().replace(/\s+/g, " ");
+  if (!t) return t;
+  t = t.charAt(0).toUpperCase() + t.slice(1);
+  if (!/[.?!]$/.test(t)) t += isStatement ? "." : "?";
+  return t;
+}
+
+function pickReply(stage) {
+  const pool = stage.dialogueReplies || [];
+  if (!pool.length) return null;
+  let idx = Math.floor(Math.random() * pool.length);
+  if (pool.length > 1 && idx === dialogueLastReply[stageIndex]) idx = (idx + 1) % pool.length;
+  dialogueLastReply[stageIndex] = idx;
+  return pool[idx];
+}
+
+function renderDialogueQuestion(q, stage) {
+  const input = document.getElementById("translateInput");
+  const btn = document.getElementById("checkBtn");
+
+  function check() {
+    const raw = input.value;
+    if (!raw.trim()) { input.focus(); return; }
+    const tokens = tokenize(raw);
+    const checker = GRAMMAR_CHECKERS[stage.dialogueGrammar];
+    const result = checker ? checker(tokens) : { ok: true };
+    input.disabled = true;
+    input.classList.add(result.ok ? "correct" : "wrong");
+    document.getElementById("hint").innerHTML = result.ok
+      ? "Looks good grammatically!"
+      : `Grammar note: ${result.note}`;
+
+    if (result.ok) { score++; playCorrectSound(); }
+    else { playWrongSound(); }
+    document.getElementById("scorelive").textContent = score;
+
+    btn.textContent = "Next →";
+    btn.onclick = () => {
+      const log = dialogueLog[stageIndex] || (dialogueLog[stageIndex] = []);
+      log.push({ who: "you", text: formatUserLine(raw, !!q.theyAsk) });
+      const reply = pickReply(stage);
+      if (reply) log.push({ who: "them", text: reply });
+      current++;
+      render();
+    };
   }
 
   btn.onclick = check;
