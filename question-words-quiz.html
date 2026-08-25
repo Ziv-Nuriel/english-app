@@ -233,11 +233,136 @@
     font-size: .85rem;
     color: var(--ink-soft);
     min-height: 1.2em;
-    direction: rtl;
   }
   .hint .why {
     display: block;
     margin-top: .35rem;
+    color: var(--wrong);
+    direction: rtl;
+    text-align: right;
+  }
+
+  .sub-tabs {
+    display: flex;
+    gap: .5rem;
+    margin-bottom: 1.25rem;
+  }
+  .sub-tab {
+    flex: 1;
+    padding: .5rem .75rem;
+    border-radius: 4px;
+    border: 1.5px solid var(--rule);
+    background: transparent;
+    color: var(--ink-soft);
+    font-size: .78rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .sub-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .sub-tab.active {
+    border-color: var(--highlight);
+    background: var(--accent-soft);
+    color: var(--accent);
+  }
+
+  .translate-prompt {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.3rem;
+    line-height: 1.6;
+    margin: .5rem 0 1.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--accent-soft);
+    border-radius: 4px;
+  }
+  .translate-input {
+    width: 100%;
+    padding: .75rem 1rem;
+    border-radius: 3px;
+    border: 1.5px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+  }
+  .translate-input:focus { outline: none; border-color: var(--accent); }
+  .translate-input:disabled { opacity: .8; }
+  .translate-input.correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+  .translate-input.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    color: var(--wrong);
+  }
+
+  .order-label {
+    font-size: .78rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 .6rem;
+    direction: rtl;
+  }
+  .order-build {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    min-height: 3.2rem;
+    padding: .75rem;
+    border: 1.5px dashed var(--rule);
+    border-radius: 4px;
+    margin-bottom: 1.1rem;
+    align-items: center;
+  }
+  .order-build.empty::before {
+    content: "Tap the words below to build the sentence";
+    color: var(--ink-soft);
+    font-size: .82rem;
+  }
+  .order-build.correct { border-style: solid; border-color: var(--correct); }
+  .order-build.wrong { border-style: solid; border-color: var(--wrong); }
+  .order-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .chip {
+    padding: .55rem .9rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .15s, background .15s, opacity .15s;
+  }
+  .chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    transform: translateY(-2px);
+  }
+  .chip:active:not(:disabled) { transform: scale(.94); }
+  .chip:disabled { opacity: .3; cursor: default; }
+  .chip.placed {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .order-build.correct .chip.placed {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+  .order-build.wrong .chip.placed {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
     color: var(--wrong);
   }
 
@@ -310,9 +435,11 @@
 
   <div class="legend" id="legend"></div>
 
+  <div class="sub-tabs" id="subTabs"></div>
+
   <div class="progress-row">
-    <span>שאלה <strong id="qnum">1</strong> מתוך <strong id="qtotal">15</strong></span>
-    <span>ניקוד: <strong id="scorelive">0</strong></span>
+    <span>Question <strong id="qnum">1</strong> of <strong id="qtotal">15</strong></span>
+    <span>Score: <strong id="scorelive">0</strong></span>
   </div>
   <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
 
@@ -325,6 +452,8 @@ const stages = [
     title: "Question Words Drill",
     sub: "השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose",
     legend: "<strong>What</strong> – מה (דבר) &nbsp;·&nbsp; <strong>Who</strong> – מי (אדם) &nbsp;·&nbsp; <strong>Where</strong> – איפה (מקום) &nbsp;·&nbsp; <strong>When</strong> – מתי (זמן) &nbsp;·&nbsp; <strong>Why</strong> – למה (סיבה) &nbsp;·&nbsp; <strong>How</strong> – איך / כמה (אופן, כמות, גיל, משך, תדירות, מחיר) &nbsp;·&nbsp; <strong>Which</strong> – איזה (בחירה מתוך אפשרויות ידועות) &nbsp;·&nbsp; <strong>Whose</strong> – של מי (בעלות)",
+    mcCount: 10,
+    orderCount: 10,
     questions: [
       { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"], why: "שואלים על <em>דבר</em> (השם עצמו) ולא על אדם או מקום, לכן What ולא Who." },
       { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"], why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
@@ -335,13 +464,35 @@ const stages = [
       { sentence: "___ is that man standing by the door?", answer: "Who", options: ["Who", "What", "Whose", "Which"], why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
       { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"], why: "יש שתי אפשרויות ידועות (הספר הזה או ההוא), ולכן משתמשים ב-Which לבחירה מתוך אפשרויות מוגבלות." },
       { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"], why: "שואלים <em>למי שייך</em> התיק, לכן Whose (בעלות)." },
-      { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." }
+      { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." },
+      { type: "order", answer: ["what", "is", "your", "name"], punct: "?", why: "שואלים על <em>דבר</em> (השם), לכן What פותח את המשפט." },
+      { type: "order", answer: ["where", "do", "you", "live"], punct: "?", why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
+      { type: "order", answer: ["why", "were", "you", "late"], punct: "?", why: "שואלים על <em>סיבה</em> לאיחור, לכן Why." },
+      { type: "order", answer: ["how", "many", "brothers", "do", "you", "have"], punct: "?", why: "\"How many\" נשארים יחד בתחילת המשפט לשאלה על כמות." },
+      { type: "order", answer: ["whose", "bag", "is", "this"], punct: "?", why: "Whose מגיע צמוד לשם העצם שאליו הוא מתייחס (bag)." },
+      { type: "order", answer: ["when", "does", "the", "movie", "start"], punct: "?", why: "שואלים על <em>זמן</em> תחילת הסרט, לכן When." },
+      { type: "order", answer: ["who", "is", "that", "man"], punct: "?", why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
+      { type: "order", answer: ["which", "book", "do", "you", "want"], punct: "?", why: "Which משמש לבחירה מתוך אפשרויות ידועות." },
+      { type: "order", answer: ["how", "old", "is", "your", "grandfather"], punct: "?", why: "\"How old\" הוא ביטוי קבוע לשאלה על גיל." },
+      { type: "order", answer: ["where", "were", "you", "born"], punct: "?", why: "שואלים על <em>מקום</em> הלידה, לכן Where." },
+      { type: "translate", direction: "toEnglish", prompt: "מה השם שלך?", answers: ["what is your name", "what's your name", "whats your name"], display: "What is your name?" },
+      { type: "translate", direction: "toEnglish", prompt: "איפה אתה גר?", answers: ["where do you live"], display: "Where do you live?" },
+      { type: "translate", direction: "toEnglish", prompt: "כמה אחים יש לך?", answers: ["how many brothers do you have"], display: "How many brothers do you have?" },
+      { type: "translate", direction: "toEnglish", prompt: "מתי הסרט מתחיל?", answers: ["when does the movie start"], display: "When does the movie start?" },
+      { type: "translate", direction: "toEnglish", prompt: "של מי התיק הזה?", answers: ["whose bag is this"], display: "Whose bag is this?" },
+      { type: "translate", direction: "toHebrew", prompt: "Why were you late?", answers: ["למה איחרת", "למה איחרתם"], display: "למה איחרת?" },
+      { type: "translate", direction: "toHebrew", prompt: "Who is that man?", answers: ["מי האיש הזה", "מי זה האיש הזה"], display: "מי האיש הזה?" },
+      { type: "translate", direction: "toHebrew", prompt: "How old is your grandfather?", answers: ["בן כמה הסבא שלך", "בת כמה הסבא שלך"], display: "בן כמה הסבא שלך?" },
+      { type: "translate", direction: "toHebrew", prompt: "Which book do you want?", answers: ["איזה ספר אתה רוצה", "איזה ספר את רוצה"], display: "איזה ספר אתה רוצה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Where were you born?", answers: ["איפה נולדת"], display: "איפה נולדת?" }
     ]
   },
   {
     title: "Do or Are Drill",
     sub: "בחרו Do או Are: משתמשים ב-Are לפני שם/תואר/מקום (הפועל to be), וב-Do כשיש פועל פעולה נוסף במשפט",
     legend: "<strong>Are</strong> – משמש עם הפועל to be, כשאחרי המילה מגיע שם עצם, תואר או ביטוי מקום (בלי פועל פעולה נוסף) &nbsp;·&nbsp; <strong>Do</strong> – משמש כפועל עזר כשיש במשפט <em>פועל פעולה</em> נוסף (like, work, study, need, walk, fit...)",
+    mcCount: 10,
+    orderCount: 10,
     questions: [
       { sentence: "___ you a teacher?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע שם עצם (a teacher), אין פועל פעולה נוסף במשפט." },
       { sentence: "___ you like pizza?", answer: "Do", options: ["Do", "Are"], why: "\"like\" הוא פועל פעולה, ולכן צריך את פועל העזר Do." },
@@ -352,13 +503,35 @@ const stages = [
       { sentence: "___ your parents at home right now?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
       { sentence: "___ your parents watch the news together?", answer: "Do", options: ["Do", "Are"], why: "\"watch\" הוא פועל פעולה, לכן Do." },
       { sentence: "___ we ready to go?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
-      { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." }
+      { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "you", "hungry"], punct: "?", why: "אין פועל פעולה נוסף אחרי Are (רק תואר), לכן Are פותח את המשפט." },
+      { type: "order", answer: ["do", "you", "like", "coffee"], punct: "?", why: "\"like\" הוא פועל פעולה, לכן צריך את Do." },
+      { type: "order", answer: ["are", "they", "students"], punct: "?", why: "אחרי Are מגיע שם עצם (students), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "they", "study", "English"], punct: "?", why: "\"study\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "we", "ready"], punct: "?", why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "you", "work", "on", "weekends"], punct: "?", why: "\"work\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "your", "parents", "at", "home"], punct: "?", why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "these", "shoes", "fit", "you"], punct: "?", why: "\"fit\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "you", "and", "your", "brother", "close", "in", "age"], punct: "?", why: "אחרי Are מגיע תיאור (close in age), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "we", "need", "to", "bring", "anything"], punct: "?", why: "\"need\" הוא פועל פעולה, לכן Do." },
+      { type: "translate", direction: "toEnglish", prompt: "אתה רעב?", answers: ["are you hungry"], display: "Are you hungry?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתה אוהב קפה?", answers: ["do you like coffee"], display: "Do you like coffee?" },
+      { type: "translate", direction: "toEnglish", prompt: "הם תלמידים?", answers: ["are they students"], display: "Are they students?" },
+      { type: "translate", direction: "toEnglish", prompt: "הם לומדים אנגלית?", answers: ["do they study english"], display: "Do they study English?" },
+      { type: "translate", direction: "toEnglish", prompt: "אנחנו מוכנים?", answers: ["are we ready"], display: "Are we ready?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do you work on weekends?", answers: ["אתה עובד בסופי שבוע", "את עובדת בסופי שבוע"], display: "אתה עובד בסופי שבוע?" },
+      { type: "translate", direction: "toHebrew", prompt: "Are your parents at home?", answers: ["ההורים שלך בבית"], display: "ההורים שלך בבית?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do these shoes fit you?", answers: ["הנעליים האלה מתאימות לך"], display: "הנעליים האלה מתאימות לך?" },
+      { type: "translate", direction: "toHebrew", prompt: "Are you and your brother close in age?", answers: ["אתה ואחיך קרובים בגיל", "את ואחיך קרובים בגיל"], display: "אתה ואחיך קרובים בגיל?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do we need to bring anything?", answers: ["אנחנו צריכים להביא משהו"], display: "אנחנו צריכים להביא משהו?" }
     ]
   },
   {
     title: "Is she / Is this / Am I",
     sub: "בחרו את הפתיח הנכון — Is she / Is this / Am I",
     legend: "<strong>Am I</strong> – שואלים על עצמכם (הדובר) &nbsp;·&nbsp; <strong>Is she</strong> – שואלים על אישה/בחורה שכבר הוזכרה בהקשר, ולא נמצאת מולכם &nbsp;·&nbsp; <strong>Is this</strong> – מצביעים או מראים על משהו/מישהו שנמצא ממש לפניכם עכשיו",
+    mcCount: 10,
+    orderCount: 10,
     questions: [
       { sentence: "Emma just got back from her trip. ___ tired?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר על Emma (אישה) שכבר הוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "<em>(מצביעים על מחשב נייד על השולחן)</em> ___ yours?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי שנמצא ממש לפניכם, לכן Is this." },
@@ -369,13 +542,35 @@ const stages = [
       { sentence: "<em>(מראים תמונה של אישה)</em> ___ your mother?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים ומראים על תמונה ספציפית שלפניכם, לכן Is this — למרות שמדובר באישה." },
       { sentence: "Grandma hasn't called in a while. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בסבתא (אישה) שהוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "___ the one who's supposed to bring the cake?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
-      { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." }
+      { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." },
+      { type: "order", answer: ["is", "this", "yours"], punct: "?", why: "מצביעים על חפץ ספציפי שלפניכם, לכן Is this." },
+      { type: "order", answer: ["is", "she", "okay"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
+      { type: "order", answer: ["am", "I", "late"], punct: "?", why: "השאלה היא על עצמכם (הדובר), לכן Am I." },
+      { type: "order", answer: ["is", "this", "your", "mother"], punct: "?", why: "מצביעים על מישהי ספציפית שלפניכם, לכן Is this — גם אם מדובר באישה." },
+      { type: "order", answer: ["am", "I", "allowed", "to", "park", "here"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
+      { type: "order", answer: ["is", "she", "working", "on", "a", "new", "piece"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
+      { type: "order", answer: ["is", "this", "where", "you", "work"], punct: "?", why: "מצביעים על מקום ספציפי שלפניכם, לכן Is this." },
+      { type: "order", answer: ["am", "I", "supposed", "to", "bring", "the", "cake"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
+      { type: "order", answer: ["is", "she", "still", "painting"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר, לכן Is she." },
+      { type: "order", answer: ["is", "this", "too", "small", "for", "you"], punct: "?", why: "מצביעים על חפץ ספציפי (החולצה) שלפניכם, לכן Is this." },
+      { type: "translate", direction: "toEnglish", prompt: "זה שלך?", answers: ["is this yours"], display: "Is this yours?" },
+      { type: "translate", direction: "toEnglish", prompt: "היא בסדר?", answers: ["is she okay"], display: "Is she okay?" },
+      { type: "translate", direction: "toEnglish", prompt: "אני מאחר?", answers: ["am i late"], display: "Am I late?" },
+      { type: "translate", direction: "toEnglish", prompt: "זאת אמא שלך?", answers: ["is this your mother"], display: "Is this your mother?" },
+      { type: "translate", direction: "toEnglish", prompt: "מותר לי לחנות כאן?", answers: ["am i allowed to park here"], display: "Am I allowed to park here?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is she working on a new piece?", answers: ["היא עובדת על יצירה חדשה"], display: "היא עובדת על יצירה חדשה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is this where you work?", answers: ["כאן אתה עובד", "זה המקום שבו אתה עובד"], display: "כאן אתה עובד?" },
+      { type: "translate", direction: "toHebrew", prompt: "Am I supposed to bring the cake?", answers: ["אני אמור להביא את העוגה", "אני אמורה להביא את העוגה"], display: "אני אמור להביא את העוגה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is she still painting?", answers: ["היא עדיין מציירת"], display: "היא עדיין מציירת?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is this too small for you?", answers: ["זה קטן מדי בשבילך"], display: "זה קטן מדי בשבילך?" }
     ]
   },
   {
     title: "Did or Do Drill",
     sub: "בחרו Did או Do: משתמשים ב-Did לשאלות בזמן עבר, וב-Do לשאלות בזמן הווה",
     legend: "<strong>Did</strong> – פועל עזר לשאלות בזמן עבר (yesterday, last night, already, this morning...) &nbsp;·&nbsp; <strong>Do</strong> – פועל עזר לשאלות בזמן הווה / הרגלים (usually, every day, always...)",
+    mcCount: 10,
+    orderCount: 10,
     questions: [
       { sentence: "___ you go to the party last night?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last night\" מציינת זמן עבר, לכן Did." },
       { sentence: "___ you like chocolate?", answer: "Do", options: ["Do", "Did"], why: "השאלה כללית בהווה ולא מציינת זמן עבר, לכן Do." },
@@ -386,13 +581,35 @@ const stages = [
       { sentence: "___ you see that movie last week?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last week\" מציינת זמן עבר, לכן Did." },
       { sentence: "___ you know the answer?", answer: "Do", options: ["Do", "Did"], why: "השאלה על מצב נוכחי בהווה, לכן Do." },
       { sentence: "___ he arrive on time this morning?", answer: "Did", options: ["Did", "Do"], why: "\"this morning\" כאן מתייחס לאירוע שכבר קרה, לכן Did." },
-      { sentence: "___ he play tennis every weekend?", answer: "Do", options: ["Do", "Did"], why: "\"every weekend\" מציין הרגל חוזר בהווה, לכן Do." }
+      { sentence: "___ he play tennis every weekend?", answer: "Do", options: ["Do", "Did"], why: "\"every weekend\" מציין הרגל חוזר בהווה, לכן Do." },
+      { type: "order", answer: ["did", "you", "go", "to", "the", "party"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "you", "like", "chocolate"], punct: "?", why: "שאלה כללית בהווה, לכן Do." },
+      { type: "order", answer: ["did", "she", "call", "you"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "they", "usually", "walk", "to", "school"], punct: "?", why: "\"usually\" מציין הרגל בהווה, לכן Do." },
+      { type: "order", answer: ["did", "he", "arrive", "on", "time"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "you", "know", "the", "answer"], punct: "?", why: "שאלה על מצב נוכחי בהווה, לכן Do." },
+      { type: "order", answer: ["did", "they", "finish", "the", "exam"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["did", "you", "see", "that", "movie"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "you", "work", "here"], punct: "?", why: "שאלה כללית בהווה, לכן Do." },
+      { type: "order", answer: ["did", "he", "play", "tennis"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "translate", direction: "toEnglish", prompt: "הלכת למסיבה?", answers: ["did you go to the party"], display: "Did you go to the party?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתה אוהב שוקולד?", answers: ["do you like chocolate"], display: "Do you like chocolate?" },
+      { type: "translate", direction: "toEnglish", prompt: "היא התקשרה אליך?", answers: ["did she call you"], display: "Did she call you?" },
+      { type: "translate", direction: "toEnglish", prompt: "הם הולכים ברגל לבית הספר בדרך כלל?", answers: ["do they usually walk to school"], display: "Do they usually walk to school?" },
+      { type: "translate", direction: "toEnglish", prompt: "הוא הגיע בזמן?", answers: ["did he arrive on time"], display: "Did he arrive on time?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do you know the answer?", answers: ["אתה יודע את התשובה", "את יודעת את התשובה"], display: "אתה יודע את התשובה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did they finish the exam?", answers: ["הם סיימו את המבחן"], display: "הם סיימו את המבחן?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did you see that movie?", answers: ["ראית את הסרט הזה"], display: "ראית את הסרט הזה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do you work here?", answers: ["אתה עובד כאן", "את עובדת כאן"], display: "אתה עובד כאן?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did he play tennis?", answers: ["הוא שיחק טניס"], display: "הוא שיחק טניס?" }
     ]
   },
   {
     title: "Didn't or Doesn't Drill",
     sub: "בחרו Didn't או Doesn't: Didn't משמש בכל הגופים בזמן עבר, ו-Doesn't משמש בזמן הווה עם גוף שלישי יחיד (he/she/it)",
     legend: "<strong>Didn't</strong> – שלילה בזמן עבר, מתאים לכל הגופים (I, you, he, she, we, they) &nbsp;·&nbsp; <strong>Doesn't</strong> – שלילה בזמן הווה, רק עם גוף שלישי יחיד (he / she / it)",
+    mcCount: 10,
+    orderCount: 10,
     questions: [
       { sentence: "She ___ like spicy food.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
       { sentence: "She ___ go to work yesterday because she was sick.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't." },
@@ -403,7 +620,27 @@ const stages = [
       { sentence: "I ___ see you at the meeting yesterday.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't — גם עם I." },
       { sentence: "The store ___ open on Sundays.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (The store = it), לכן Doesn't." },
       { sentence: "You ___ call me back last week.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"last week\" מציינת זמן עבר, לכן Didn't — גם עם You." },
-      { sentence: "My dog ___ like loud noises.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." }
+      { sentence: "My dog ___ like loud noises.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." },
+      { type: "order", answer: ["she", "doesn't", "like", "spicy", "food"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
+      { type: "order", answer: ["she", "didn't", "go", "to", "work", "yesterday"], punct: ".", why: "\"yesterday\" מציין זמן עבר, לכן Didn't." },
+      { type: "order", answer: ["he", "doesn't", "drink", "coffee"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (He), לכן Doesn't." },
+      { type: "order", answer: ["they", "didn't", "arrive", "on", "time"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
+      { type: "order", answer: ["my", "dog", "doesn't", "like", "loud", "noises"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." },
+      { type: "order", answer: ["we", "didn't", "finish", "the", "assignment"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
+      { type: "order", answer: ["my", "brother", "doesn't", "eat", "meat"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (My brother = he), לכן Doesn't." },
+      { type: "order", answer: ["I", "didn't", "see", "you", "at", "the", "meeting"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם I." },
+      { type: "order", answer: ["the", "store", "doesn't", "open", "on", "Sundays"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (The store = it), לכן Doesn't." },
+      { type: "order", answer: ["you", "didn't", "call", "me", "back"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם You." },
+      { type: "translate", direction: "toEnglish", prompt: "היא לא אוהבת אוכל חריף.", answers: ["she doesnt like spicy food", "she doesn't like spicy food"], display: "She doesn't like spicy food." },
+      { type: "translate", direction: "toEnglish", prompt: "היא לא הלכה לעבודה אתמול.", answers: ["she didnt go to work yesterday", "she didn't go to work yesterday"], display: "She didn't go to work yesterday." },
+      { type: "translate", direction: "toEnglish", prompt: "הוא לא שותה קפה.", answers: ["he doesnt drink coffee", "he doesn't drink coffee"], display: "He doesn't drink coffee." },
+      { type: "translate", direction: "toEnglish", prompt: "הם לא הגיעו בזמן.", answers: ["they didnt arrive on time", "they didn't arrive on time"], display: "They didn't arrive on time." },
+      { type: "translate", direction: "toEnglish", prompt: "הכלב שלי לא אוהב רעשים חזקים.", answers: ["my dog doesnt like loud noises", "my dog doesn't like loud noises"], display: "My dog doesn't like loud noises." },
+      { type: "translate", direction: "toHebrew", prompt: "We didn't finish the assignment.", answers: ["לא סיימנו את המטלה"], display: "לא סיימנו את המטלה." },
+      { type: "translate", direction: "toHebrew", prompt: "My brother doesn't eat meat.", answers: ["אחי לא אוכל בשר"], display: "אחי לא אוכל בשר." },
+      { type: "translate", direction: "toHebrew", prompt: "I didn't see you at the meeting.", answers: ["לא ראיתי אותך בפגישה"], display: "לא ראיתי אותך בפגישה." },
+      { type: "translate", direction: "toHebrew", prompt: "The store doesn't open on Sundays.", answers: ["החנות לא פתוחה בימי ראשון", "החנות לא נפתחת בימי ראשון"], display: "החנות לא פתוחה בימי ראשון." },
+      { type: "translate", direction: "toHebrew", prompt: "You didn't call me back.", answers: ["לא התקשרת אליי בחזרה", "לא התקשרת אליי חזרה"], display: "לא התקשרת אליי בחזרה." }
     ]
   }
 ];
@@ -474,10 +711,28 @@ function render() {
   document.getElementById("stageSub").textContent = stage.sub;
   document.getElementById("legend").innerHTML = stage.legend;
   document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} / ${stages.length}`;
-  document.getElementById("qnum").textContent = current + 1;
-  document.getElementById("qtotal").textContent = stage.questions.length;
+
+  const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
+  const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
+  renderSubTabs(stage, mcCount, orderCount);
+
+  if (current < stage.questions.length) {
+    let sectionStart, sectionLen;
+    if (current < mcCount) {
+      sectionStart = 0; sectionLen = mcCount;
+    } else if (current < mcCount + orderCount) {
+      sectionStart = mcCount; sectionLen = orderCount;
+    } else {
+      sectionStart = mcCount + orderCount; sectionLen = stage.questions.length - sectionStart;
+    }
+    document.getElementById("qnum").textContent = current - sectionStart + 1;
+    document.getElementById("qtotal").textContent = sectionLen;
+    document.getElementById("barFill").style.width = `${((current - sectionStart) / sectionLen) * 100}%`;
+  } else {
+    document.getElementById("qnum").textContent = stage.questions.length;
+    document.getElementById("qtotal").textContent = stage.questions.length;
+  }
   document.getElementById("scorelive").textContent = score;
-  document.getElementById("barFill").style.width = `${(current / stage.questions.length) * 100}%`;
 
   if (current >= stage.questions.length) {
     const isLastStage = stageIndex === stages.length - 1;
@@ -487,11 +742,11 @@ function render() {
       document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} COMPLETE`;
       card.innerHTML = `
         <div class="result">
-          <span class="level">שלב ${stageIndex + 1} הושלם</span>
-          <div>ניקוד עד כה</div>
+          <span class="level">Stage ${stageIndex + 1} Complete</span>
+          <div>Score so far</div>
           <div class="score">${score} / ${stage.questions.length}</div>
-          <p>מוכנים לשלב הבא: ${stages[stageIndex + 1].title}</p>
-          <button class="restart" onclick="goToStage(${stageIndex + 1})">לשלב הבא →</button>
+          <p>Ready for the next stage: ${stages[stageIndex + 1].title}</p>
+          <button class="restart" onclick="goToStage(${stageIndex + 1})">Next Stage →</button>
         </div>`;
       document.getElementById("barFill").style.width = "100%";
       return;
@@ -499,23 +754,51 @@ function render() {
 
     document.getElementById("levelTag").textContent = "COMPLETE";
     const verdict = score === totalQuestions
-      ? "מושלם! שליטה מלאה בשני השלבים."
+      ? "Perfect! Full mastery of all stages."
       : score >= totalQuestions * 0.7
-      ? "כל הכבוד, ביצוע טוב מאוד!"
-      : "לא רע — כדאי לחזור על התרגול לחיזוק.";
+      ? "Great job — very good performance!"
+      : "Not bad — practice again to reinforce it.";
     card.innerHTML = `
       <div class="result">
         <span class="level">INTERMEDIATE</span>
-        <div>סיימת את שני השלבים</div>
+        <div>You finished all the stages</div>
         <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
-        <button class="restart" onclick="restart()">התחל מחדש</button>
+        <button class="restart" onclick="restart()">Start Over</button>
       </div>`;
     document.getElementById("barFill").style.width = "100%";
     return;
   }
 
   const q = stage.questions[current];
+
+  if (q.type === "order") {
+    card.innerHTML = `
+      <div class="order-label">Arrange the words into the correct sentence</div>
+      <div class="order-build empty" id="orderBuild"></div>
+      <div class="order-bank" id="orderBank"></div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+    `;
+    renderOrderQuestion(q);
+    return;
+  }
+
+  if (q.type === "translate") {
+    const label = q.direction === "toHebrew" ? "Translate to Hebrew" : "Translate to English";
+    const promptDir = q.direction === "toHebrew" ? "ltr" : "rtl";
+    const inputDir = q.direction === "toHebrew" ? "rtl" : "ltr";
+    card.innerHTML = `
+      <div class="order-label">${label}</div>
+      <div class="translate-prompt" dir="${promptDir}">${q.prompt}</div>
+      <input type="text" class="translate-input" id="translateInput" dir="${inputDir}" autocomplete="off" spellcheck="false" />
+      <div class="hint" id="hint"></div>
+      <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
+    `;
+    renderTranslateQuestion(q);
+    return;
+  }
+
   const opts = shuffle(q.options);
 
   card.innerHTML = `
@@ -524,12 +807,122 @@ function render() {
       ${opts.map(o => `<button class="opt" data-value="${o}">${o}</button>`).join("")}
     </div>
     <div class="hint" id="hint"></div>
-    <div class="footer-row"><button class="next" id="nextBtn">הבא →</button></div>
+    <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
   `;
 
   card.querySelectorAll(".opt").forEach(btn => {
     btn.addEventListener("click", () => selectAnswer(btn, q));
   });
+}
+
+function renderSubTabs(stage, mcCount, orderCount) {
+  const el = document.getElementById("subTabs");
+  const translateCount = stage.questions.length - mcCount - orderCount;
+
+  const sections = [{ label: "Regular Questions", start: 0, len: mcCount }];
+  if (orderCount > 0) sections.push({ label: "Word Order", start: mcCount, len: orderCount });
+  if (translateCount > 0) sections.push({ label: "Translation", start: mcCount + orderCount, len: translateCount });
+
+  if (sections.length < 2) { el.innerHTML = ""; return; }
+
+  el.innerHTML = sections.map(s => {
+    const active = current >= s.start && current < s.start + s.len;
+    return `<button class="sub-tab${active ? " active" : ""}" data-start="${s.start}">${s.label}</button>`;
+  }).join("");
+  el.querySelectorAll(".sub-tab").forEach(btn => {
+    btn.onclick = () => { current = Number(btn.dataset.start); render(); };
+  });
+}
+
+function normalizeAnswer(str) {
+  return str.trim().toLowerCase().replace(/[?.!,]/g, "").replace(/\s+/g, " ");
+}
+
+function renderTranslateQuestion(q) {
+  const input = document.getElementById("translateInput");
+  const btn = document.getElementById("checkBtn");
+
+  function check() {
+    const userVal = normalizeAnswer(input.value);
+    const isCorrect = q.answers.some(a => normalizeAnswer(a) === userVal);
+    input.disabled = true;
+    input.classList.add(isCorrect ? "correct" : "wrong");
+    document.getElementById("hint").innerHTML = isCorrect
+      ? `Correct! <strong>${q.display}</strong>`
+      : `Not quite — a correct answer is: <strong>${q.display}</strong>`;
+
+    if (isCorrect) { score++; playCorrectSound(); }
+    else { playWrongSound(); }
+    document.getElementById("scorelive").textContent = score;
+
+    btn.textContent = "Next →";
+    btn.onclick = () => { current++; render(); };
+  }
+
+  btn.onclick = check;
+  input.addEventListener("keydown", e => {
+    if (e.key === "Enter") check();
+  });
+  input.focus();
+}
+
+function renderOrderQuestion(q) {
+  let placed = [];
+  const shuffled = shuffle(q.answer.map((w, i) => ({ w, i })));
+  if (q.answer.length > 1 && shuffled.every((item, idx) => item.i === idx)) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+
+  function draw() {
+    const buildEl = document.getElementById("orderBuild");
+    const bankEl = document.getElementById("orderBank");
+    buildEl.classList.toggle("empty", placed.length === 0);
+    buildEl.innerHTML = placed.map(p => `<button class="chip placed" data-i="${p.i}">${p.w}</button>`).join("");
+    bankEl.innerHTML = shuffled.map(item => {
+      const used = placed.some(p => p.i === item.i);
+      return `<button class="chip" data-i="${item.i}" ${used ? "disabled" : ""}>${item.w}</button>`;
+    }).join("");
+
+    buildEl.querySelectorAll(".chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        placed = placed.filter(p => p.i !== Number(btn.dataset.i));
+        draw();
+      });
+    });
+    bankEl.querySelectorAll(".chip:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        placed.push(shuffled.find(s => s.i === Number(btn.dataset.i)));
+        draw();
+        if (placed.length === q.answer.length) checkOrder();
+      });
+    });
+  }
+
+  function checkOrder() {
+    const buildEl = document.getElementById("orderBuild");
+    const userOrder = placed.map(p => p.w);
+    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(q.answer);
+    buildEl.classList.add(isCorrect ? "correct" : "wrong");
+    buildEl.querySelectorAll(".chip").forEach(b => b.disabled = true);
+    document.getElementById("orderBank").querySelectorAll(".chip").forEach(b => b.disabled = true);
+
+    const sentence = q.answer.join(" ");
+    const proper = sentence.charAt(0).toUpperCase() + sentence.slice(1) + q.punct;
+    document.getElementById("hint").innerHTML = isCorrect
+      ? `Correct! <strong>${proper}</strong>`
+      : `Almost — the correct order is: <strong>${proper}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`;
+
+    if (isCorrect) { score++; playCorrectSound(); }
+    else { playWrongSound(); }
+    document.getElementById("scorelive").textContent = score;
+    document.getElementById("nextBtn").classList.add("show");
+    document.getElementById("nextBtn").onclick = () => {
+      current++;
+      render();
+    };
+  }
+
+  draw();
 }
 
 function selectAnswer(btn, q) {
@@ -544,8 +937,8 @@ function selectAnswer(btn, q) {
   });
 
   document.getElementById("hint").innerHTML = isCorrect
-    ? "נכון!"
-    : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".<span class="why">${q.why}</span>`;
+    ? "Correct!"
+    : `Not quite — the correct answer is "${correctAnswer}".<span class="why">${q.why}</span>`;
 
   if (isCorrect) {
     score++;

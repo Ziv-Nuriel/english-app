@@ -195,7 +195,78 @@
     font-size: .85rem;
     color: var(--ink-soft);
     min-height: 1.2em;
+  }
+  .hint .why {
+    display: block;
+    margin-top: .35rem;
+    color: var(--ink-soft);
     direction: rtl;
+    text-align: right;
+  }
+
+  .order-label {
+    font-size: .78rem;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin: 0 0 .6rem;
+  }
+  .order-build {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    min-height: 3.2rem;
+    padding: .75rem;
+    border: 1.5px dashed var(--rule);
+    border-radius: 4px;
+    margin-bottom: 1.1rem;
+    align-items: center;
+  }
+  .order-build.empty::before {
+    content: "Tap the words below to build the sentence";
+    color: var(--ink-soft);
+    font-size: .82rem;
+  }
+  .order-build.correct { border-style: solid; border-color: var(--correct); }
+  .order-build.wrong { border-style: solid; border-color: var(--wrong); }
+  .order-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+  }
+  .chip {
+    padding: .55rem .9rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform .12s ease, border-color .15s, background .15s, opacity .15s;
+  }
+  .chip:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    transform: translateY(-2px);
+  }
+  .chip:active:not(:disabled) { transform: scale(.94); }
+  .chip:disabled { opacity: .3; cursor: default; }
+  .chip.placed {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .order-build.correct .chip.placed {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+    color: var(--correct);
+  }
+  .order-build.wrong .chip.placed {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+    color: var(--wrong);
   }
 
   .footer-row {
@@ -237,7 +308,6 @@
   }
   .result p {
     color: var(--ink-soft);
-    direction: rtl;
     font-size: .95rem;
   }
   button.restart {
@@ -264,8 +334,8 @@
   <div class="sub">בחרו Do או Are: משתמשים ב-Are לפני שם/תואר/מקום (הפועל to be), וב-Do כשיש פועל פעולה נוסף במשפט</div>
 
   <div class="progress-row">
-    <span>שאלה <strong id="qnum">1</strong> מתוך <strong>15</strong></span>
-    <span>ניקוד: <strong id="scorelive">0</strong></span>
+    <span>Question <strong id="qnum">1</strong> of <strong id="qtotal">15</strong></span>
+    <span>Score: <strong id="scorelive">0</strong></span>
   </div>
   <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
 
@@ -288,11 +358,45 @@ const questions = [
   { sentence: "___ you usually walk to work?", answer: "Do", options: ["Do", "Are"] },
   { sentence: "___ these shoes comfortable?", answer: "Are", options: ["Are", "Do"] },
   { sentence: "___ these shoes fit you well?", answer: "Do", options: ["Do", "Are"] },
-  { sentence: "___ you and your brother close in age?", answer: "Are", options: ["Are", "Do"] }
+  { sentence: "___ you and your brother close in age?", answer: "Are", options: ["Are", "Do"] },
+  { type: "order", answer: ["are", "you", "hungry"], punct: "?", why: "אין פועל פעולה נוסף אחרי Are (רק תואר), לכן Are פותח את המשפט." },
+  { type: "order", answer: ["do", "you", "work", "on", "weekends"], punct: "?", why: "\"work\" הוא פועל פעולה, לכן צריך את Do בתחילת המשפט." },
+  { type: "order", answer: ["are", "your", "parents", "at", "home"], punct: "?", why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
+  { type: "order", answer: ["do", "these", "shoes", "fit", "you"], punct: "?", why: "\"fit\" הוא פועל פעולה, לכן Do." },
+  { type: "order", answer: ["are", "you", "and", "your", "brother", "close", "in", "age"], punct: "?", why: "אחרי Are מגיע תיאור (close in age), אין פועל פעולה נוסף." }
 ];
 
 let current = 0;
 let score = 0;
+
+let audioCtx = null;
+function playTone(freqStart, freqEnd, duration, type, gainStart) {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freqStart, audioCtx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(freqEnd, audioCtx.currentTime + duration);
+    gain.gain.setValueAtTime(gainStart, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+  } catch (e) {}
+}
+
+function playCorrectSound() {
+  const notes = [523.25, 659.25, 783.99, 1046.5];
+  notes.forEach((freq, i) => {
+    setTimeout(() => playTone(freq, freq * 1.01, 0.18, "triangle", 0.2), i * 70);
+  });
+}
+
+function playWrongSound() {
+  playTone(220, 110, 0.32, "sawtooth", 0.15);
+}
 
 function shuffle(arr) {
   const a = [...arr];
@@ -306,29 +410,43 @@ function shuffle(arr) {
 function render() {
   const card = document.getElementById("quizCard");
   document.getElementById("qnum").textContent = current + 1;
+  document.getElementById("qtotal").textContent = questions.length;
   document.getElementById("scorelive").textContent = score;
   document.getElementById("barFill").style.width = `${(current / questions.length) * 100}%`;
 
   if (current >= questions.length) {
     document.getElementById("levelTag").textContent = "COMPLETE";
     const verdict = score === questions.length
-      ? "מושלם! שליטה מלאה בהבדל בין Do ל-Are."
+      ? "Perfect! Full mastery of Do vs. Are."
       : score >= questions.length * 0.7
-      ? "כל הכבוד, ביצוע טוב מאוד!"
-      : "לא רע — כדאי לחזור על התרגול לחיזוק.";
+      ? "Great job — very good performance!"
+      : "Not bad — practice again to reinforce it.";
     card.innerHTML = `
       <div class="result">
         <span class="level">INTERMEDIATE</span>
-        <div>סיימת את התרגול</div>
+        <div>You finished the drill</div>
         <div class="score">${score} / ${questions.length}</div>
         <p>${verdict}</p>
-        <button class="restart" onclick="restart()">התחל מחדש</button>
+        <button class="restart" onclick="restart()">Start Over</button>
       </div>`;
     document.getElementById("barFill").style.width = "100%";
     return;
   }
 
   const q = questions[current];
+
+  if (q.type === "order") {
+    card.innerHTML = `
+      <div class="order-label">Arrange the words into the correct sentence</div>
+      <div class="order-build empty" id="orderBuild"></div>
+      <div class="order-bank" id="orderBank"></div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+    `;
+    renderOrderQuestion(q);
+    return;
+  }
+
   const opts = shuffle(q.options);
 
   card.innerHTML = `
@@ -337,12 +455,71 @@ function render() {
       ${opts.map(o => `<button class="opt" data-value="${o}">${o}</button>`).join("")}
     </div>
     <div class="hint" id="hint"></div>
-    <div class="footer-row"><button class="next" id="nextBtn">הבא →</button></div>
+    <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
   `;
 
   card.querySelectorAll(".opt").forEach(btn => {
     btn.addEventListener("click", () => selectAnswer(btn, q.answer));
   });
+}
+
+function renderOrderQuestion(q) {
+  let placed = [];
+  const shuffled = shuffle(q.answer.map((w, i) => ({ w, i })));
+  if (q.answer.length > 1 && shuffled.every((item, idx) => item.i === idx)) {
+    [shuffled[0], shuffled[1]] = [shuffled[1], shuffled[0]];
+  }
+
+  function draw() {
+    const buildEl = document.getElementById("orderBuild");
+    const bankEl = document.getElementById("orderBank");
+    buildEl.classList.toggle("empty", placed.length === 0);
+    buildEl.innerHTML = placed.map(p => `<button class="chip placed" data-i="${p.i}">${p.w}</button>`).join("");
+    bankEl.innerHTML = shuffled.map(item => {
+      const used = placed.some(p => p.i === item.i);
+      return `<button class="chip" data-i="${item.i}" ${used ? "disabled" : ""}>${item.w}</button>`;
+    }).join("");
+
+    buildEl.querySelectorAll(".chip").forEach(btn => {
+      btn.addEventListener("click", () => {
+        placed = placed.filter(p => p.i !== Number(btn.dataset.i));
+        draw();
+      });
+    });
+    bankEl.querySelectorAll(".chip:not(:disabled)").forEach(btn => {
+      btn.addEventListener("click", () => {
+        placed.push(shuffled.find(s => s.i === Number(btn.dataset.i)));
+        draw();
+        if (placed.length === q.answer.length) checkOrder();
+      });
+    });
+  }
+
+  function checkOrder() {
+    const buildEl = document.getElementById("orderBuild");
+    const userOrder = placed.map(p => p.w);
+    const isCorrect = JSON.stringify(userOrder) === JSON.stringify(q.answer);
+    buildEl.classList.add(isCorrect ? "correct" : "wrong");
+    buildEl.querySelectorAll(".chip").forEach(b => b.disabled = true);
+    document.getElementById("orderBank").querySelectorAll(".chip").forEach(b => b.disabled = true);
+
+    const sentence = q.answer.join(" ");
+    const proper = sentence.charAt(0).toUpperCase() + sentence.slice(1) + q.punct;
+    document.getElementById("hint").innerHTML = isCorrect
+      ? `Correct! <strong>${proper}</strong>`
+      : `Almost — the correct order is: <strong>${proper}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`;
+
+    if (isCorrect) { score++; playCorrectSound(); }
+    else { playWrongSound(); }
+    document.getElementById("scorelive").textContent = score;
+    document.getElementById("nextBtn").classList.add("show");
+    document.getElementById("nextBtn").onclick = () => {
+      current++;
+      render();
+    };
+  }
+
+  draw();
 }
 
 function selectAnswer(btn, correctAnswer) {
@@ -356,8 +533,8 @@ function selectAnswer(btn, correctAnswer) {
   });
 
   document.getElementById("hint").textContent = isCorrect
-    ? "נכון!"
-    : `לא מדויק — התשובה הנכונה היא "${correctAnswer}".`;
+    ? "Correct!"
+    : `Not quite — the correct answer is "${correctAnswer}".`;
 
   if (isCorrect) score++;
   document.getElementById("scorelive").textContent = score;
