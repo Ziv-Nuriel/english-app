@@ -305,6 +305,18 @@
     direction: ltr;
     text-align: left;
   }
+  .speak-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: .85rem;
+    padding: 0 0 0 .3rem;
+    opacity: .6;
+    vertical-align: middle;
+  }
+  .speak-btn:hover {
+    opacity: 1;
+  }
   .dialogue-msg.you {
     align-self: flex-end;
     background: var(--accent-soft);
@@ -766,6 +778,53 @@ const stages = [
       { type: "dialogue", theyAsk: "Is the store open right now?" },
       { type: "dialogue", theyAsk: "Did she call you back yet?" }
     ]
+  },
+  {
+    title: "Short Answers (Yes/No)",
+    sub: "ענו בתשובה קצרה נכונה — Yes/No + נושא + אותו פועל עזר מהשאלה (do/does/did)",
+    legend: "<strong>Yes, ... do/does/did.</strong> – תשובה חיובית, אותו פועל עזר שהופיע בשאלה &nbsp;·&nbsp; <strong>No, ... don't/doesn't/didn't.</strong> – תשובה שלילית, אותו פועל עזר בצורה שלילית &nbsp;·&nbsp; שימו לב: כששואלים עם You, עונים עם I.",
+    mcCount: 10,
+    orderCount: 10,
+    dialogueCount: 5,
+    dialogueScenario: "עונים בקצרה על שאלות Yes/No — ובהתאם לתשובה שלכם, השיחה ממשיכה לכיוון אחר.",
+    dialogueGrammar: "shortAnswers",
+    questions: [
+      { sentence: "Does she like coffee?", answer: "Yes, she does.", options: ["Yes, she does.", "Yes, she do.", "Yes, she doesn't."], why: "בתשובה קצרה חוזרים על אותו פועל עזר שבשאלה (Does), בלי לשנות אותו." },
+      { sentence: "Do you speak French?", answer: "No, I don't.", options: ["No, I don't.", "No, I doesn't.", "No, you don't."], why: "עם I משתמשים ב-Do/Don't; והנושא בתשובה הוא I, לא You." },
+      { sentence: "Did they finish the exam?", answer: "Yes, they did.", options: ["Yes, they did.", "Yes, they do.", "Yes, they does."], why: "Did נשאר Did בתשובה הקצרה, בלי קשר לגוף." },
+      { sentence: "Does he play tennis?", answer: "No, he doesn't.", options: ["No, he doesn't.", "No, he don't.", "No, he isn't."], why: "גוף שלישי יחיד (he) בהווה — Doesn't." },
+      { sentence: "Do we need tickets?", answer: "Yes, we do.", options: ["Yes, we do.", "Yes, we does.", "Yes, we did."], why: "We הוא גוף רבים — Do, לא Does." },
+      { sentence: "Did she call you?", answer: "No, she didn't.", options: ["No, she didn't.", "No, she doesn't.", "No, she don't."], why: "השאלה בעבר (Did), אז גם התשובה הקצרה עם Didn't." },
+      { sentence: "Does the store open on Sundays?", answer: "No, it doesn't.", options: ["No, it doesn't.", "No, it don't.", "No, it isn't."], why: "The store = it, גוף שלישי יחיד — Doesn't." },
+      { sentence: "Do your parents live nearby?", answer: "Yes, they do.", options: ["Yes, they do.", "Yes, they does.", "Yes, he does."], why: "Your parents = they, גוף רבים — Do." },
+      { sentence: "Did you see the movie?", answer: "Yes, I did.", options: ["Yes, I did.", "Yes, I do.", "Yes, you did."], why: "בתשובה על שאלה עם You, משתמשים ב-I; הפועל העזר נשאר Did." },
+      { sentence: "Does your dog like walks?", answer: "Yes, he does.", options: ["Yes, he does.", "Yes, he do.", "Yes, it do."], why: "גוף שלישי יחיד בהווה — Does." },
+      { type: "order", answer: ["yes,", "she", "does"], punct: ".", why: "תשובה קצרה: Yes, נושא, ואותו פועל עזר שבשאלה (Does)." },
+      { type: "order", answer: ["no,", "I", "don't"], punct: ".", why: "עם I בשלילה: Don't." },
+      { type: "order", answer: ["yes,", "they", "did"], punct: ".", why: "Did נשאר Did בתשובה הקצרה." },
+      { type: "order", answer: ["no,", "he", "doesn't"], punct: ".", why: "גוף שלישי יחיד בהווה בשלילה: Doesn't." },
+      { type: "order", answer: ["yes,", "we", "do"], punct: ".", why: "We בהווה: Do." },
+      { type: "order", answer: ["no,", "she", "didn't"], punct: ".", why: "עבר בשלילה: Didn't." },
+      { type: "order", answer: ["no,", "it", "doesn't"], punct: ".", why: "גוף שלישי יחיד (it) בהווה בשלילה: Doesn't." },
+      { type: "order", answer: ["yes,", "they", "do"], punct: ".", why: "גוף רבים בהווה: Do." },
+      { type: "order", answer: ["yes,", "I", "did"], punct: ".", why: "עבר: Did, והנושא הופך ל-I." },
+      { type: "order", answer: ["yes,", "he", "does"], punct: ".", why: "גוף שלישי יחיד בהווה: Does." },
+      { type: "translate", direction: "toEnglish", prompt: "כן, היא אוהבת.", answers: ["yes she does", "yes, she does"], display: "Yes, she does." },
+      { type: "translate", direction: "toEnglish", prompt: "לא, אני לא.", answers: ["no i dont", "no, i don't"], display: "No, I don't." },
+      { type: "translate", direction: "toEnglish", prompt: "כן, הם סיימו.", answers: ["yes they did", "yes, they did"], display: "Yes, they did." },
+      { type: "translate", direction: "toEnglish", prompt: "לא, הוא לא.", answers: ["no he doesnt", "no, he doesn't"], display: "No, he doesn't." },
+      { type: "translate", direction: "toEnglish", prompt: "כן, אנחנו כן.", answers: ["yes we do", "yes, we do"], display: "Yes, we do." },
+      { type: "translate", direction: "toHebrew", prompt: "No, she didn't.", answers: ["לא, היא לא"], display: "לא, היא לא." },
+      { type: "translate", direction: "toHebrew", prompt: "No, it doesn't.", answers: ["לא, זה לא"], display: "לא, זה לא." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, they do.", answers: ["כן, הם כן"], display: "כן, הם כן." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, I did.", answers: ["כן, אני כן"], display: "כן, אני כן." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, he does.", answers: ["כן, הוא כן"], display: "כן, הוא כן." },
+      { type: "dialogue", theyAsk: "Do you like coffee?", yesReply: "Nice — how many cups do you usually have in a day?", noReply: "Really? What do you drink in the morning instead?" },
+      { type: "dialogue", theyAsk: "Does your best friend live nearby?", yesReply: "That's convenient — do you see each other often?", noReply: "Oh, how far away do they live?" },
+      { type: "dialogue", theyAsk: "Did you sleep well last night?", yesReply: "Good to hear — what time did you wake up?", noReply: "Sorry to hear that — what kept you up?" },
+      { type: "dialogue", theyAsk: "Do your parents like traveling?", yesReply: "Nice — where was the last place they went?", noReply: "Interesting — what do they prefer doing instead?" },
+      { type: "dialogue", theyAsk: "Did your team win the game?", yesReply: "Congratulations! Was it a close game?", noReply: "That's a shame — what went wrong?" }
+    ]
   }
 ];
 
@@ -774,6 +833,25 @@ let current = 0;
 let score = 0;
 let dialogueLog = {};
 let dialogueLastReply = {};
+
+const DIALOGUE_API_URL = ""; // paste your deployed Cloudflare Worker URL here to enable AI-powered replies
+
+async function getDialogueResponse(stage, log, message) {
+  if (!DIALOGUE_API_URL) return null;
+  try {
+    const resp = await fetch(DIALOGUE_API_URL, {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ scenario: stage.dialogueScenario, grammarFocus: stage.title, history: log, message })
+    });
+    if (!resp.ok) return null;
+    const data = await resp.json();
+    if (typeof data.grammar_ok !== "boolean" || typeof data.reply !== "string") return null;
+    return { ok: data.grammar_ok, note: data.note || "", reply: data.reply };
+  } catch (e) {
+    return null;
+  }
+}
 
 let audioCtx = null;
 function playTone(freqStart, freqEnd, duration, type, gainStart) {
@@ -1116,12 +1194,35 @@ function checkNegatives(tokens) {
   return { ok: true };
 }
 
+function checkShortAnswers(tokens, theyAsk) {
+  const answerType = tokens[0] === "no" ? "no" : "yes";
+  if (!tokens.length) return { ok: false, note: 'נסו לכתוב תשובה קצרה, למשל "Yes, I do."', answerType };
+  const first = tokens[0];
+  if (first !== "yes" && first !== "no") return { ok: false, note: 'תשובה קצרה מתחילה ב-"Yes" או "No".', answerType };
+  const subject = tokens[1];
+  const auxRaw = tokens[2];
+  if (!subject || !auxRaw) return { ok: false, note: 'תשובה קצרה בנויה כך: Yes/No, נושא, פועל עזר — למשל "Yes, I do."', answerType };
+  const isNeg = /n't$|nt$/.test(auxRaw);
+  const aux = auxRaw.replace(/n't$|nt$/, "");
+  if (!["do", "does", "did"].includes(aux)) return { ok: false, note: `התשובה צריכה פועל עזר: do / does / did (בשלילה: don't / doesn't / didn't).`, answerType };
+  if (first === "no" && !isNeg) return { ok: false, note: `עם "No" צריך צורה שלילית (don't / doesn't / didn't).`, answerType };
+  if (first === "yes" && isNeg) return { ok: false, note: `עם "Yes" לא משתמשים בצורה השלילית.`, answerType };
+  if (aux === "does" && ["i", "you", "we", "they"].includes(subject)) return { ok: false, note: `"Does" מתאים רק לגוף שלישי יחיד — עם "${subject}" צריך "Do".`, answerType };
+  if (aux === "do" && ["he", "she", "it"].includes(subject)) return { ok: false, note: `עם "${subject}" צריך "Does" ולא "Do".`, answerType };
+  if (theyAsk) {
+    const qAux = tokenize(theyAsk)[0];
+    if (["do", "does", "did"].includes(qAux) && qAux !== aux) return { ok: false, note: `השאלה נשאלה עם "${cap(qAux)}" — התשובה הקצרה צריכה להשתמש באותו פועל עזר.`, answerType };
+  }
+  return { ok: true, answerType };
+}
+
 const GRAMMAR_CHECKERS = {
   questionWords: checkQuestionWords,
   doAre: checkDoAre,
   didDo: checkDidDo,
   isAmThis: checkIsAmThis,
-  negatives: checkNegatives
+  negatives: checkNegatives,
+  shortAnswers: checkShortAnswers
 };
 
 function renderTranslateQuestion(q) {
@@ -1152,8 +1253,22 @@ function renderTranslateQuestion(q) {
   input.focus();
 }
 
+function escapeAttr(s) {
+  return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+function speak(text) {
+  try {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    window.speechSynthesis.speak(utter);
+  } catch (e) {}
+}
+
 function renderDialogueLog(log) {
-  return log.map(m => `<div class="dialogue-msg ${m.who}">${m.text}</div>`).join("");
+  return log.map(m => `<div class="dialogue-msg ${m.who}">${m.text} <button class="speak-btn" onclick="speak(this.dataset.text)" data-text="${escapeAttr(m.text)}" title="Listen" aria-label="Listen">🔊</button></div>`).join("");
 }
 
 function formatUserLine(raw, isStatement) {
@@ -1177,13 +1292,28 @@ function renderDialogueQuestion(q, stage) {
   const input = document.getElementById("translateInput");
   const btn = document.getElementById("checkBtn");
 
-  function check() {
+  async function check() {
     const raw = input.value;
     if (!raw.trim()) { input.focus(); return; }
-    const tokens = tokenize(raw);
-    const checker = GRAMMAR_CHECKERS[stage.dialogueGrammar];
-    const result = checker ? checker(tokens) : { ok: true };
     input.disabled = true;
+    btn.disabled = true;
+    document.getElementById("hint").textContent = DIALOGUE_API_URL ? "…" : "";
+
+    const log = dialogueLog[stageIndex] || (dialogueLog[stageIndex] = []);
+    const aiResult = await getDialogueResponse(stage, log, raw);
+
+    let result, reply;
+    if (aiResult) {
+      result = { ok: aiResult.ok, note: aiResult.note };
+      reply = aiResult.reply;
+    } else {
+      const tokens = tokenize(raw);
+      const checker = GRAMMAR_CHECKERS[stage.dialogueGrammar];
+      result = checker ? checker(tokens, q.theyAsk) : { ok: true };
+      reply = (q.yesReply || q.noReply) ? (result.answerType === "no" ? q.noReply : q.yesReply) : pickReply(stage);
+    }
+
+    btn.disabled = false;
     input.classList.add(result.ok ? "correct" : "wrong");
     document.getElementById("hint").innerHTML = result.ok
       ? "Looks good grammatically!"
@@ -1195,9 +1325,7 @@ function renderDialogueQuestion(q, stage) {
 
     btn.textContent = "Next →";
     btn.onclick = () => {
-      const log = dialogueLog[stageIndex] || (dialogueLog[stageIndex] = []);
       log.push({ who: "you", text: formatUserLine(raw, !!q.theyAsk) });
-      const reply = pickReply(stage);
       if (reply) log.push({ who: "them", text: reply });
       current++;
       render();
