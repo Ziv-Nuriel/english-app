@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1f6f78">
+<title>English Practice</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f6f3ec;
+    --ink: #2b2a28;
+    --ink-soft: #6b6558;
+    --rule: #d8d2c4;
+    --card: #fffefb;
+    --accent: #1f6f78;
+    --accent-soft: #e3eeee;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1c1b18;
+      --ink: #ece7dc;
+      --ink-soft: #a49c8a;
+      --rule: #3a382f;
+      --card: #23221e;
+      --accent: #6bc2cb;
+      --accent-soft: #1e3336;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 3rem 1.25rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 480px; }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.6rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: .6rem;
+    margin: 0 0 1.5rem;
+  }
+  .card {
+    display: block;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    color: var(--ink);
+    transition: border-color .15s, background .15s;
+  }
+  .card:hover { border-color: var(--accent); background: var(--accent-soft); }
+  .card strong {
+    display: block;
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1.15rem;
+    color: var(--accent);
+    margin-bottom: .3rem;
+  }
+  .card span { font-size: .88rem; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>English Practice</h1>
+    <a class="card" href="question-words-quiz.html">
+      <strong>Question Words Drill</strong>
+      <span>שישה שלבים: מילות שאלה, Do/Are, Is/Am, Did/Do, שלילה, תשובות קצרות — כולל דיאלוגים</span>
+    </a>
+    <a class="card" href="do-are-quiz.html">
+      <strong>Do or Are Drill</strong>
+      <span>תרגול נפרד וממוקד ב-Do מול Are</span>
+    </a>
+  </div>
+</body>
+</html>

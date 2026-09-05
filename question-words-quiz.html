@@ -1,3 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Question Words Drill</title>
 <style>
   :root {
@@ -536,31 +538,31 @@ const stages = [
       { sentence: "___ book do you want, this one or that one?", answer: "Which", options: ["Which", "What", "Whose", "Who"], why: "יש שתי אפשרויות ידועות (הספר הזה או ההוא), ולכן משתמשים ב-Which לבחירה מתוך אפשרויות מוגבלות." },
       { sentence: "___ bag is this? It was left on the table.", answer: "Whose", options: ["Whose", "Who", "Which", "What"], why: "שואלים <em>למי שייך</em> התיק, לכן Whose (בעלות)." },
       { sentence: "___ is coming to the party tonight?", answer: "Who", options: ["Who", "Whose", "What", "Which"], why: "שואלים על <em>זהות האדם</em> שמגיע, לכן Who." },
-      { type: "order", answer: ["what", "is", "your", "name"], punct: "?", why: "שואלים על <em>דבר</em> (השם), לכן What פותח את המשפט." },
-      { type: "order", answer: ["where", "do", "you", "live"], punct: "?", why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
-      { type: "order", answer: ["why", "were", "you", "late"], punct: "?", why: "שואלים על <em>סיבה</em> לאיחור, לכן Why." },
-      { type: "order", answer: ["how", "many", "brothers", "do", "you", "have"], punct: "?", why: "\"How many\" נשארים יחד בתחילת המשפט לשאלה על כמות." },
-      { type: "order", answer: ["whose", "bag", "is", "this"], punct: "?", why: "Whose מגיע צמוד לשם העצם שאליו הוא מתייחס (bag)." },
-      { type: "order", answer: ["when", "does", "the", "movie", "start"], punct: "?", why: "שואלים על <em>זמן</em> תחילת הסרט, לכן When." },
-      { type: "order", answer: ["who", "is", "that", "man"], punct: "?", why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
-      { type: "order", answer: ["which", "book", "do", "you", "want"], punct: "?", why: "Which משמש לבחירה מתוך אפשרויות ידועות." },
-      { type: "order", answer: ["how", "old", "is", "your", "grandfather"], punct: "?", why: "\"How old\" הוא ביטוי קבוע לשאלה על גיל." },
-      { type: "order", answer: ["where", "were", "you", "born"], punct: "?", why: "שואלים על <em>מקום</em> הלידה, לכן Where." },
-      { type: "translate", direction: "toEnglish", prompt: "מה השם שלך?", answers: ["what is your name", "what's your name", "whats your name"], display: "What is your name?" },
-      { type: "translate", direction: "toEnglish", prompt: "איפה אתה גר?", answers: ["where do you live"], display: "Where do you live?" },
-      { type: "translate", direction: "toEnglish", prompt: "כמה אחים יש לך?", answers: ["how many brothers do you have"], display: "How many brothers do you have?" },
-      { type: "translate", direction: "toEnglish", prompt: "מתי הסרט מתחיל?", answers: ["when does the movie start"], display: "When does the movie start?" },
-      { type: "translate", direction: "toEnglish", prompt: "של מי התיק הזה?", answers: ["whose bag is this"], display: "Whose bag is this?" },
-      { type: "translate", direction: "toHebrew", prompt: "Why were you late?", answers: ["למה איחרת", "למה איחרתם"], display: "למה איחרת?" },
-      { type: "translate", direction: "toHebrew", prompt: "Who is that man?", answers: ["מי האיש הזה", "מי זה האיש הזה"], display: "מי האיש הזה?" },
-      { type: "translate", direction: "toHebrew", prompt: "How old is your grandfather?", answers: ["בן כמה הסבא שלך", "בת כמה הסבא שלך"], display: "בן כמה הסבא שלך?" },
-      { type: "translate", direction: "toHebrew", prompt: "Which book do you want?", answers: ["איזה ספר אתה רוצה", "איזה ספר את רוצה"], display: "איזה ספר אתה רוצה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Where were you born?", answers: ["איפה נולדת"], display: "איפה נולדת?" },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול על הניסיון הקודם שלו." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול למה הוא רוצה לעבוד כאן." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול מתי הוא יכול להתחיל." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול איך הוא מתמודד עם לחץ." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת שמעניינת אתכם." }
+      { type: "order", answer: ["what", "time", "is", "it"], punct: "?", why: "שואלים על <em>דבר</em> (השעה), לכן What." },
+      { type: "order", answer: ["where", "is", "the", "nearest", "bank"], punct: "?", why: "שואלים על <em>מקום</em>, לכן Where." },
+      { type: "order", answer: ["why", "is", "the", "sky", "blue"], punct: "?", why: "שואלים על <em>סיבה</em>, לכן Why." },
+      { type: "order", answer: ["when", "is", "your", "birthday"], punct: "?", why: "שואלים על <em>זמן</em>, לכן When." },
+      { type: "order", answer: ["how", "much", "does", "this", "shirt", "cost"], punct: "?", why: "\"How much\" משמש לשאלה על מחיר/כמות." },
+      { type: "order", answer: ["how", "far", "is", "the", "airport", "from", "here"], punct: "?", why: "\"How far\" משמש לשאלה על מרחק." },
+      { type: "order", answer: ["who", "wrote", "this", "book"], punct: "?", why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
+      { type: "order", answer: ["which", "color", "do", "you", "prefer"], punct: "?", why: "בחירה מתוך אפשרויות, לכן Which." },
+      { type: "order", answer: ["whose", "phone", "is", "ringing"], punct: "?", why: "שואלים <em>למי שייך</em> הטלפון, לכן Whose." },
+      { type: "order", answer: ["who", "is", "knocking", "at", "the", "door"], punct: "?", why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
+      { type: "translate", direction: "toEnglish", prompt: "מה אתה עושה עכשיו?", answers: ["what are you doing now"], display: "What are you doing now?" },
+      { type: "translate", direction: "toEnglish", prompt: "איפה השירותים?", answers: ["where is the bathroom", "where's the bathroom"], display: "Where is the bathroom?" },
+      { type: "translate", direction: "toEnglish", prompt: "כמה זה עולה?", answers: ["how much is this"], display: "How much is this?" },
+      { type: "translate", direction: "toEnglish", prompt: "מתי אתה חוזר הביתה?", answers: ["when are you coming home"], display: "When are you coming home?" },
+      { type: "translate", direction: "toEnglish", prompt: "של מי המפתחות האלה?", answers: ["whose keys are these"], display: "Whose keys are these?" },
+      { type: "translate", direction: "toHebrew", prompt: "Why is he crying?", answers: ["למה הוא בוכה"], display: "למה הוא בוכה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Which way should I go?", answers: ["לאיזה כיוון עלי ללכת", "לאיזה כיוון אני צריך ללכת"], display: "לאיזה כיוון עלי ללכת?" },
+      { type: "translate", direction: "toHebrew", prompt: "How often do you exercise?", answers: ["כמה פעמים אתה מתאמן", "כמה פעמים את מתאמנת"], display: "כמה פעמים אתה מתאמן?" },
+      { type: "translate", direction: "toHebrew", prompt: "Who is your best friend?", answers: ["מי החבר הכי טוב שלך", "מי החברה הכי טובה שלך"], display: "מי החבר הכי טוב שלך?" },
+      { type: "translate", direction: "toHebrew", prompt: "Whose idea was this?", answers: ["של מי היה הרעיון הזה"], display: "של מי היה הרעיון הזה?" },
+      { type: "dialogue", instruction: "שאלו אותו על התפקיד הקודם שלו — למשל מה הוא עשה בעבודה הקודמת.", topic: ["previous", "before", "last", "past", "role", "job", "work"], display: "What was your previous role?", reply: "That's a good question — I spent the last three years leading a small design team before this." },
+      { type: "dialogue", instruction: "שאלו אותו למה הוא רוצה לעבוד כאן.", topic: ["why"], display: "Why do you want to work here?", reply: "Honestly, I've always admired this company's projects, and I want to be part of that." },
+      { type: "dialogue", instruction: "שאלו אותו מתי הוא יכול להתחיל לעבוד.", topic: ["when"], display: "When can you start?", reply: "I could start as soon as two weeks from now, once I wrap up my notice period." },
+      { type: "dialogue", instruction: "שאלו אותו איך הוא מתמודד עם לחץ בעבודה.", topic: ["how"], display: "How do you handle pressure?", reply: "I usually break the problem into smaller steps and take a short walk if I need to reset." },
+      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שמעניינת אתכם." }
     ]
   },
   {
@@ -590,31 +592,31 @@ const stages = [
       { sentence: "___ your parents watch the news together?", answer: "Do", options: ["Do", "Are"], why: "\"watch\" הוא פועל פעולה, לכן Do." },
       { sentence: "___ we ready to go?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
       { sentence: "___ we need to bring anything?", answer: "Do", options: ["Do", "Are"], why: "\"need\" הוא פועל פעולה, לכן Do." },
-      { type: "order", answer: ["are", "you", "hungry"], punct: "?", why: "אין פועל פעולה נוסף אחרי Are (רק תואר), לכן Are פותח את המשפט." },
-      { type: "order", answer: ["do", "you", "like", "coffee"], punct: "?", why: "\"like\" הוא פועל פעולה, לכן צריך את Do." },
-      { type: "order", answer: ["are", "they", "students"], punct: "?", why: "אחרי Are מגיע שם עצם (students), אין פועל פעולה נוסף." },
-      { type: "order", answer: ["do", "they", "study", "English"], punct: "?", why: "\"study\" הוא פועל פעולה, לכן Do." },
-      { type: "order", answer: ["are", "we", "ready"], punct: "?", why: "אחרי Are מגיע תואר (ready), אין פועל פעולה נוסף." },
-      { type: "order", answer: ["do", "you", "work", "on", "weekends"], punct: "?", why: "\"work\" הוא פועל פעולה, לכן Do." },
-      { type: "order", answer: ["are", "your", "parents", "at", "home"], punct: "?", why: "אחרי Are מגיע ביטוי מקום (at home), אין פועל פעולה נוסף." },
-      { type: "order", answer: ["do", "these", "shoes", "fit", "you"], punct: "?", why: "\"fit\" הוא פועל פעולה, לכן Do." },
-      { type: "order", answer: ["are", "you", "and", "your", "brother", "close", "in", "age"], punct: "?", why: "אחרי Are מגיע תיאור (close in age), אין פועל פעולה נוסף." },
-      { type: "order", answer: ["do", "we", "need", "to", "bring", "anything"], punct: "?", why: "\"need\" הוא פועל פעולה, לכן Do." },
-      { type: "translate", direction: "toEnglish", prompt: "אתה רעב?", answers: ["are you hungry"], display: "Are you hungry?" },
-      { type: "translate", direction: "toEnglish", prompt: "אתה אוהב קפה?", answers: ["do you like coffee"], display: "Do you like coffee?" },
-      { type: "translate", direction: "toEnglish", prompt: "הם תלמידים?", answers: ["are they students"], display: "Are they students?" },
-      { type: "translate", direction: "toEnglish", prompt: "הם לומדים אנגלית?", answers: ["do they study english"], display: "Do they study English?" },
-      { type: "translate", direction: "toEnglish", prompt: "אנחנו מוכנים?", answers: ["are we ready"], display: "Are we ready?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do you work on weekends?", answers: ["אתה עובד בסופי שבוע", "את עובדת בסופי שבוע"], display: "אתה עובד בסופי שבוע?" },
-      { type: "translate", direction: "toHebrew", prompt: "Are your parents at home?", answers: ["ההורים שלך בבית"], display: "ההורים שלך בבית?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do these shoes fit you?", answers: ["הנעליים האלה מתאימות לך"], display: "הנעליים האלה מתאימות לך?" },
-      { type: "translate", direction: "toHebrew", prompt: "Are you and your brother close in age?", answers: ["אתה ואחיך קרובים בגיל", "את ואחיך קרובים בגיל"], display: "אתה ואחיך קרובים בגיל?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do we need to bring anything?", answers: ["אנחנו צריכים להביא משהו"], display: "אנחנו צריכים להביא משהו?" },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא חדש בבניין." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא עובד מהבית." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא אוהב בעלי חיים." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול אם הוא צריך עזרה עם משהו." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת שתרצו." }
+      { type: "order", answer: ["are", "you", "tired"], punct: "?", why: "אחרי Are מגיע תואר (tired), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "you", "play", "guitar"], punct: "?", why: "\"play\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "they", "at", "school"], punct: "?", why: "אחרי Are מגיע ביטוי מקום (at school), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "they", "eat", "breakfast", "every", "day"], punct: "?", why: "\"eat\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "we", "late", "for", "the", "show"], punct: "?", why: "אחרי Are מגיע תיאור (late), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "we", "have", "enough", "time"], punct: "?", why: "\"have\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "your", "friends", "coming", "tonight"], punct: "?", why: "\"coming\" הוא צורת ing שמלווה את Are (הווה מתמשך), לא פועל פעולה רגיל." },
+      { type: "order", answer: ["do", "your", "friends", "like", "sports"], punct: "?", why: "\"like\" הוא פועל פעולה, לכן Do." },
+      { type: "order", answer: ["are", "you", "and", "your", "sister", "twins"], punct: "?", why: "אחרי Are מגיע שם עצם (twins), אין פועל פעולה נוסף." },
+      { type: "order", answer: ["do", "you", "speak", "Spanish"], punct: "?", why: "\"speak\" הוא פועל פעולה, לכן Do." },
+      { type: "translate", direction: "toEnglish", prompt: "אתה צמא?", answers: ["are you thirsty"], display: "Are you thirsty?" },
+      { type: "translate", direction: "toEnglish", prompt: "האנשים האלה עובדים כאן?", answers: ["do these people work here"], display: "Do these people work here?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתם צריכים טרמפ?", answers: ["do you need a ride"], display: "Do you need a ride?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתם אוהבים תה?", answers: ["do you like tea"], display: "Do you like tea?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתם מוכנים להזמין?", answers: ["are you ready to order"], display: "Are you ready to order?" },
+      { type: "translate", direction: "toHebrew", prompt: "Are they hungry?", answers: ["הם רעבים"], display: "הם רעבים?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do we need an umbrella?", answers: ["אנחנו צריכים מטריה"], display: "אנחנו צריכים מטריה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Are your parents strict?", answers: ["ההורים שלך מחמירים", "ההורים שלך קפדנים"], display: "ההורים שלך מחמירים?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do you two get along?", answers: ["אתם שניכם מסתדרים", "אתם מסתדרים"], display: "אתם שניכם מסתדרים?" },
+      { type: "translate", direction: "toHebrew", prompt: "Are we allowed to swim here?", answers: ["מותר לנו לשחות כאן"], display: "מותר לנו לשחות כאן?" },
+      { type: "dialogue", instruction: "שאלו אותו אם הוא חדש בבניין.", topic: ["new"], display: "Are you new to the building?", reply: "Yes, I just moved in last week from across town." },
+      { type: "dialogue", instruction: "שאלו אותו אם הוא עובד מהבית.", topic: ["work", "home"], display: "Do you work from home?", reply: "I do, actually — I've been freelancing from home for about a year now." },
+      { type: "dialogue", instruction: "שאלו אותו אם הוא אוהב בעלי חיים.", topic: ["animal", "pet"], display: "Do you like animals?", reply: "I love them — I actually have two cats waiting for me upstairs." },
+      { type: "dialogue", instruction: "שאלו אותו אם הוא צריך עזרה עם משהו.", topic: ["need", "help"], display: "Do you need help with anything?", reply: "That's kind of you to ask — I could actually use a hand carrying some boxes later." },
+      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שתרצו." }
     ]
   },
   {
@@ -644,31 +646,31 @@ const stages = [
       { sentence: "Grandma hasn't called in a while. ___ okay?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר בסבתא (אישה) שהוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "___ the one who's supposed to bring the cake?", answer: "Am I", options: ["Is she", "Is this", "Am I"], why: "השאלה היא על עצמכם, לכן Am I." },
       { sentence: "<em>(מצביעים על הבניין שממול)</em> ___ where you work?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על מקום ספציפי שנמצא ממש מולכם, לכן Is this." },
-      { type: "order", answer: ["is", "this", "yours"], punct: "?", why: "מצביעים על חפץ ספציפי שלפניכם, לכן Is this." },
-      { type: "order", answer: ["is", "she", "okay"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
-      { type: "order", answer: ["am", "I", "late"], punct: "?", why: "השאלה היא על עצמכם (הדובר), לכן Am I." },
-      { type: "order", answer: ["is", "this", "your", "mother"], punct: "?", why: "מצביעים על מישהי ספציפית שלפניכם, לכן Is this — גם אם מדובר באישה." },
-      { type: "order", answer: ["am", "I", "allowed", "to", "park", "here"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
-      { type: "order", answer: ["is", "she", "working", "on", "a", "new", "piece"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
-      { type: "order", answer: ["is", "this", "where", "you", "work"], punct: "?", why: "מצביעים על מקום ספציפי שלפניכם, לכן Is this." },
-      { type: "order", answer: ["am", "I", "supposed", "to", "bring", "the", "cake"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
-      { type: "order", answer: ["is", "she", "still", "painting"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר, לכן Is she." },
-      { type: "order", answer: ["is", "this", "too", "small", "for", "you"], punct: "?", why: "מצביעים על חפץ ספציפי (החולצה) שלפניכם, לכן Is this." },
-      { type: "translate", direction: "toEnglish", prompt: "זה שלך?", answers: ["is this yours"], display: "Is this yours?" },
-      { type: "translate", direction: "toEnglish", prompt: "היא בסדר?", answers: ["is she okay"], display: "Is she okay?" },
-      { type: "translate", direction: "toEnglish", prompt: "אני מאחר?", answers: ["am i late"], display: "Am I late?" },
-      { type: "translate", direction: "toEnglish", prompt: "זאת אמא שלך?", answers: ["is this your mother"], display: "Is this your mother?" },
-      { type: "translate", direction: "toEnglish", prompt: "מותר לי לחנות כאן?", answers: ["am i allowed to park here"], display: "Am I allowed to park here?" },
-      { type: "translate", direction: "toHebrew", prompt: "Is she working on a new piece?", answers: ["היא עובדת על יצירה חדשה"], display: "היא עובדת על יצירה חדשה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Is this where you work?", answers: ["כאן אתה עובד", "זה המקום שבו אתה עובד"], display: "כאן אתה עובד?" },
-      { type: "translate", direction: "toHebrew", prompt: "Am I supposed to bring the cake?", answers: ["אני אמור להביא את העוגה", "אני אמורה להביא את העוגה"], display: "אני אמור להביא את העוגה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Is she still painting?", answers: ["היא עדיין מציירת"], display: "היא עדיין מציירת?" },
-      { type: "translate", direction: "toHebrew", prompt: "Is this too small for you?", answers: ["זה קטן מדי בשבילך"], display: "זה קטן מדי בשבילך?" },
-      { type: "dialogue", hint: "רעיון: מצביעים על מישהו — אפשר לשאול מי זה." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול על מישהי שהוזכרה קודם ולא נמצאת כאן." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול שאלה על עצמכם." },
-      { type: "dialogue", hint: "רעיון: מצביעים על חפץ — אפשר לשאול עליו." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת." }
+      { type: "order", answer: ["is", "this", "your", "phone"], punct: "?", why: "מצביעים על חפץ ספציפי שלפניכם, לכן Is this." },
+      { type: "order", answer: ["is", "she", "still", "asleep"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
+      { type: "order", answer: ["am", "I", "too", "early"], punct: "?", why: "השאלה היא על עצמכם (הדובר), לכן Am I." },
+      { type: "order", answer: ["is", "this", "the", "right", "bus"], punct: "?", why: "מצביעים/מתכוונים למשהו ספציפי לפניכם, לכן Is this." },
+      { type: "order", answer: ["is", "she", "coming", "to", "the", "wedding"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר ואינה נוכחת מולכם, לכן Is she." },
+      { type: "order", answer: ["am", "I", "disturbing", "you"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
+      { type: "order", answer: ["is", "this", "seat", "taken"], punct: "?", why: "מצביעים על משהו ספציפי שלפניכם, לכן Is this." },
+      { type: "order", answer: ["is", "she", "feeling", "better", "today"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר, לכן Is she." },
+      { type: "order", answer: ["am", "I", "on", "the", "right", "track"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
+      { type: "order", answer: ["is", "this", "your", "handwriting"], punct: "?", why: "מצביעים על משהו ספציפי שלפניכם, לכן Is this." },
+      { type: "translate", direction: "toEnglish", prompt: "זאת המכונית שלך?", answers: ["is this your car"], display: "Is this your car?" },
+      { type: "translate", direction: "toEnglish", prompt: "היא כבר הגיעה?", answers: ["is she here already"], display: "Is she here already?" },
+      { type: "translate", direction: "toEnglish", prompt: "אני מאחר למסיבה?", answers: ["am i late for the party"], display: "Am I late for the party?" },
+      { type: "translate", direction: "toEnglish", prompt: "זה המקום הנכון?", answers: ["is this the right place"], display: "Is this the right place?" },
+      { type: "translate", direction: "toEnglish", prompt: "היא מרוצה מהתוצאה?", answers: ["is she happy with the result"], display: "Is she happy with the result?" },
+      { type: "translate", direction: "toHebrew", prompt: "Am I making sense?", answers: ["אני נשמע הגיוני", "אני נשמעת הגיונית"], display: "אני נשמע הגיוני?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is this your umbrella?", answers: ["זאת המטריה שלך", "זו המטריה שלך"], display: "זאת המטריה שלך?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is she busy right now?", answers: ["היא עסוקה כרגע"], display: "היא עסוקה כרגע?" },
+      { type: "translate", direction: "toHebrew", prompt: "Am I invited too?", answers: ["גם אני מוזמן", "גם אני מוזמנת"], display: "גם אני מוזמן?" },
+      { type: "translate", direction: "toHebrew", prompt: "Is this the last one?", answers: ["זה האחרון", "זאת האחרונה"], display: "זה האחרון?" },
+      { type: "dialogue", instruction: "מצביעים על מישהו שנמצא ממש לידכם במסיבה — שאלו עליו, למשל האם זה חבר שלכם.", topic: ["this"], display: "Is this your friend?", reply: "No, that's my cousin — my sister couldn't make it tonight." },
+      { type: "dialogue", instruction: "מישהי שהזכרתם קודם ואינה נמצאת כאן — שאלו האם היא בסדר.", topic: ["she"], display: "Is she okay?", reply: "Yeah, she just texted me — everything's fine." },
+      { type: "dialogue", instruction: "שאלו שאלה על עצמכם — למשל האם אתם לבושים מתאים למסיבה.", display: "Am I dressed okay for this party?", reply: "You look great — no need to worry!" },
+      { type: "dialogue", instruction: "מצביעים על משהו שרואים ממש לפניכם, למשל אוכל על השולחן — שאלו עליו.", topic: ["this"], display: "Is this spicy?", reply: "Careful, it's spicier than it looks!" },
+      { type: "dialogue", instruction: "מצביעים על מישהו או משהו נוסף — שאלו כל שאלה שתרצו." }
     ]
   },
   {
@@ -698,31 +700,31 @@ const stages = [
       { sentence: "___ you know the answer?", answer: "Do", options: ["Do", "Did"], why: "השאלה על מצב נוכחי בהווה, לכן Do." },
       { sentence: "___ he arrive on time this morning?", answer: "Did", options: ["Did", "Do"], why: "\"this morning\" כאן מתייחס לאירוע שכבר קרה, לכן Did." },
       { sentence: "___ he play tennis every weekend?", answer: "Do", options: ["Do", "Did"], why: "\"every weekend\" מציין הרגל חוזר בהווה, לכן Do." },
-      { type: "order", answer: ["did", "you", "go", "to", "the", "party"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "order", answer: ["do", "you", "like", "chocolate"], punct: "?", why: "שאלה כללית בהווה, לכן Do." },
-      { type: "order", answer: ["did", "she", "call", "you"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "order", answer: ["do", "they", "usually", "walk", "to", "school"], punct: "?", why: "\"usually\" מציין הרגל בהווה, לכן Do." },
-      { type: "order", answer: ["did", "he", "arrive", "on", "time"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "order", answer: ["do", "you", "know", "the", "answer"], punct: "?", why: "שאלה על מצב נוכחי בהווה, לכן Do." },
-      { type: "order", answer: ["did", "they", "finish", "the", "exam"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "order", answer: ["did", "you", "see", "that", "movie"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "order", answer: ["do", "you", "work", "here"], punct: "?", why: "שאלה כללית בהווה, לכן Do." },
-      { type: "order", answer: ["did", "he", "play", "tennis"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
-      { type: "translate", direction: "toEnglish", prompt: "הלכת למסיבה?", answers: ["did you go to the party"], display: "Did you go to the party?" },
-      { type: "translate", direction: "toEnglish", prompt: "אתה אוהב שוקולד?", answers: ["do you like chocolate"], display: "Do you like chocolate?" },
-      { type: "translate", direction: "toEnglish", prompt: "היא התקשרה אליך?", answers: ["did she call you"], display: "Did she call you?" },
-      { type: "translate", direction: "toEnglish", prompt: "הם הולכים ברגל לבית הספר בדרך כלל?", answers: ["do they usually walk to school"], display: "Do they usually walk to school?" },
-      { type: "translate", direction: "toEnglish", prompt: "הוא הגיע בזמן?", answers: ["did he arrive on time"], display: "Did he arrive on time?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do you know the answer?", answers: ["אתה יודע את התשובה", "את יודעת את התשובה"], display: "אתה יודע את התשובה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Did they finish the exam?", answers: ["הם סיימו את המבחן"], display: "הם סיימו את המבחן?" },
-      { type: "translate", direction: "toHebrew", prompt: "Did you see that movie?", answers: ["ראית את הסרט הזה"], display: "ראית את הסרט הזה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Do you work here?", answers: ["אתה עובד כאן", "את עובדת כאן"], display: "אתה עובד כאן?" },
-      { type: "translate", direction: "toHebrew", prompt: "Did he play tennis?", answers: ["הוא שיחק טניס"], display: "הוא שיחק טניס?" },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול על משהו מהעבר (Did)." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול על ההווה שלו (Do)." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול עוד שאלה על העבר." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול עוד שאלה על הרגלים בהווה." },
-      { type: "dialogue", hint: "רעיון: אפשר לשאול כל שאלה נוספת." }
+      { type: "order", answer: ["did", "you", "finish", "your", "homework"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "you", "drink", "coffee", "every", "morning"], punct: "?", why: "\"every morning\" מציין הרגל בהווה, לכן Do." },
+      { type: "order", answer: ["did", "they", "win", "the", "match"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "they", "visit", "their", "grandparents", "often"], punct: "?", why: "\"often\" מציין הרגל בהווה, לכן Do." },
+      { type: "order", answer: ["did", "we", "forget", "the", "tickets"], punct: "?", why: "מדובר בפעולה שכבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "we", "usually", "meet", "on", "Fridays"], punct: "?", why: "\"usually\" מציין הרגל בהווה, לכן Do." },
+      { type: "order", answer: ["did", "you", "call", "your", "mother", "yesterday"], punct: "?", why: "\"yesterday\" מציין זמן עבר, לכן Did." },
+      { type: "order", answer: ["do", "you", "usually", "cook", "dinner"], punct: "?", why: "\"usually\" מציין הרגל בהווה, לכן Do." },
+      { type: "order", answer: ["did", "they", "leave", "already"], punct: "?", why: "\"already\" מציין שהפעולה כבר קרתה, לכן Did." },
+      { type: "order", answer: ["do", "you", "read", "before", "bed"], punct: "?", why: "שאלה על הרגל בהווה, לכן Do." },
+      { type: "translate", direction: "toEnglish", prompt: "עזבת את המסיבה מוקדם?", answers: ["did you leave the party early"], display: "Did you leave the party early?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתה קורא ספרים בדרך כלל?", answers: ["do you usually read books"], display: "Do you usually read books?" },
+      { type: "translate", direction: "toEnglish", prompt: "הם קנו מתנה?", answers: ["did they buy a gift"], display: "Did they buy a gift?" },
+      { type: "translate", direction: "toEnglish", prompt: "אתם מבקרים שם כל קיץ?", answers: ["do you visit there every summer"], display: "Do you visit there every summer?" },
+      { type: "translate", direction: "toEnglish", prompt: "שכחנו לנעול את הדלת?", answers: ["did we forget to lock the door"], display: "Did we forget to lock the door?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did she pass by earlier?", answers: ["היא עברה כאן קודם"], display: "היא עברה כאן קודם?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do you often travel for work?", answers: ["אתה נוסע הרבה לעבודה", "את נוסעת הרבה לעבודה"], display: "אתה נוסע הרבה לעבודה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did he lose his keys?", answers: ["הוא איבד את המפתחות שלו"], display: "הוא איבד את המפתחות שלו?" },
+      { type: "translate", direction: "toHebrew", prompt: "Do they celebrate this holiday?", answers: ["הם חוגגים את החג הזה"], display: "הם חוגגים את החג הזה?" },
+      { type: "translate", direction: "toHebrew", prompt: "Did you enjoy the trip?", answers: ["נהנית מהטיול"], display: "נהנית מהטיול?" },
+      { type: "dialogue", instruction: "שאלו אותו משהו על העבר — למשל האם הוא סיים את התואר שלו.", topic: ["finish", "degree", "graduate"], display: "Did you finish your degree?", reply: "Yes, finally — it took an extra year, but I got there." },
+      { type: "dialogue", instruction: "שאלו אותו על ההווה שלו — למשל האם הוא עדיין גר באותה שכונה.", topic: ["live", "still"], display: "Do you still live in the same neighborhood?", reply: "No, I actually moved about a year ago." },
+      { type: "dialogue", instruction: "שאלו אותו עוד שאלה על העבר — למשל האם נתקל בחברים משותפים לאחרונה.", topic: ["friend", "run", "meet", "see"], display: "Did you run into any old friends recently?", reply: "I ran into a couple of them last month, actually." },
+      { type: "dialogue", instruction: "שאלו אותו עוד שאלה על הרגלים בהווה — למשל האם הוא עדיין משחק כדורגל.", topic: ["play", "still"], display: "Do you still play soccer?", reply: "Not every day anymore, but most weekends." },
+      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שתרצו." }
     ]
   },
   {
@@ -752,31 +754,31 @@ const stages = [
       { sentence: "The store ___ open on Sundays.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (The store = it), לכן Doesn't." },
       { sentence: "You ___ call me back last week.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"last week\" מציינת זמן עבר, לכן Didn't — גם עם You." },
       { sentence: "My dog ___ like loud noises.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." },
-      { type: "order", answer: ["she", "doesn't", "like", "spicy", "food"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
-      { type: "order", answer: ["she", "didn't", "go", "to", "work", "yesterday"], punct: ".", why: "\"yesterday\" מציין זמן עבר, לכן Didn't." },
-      { type: "order", answer: ["he", "doesn't", "drink", "coffee"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (He), לכן Doesn't." },
-      { type: "order", answer: ["they", "didn't", "arrive", "on", "time"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
-      { type: "order", answer: ["my", "dog", "doesn't", "like", "loud", "noises"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (My dog = it), לכן Doesn't." },
-      { type: "order", answer: ["we", "didn't", "finish", "the", "assignment"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
-      { type: "order", answer: ["my", "brother", "doesn't", "eat", "meat"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (My brother = he), לכן Doesn't." },
-      { type: "order", answer: ["I", "didn't", "see", "you", "at", "the", "meeting"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם I." },
-      { type: "order", answer: ["the", "store", "doesn't", "open", "on", "Sundays"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (The store = it), לכן Doesn't." },
-      { type: "order", answer: ["you", "didn't", "call", "me", "back"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם You." },
-      { type: "translate", direction: "toEnglish", prompt: "היא לא אוהבת אוכל חריף.", answers: ["she doesnt like spicy food", "she doesn't like spicy food"], display: "She doesn't like spicy food." },
-      { type: "translate", direction: "toEnglish", prompt: "היא לא הלכה לעבודה אתמול.", answers: ["she didnt go to work yesterday", "she didn't go to work yesterday"], display: "She didn't go to work yesterday." },
-      { type: "translate", direction: "toEnglish", prompt: "הוא לא שותה קפה.", answers: ["he doesnt drink coffee", "he doesn't drink coffee"], display: "He doesn't drink coffee." },
-      { type: "translate", direction: "toEnglish", prompt: "הם לא הגיעו בזמן.", answers: ["they didnt arrive on time", "they didn't arrive on time"], display: "They didn't arrive on time." },
-      { type: "translate", direction: "toEnglish", prompt: "הכלב שלי לא אוהב רעשים חזקים.", answers: ["my dog doesnt like loud noises", "my dog doesn't like loud noises"], display: "My dog doesn't like loud noises." },
-      { type: "translate", direction: "toHebrew", prompt: "We didn't finish the assignment.", answers: ["לא סיימנו את המטלה"], display: "לא סיימנו את המטלה." },
-      { type: "translate", direction: "toHebrew", prompt: "My brother doesn't eat meat.", answers: ["אחי לא אוכל בשר"], display: "אחי לא אוכל בשר." },
-      { type: "translate", direction: "toHebrew", prompt: "I didn't see you at the meeting.", answers: ["לא ראיתי אותך בפגישה"], display: "לא ראיתי אותך בפגישה." },
-      { type: "translate", direction: "toHebrew", prompt: "The store doesn't open on Sundays.", answers: ["החנות לא פתוחה בימי ראשון", "החנות לא נפתחת בימי ראשון"], display: "החנות לא פתוחה בימי ראשון." },
-      { type: "translate", direction: "toHebrew", prompt: "You didn't call me back.", answers: ["לא התקשרת אליי בחזרה", "לא התקשרת אליי חזרה"], display: "לא התקשרת אליי בחזרה." },
-      { type: "dialogue", theyAsk: "Why didn't you come to the party?" },
-      { type: "dialogue", theyAsk: "Does your brother like spicy food?" },
-      { type: "dialogue", theyAsk: "Did you two finish the project?" },
-      { type: "dialogue", theyAsk: "Is the store open right now?" },
-      { type: "dialogue", theyAsk: "Did she call you back yet?" }
+      { type: "order", answer: ["he", "doesn't", "wake", "up", "early"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (He), לכן Doesn't." },
+      { type: "order", answer: ["I", "didn't", "hear", "the", "phone", "ring"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם I." },
+      { type: "order", answer: ["the", "teacher", "doesn't", "allow", "phones", "in", "class"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (The teacher = he/she), לכן Doesn't." },
+      { type: "order", answer: ["we", "didn't", "expect", "this", "result"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
+      { type: "order", answer: ["my", "car", "doesn't", "start", "in", "winter"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (My car = it), לכן Doesn't." },
+      { type: "order", answer: ["they", "didn't", "answer", "the", "phone"], punct: ".", why: "מדובר בפעולה שכבר קרתה (עבר), לכן Didn't." },
+      { type: "order", answer: ["she", "doesn't", "trust", "strangers"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
+      { type: "order", answer: ["you", "didn't", "lock", "the", "door"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם You." },
+      { type: "order", answer: ["this", "restaurant", "doesn't", "serve", "breakfast"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (This restaurant = it), לכן Doesn't." },
+      { type: "order", answer: ["I", "didn't", "recognize", "you", "at", "first"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם I." },
+      { type: "translate", direction: "toEnglish", prompt: "הוא לא זוכר את השם שלי.", answers: ["he doesnt remember my name", "he doesn't remember my name"], display: "He doesn't remember my name." },
+      { type: "translate", direction: "toEnglish", prompt: "לא הבנתי את השאלה.", answers: ["i didnt understand the question", "i didn't understand the question"], display: "I didn't understand the question." },
+      { type: "translate", direction: "toEnglish", prompt: "החנות הזאת לא מוכרת בגדים.", answers: ["this store doesnt sell clothes", "this store doesn't sell clothes"], display: "This store doesn't sell clothes." },
+      { type: "translate", direction: "toEnglish", prompt: "לא תכננו את זה.", answers: ["we didnt plan this", "we didn't plan this"], display: "We didn't plan this." },
+      { type: "translate", direction: "toEnglish", prompt: "היא לא עונה להודעות.", answers: ["she doesnt answer messages", "she doesn't answer messages"], display: "She doesn't answer messages." },
+      { type: "translate", direction: "toHebrew", prompt: "They didn't tell me the truth.", answers: ["הם לא אמרו לי את האמת"], display: "הם לא אמרו לי את האמת." },
+      { type: "translate", direction: "toHebrew", prompt: "He doesn't drive to work.", answers: ["הוא לא נוסע לעבודה ברכב", "הוא לא נוהג לעבודה"], display: "הוא לא נוסע לעבודה ברכב." },
+      { type: "translate", direction: "toHebrew", prompt: "You didn't answer my question.", answers: ["לא ענית על השאלה שלי"], display: "לא ענית על השאלה שלי." },
+      { type: "translate", direction: "toHebrew", prompt: "This app doesn't work offline.", answers: ["האפליקציה הזאת לא עובדת אופליין", "האפליקציה הזאת לא עובדת בלי אינטרנט"], display: "האפליקציה הזאת לא עובדת אופליין." },
+      { type: "translate", direction: "toHebrew", prompt: "I didn't notice the mistake.", answers: ["לא שמתי לב לטעות"], display: "לא שמתי לב לטעות." },
+      { type: "dialogue", theyAsk: "Why didn't you come to the party?", instruction: "ענו לו שלא הגעתם כי הייתם חולים.", display: "I didn't come because I was sick.", reply: "Ah, I see — thanks for explaining." },
+      { type: "dialogue", theyAsk: "Does your brother like spicy food?", instruction: "עני/ה שהאח שלך לא אוהב אוכל חריף.", display: "No, he doesn't like spicy food.", reply: "Got it, that makes sense." },
+      { type: "dialogue", theyAsk: "Did you two finish the project?", instruction: "עני/ה שלא סיימתם את הפרויקט.", display: "No, we didn't finish the project.", reply: "No worries at all." },
+      { type: "dialogue", theyAsk: "Does the store open on Sundays?", instruction: "עני/ה שהחנות לא פתוחה בימי ראשון.", display: "No, it doesn't open on Sundays.", reply: "Fair enough!" },
+      { type: "dialogue", theyAsk: "Did she call you back yet?", instruction: "עני/ה שהיא עדיין לא התקשרה בחזרה.", display: "No, she didn't call me back yet.", reply: "Oh really? Good to know." }
     ]
   },
   {
@@ -799,31 +801,31 @@ const stages = [
       { sentence: "Do your parents live nearby?", answer: "Yes, they do.", options: ["Yes, they do.", "Yes, they does.", "Yes, he does."], why: "Your parents = they, גוף רבים — Do." },
       { sentence: "Did you see the movie?", answer: "Yes, I did.", options: ["Yes, I did.", "Yes, I do.", "Yes, you did."], why: "בתשובה על שאלה עם You, משתמשים ב-I; הפועל העזר נשאר Did." },
       { sentence: "Does your dog like walks?", answer: "Yes, he does.", options: ["Yes, he does.", "Yes, he do.", "Yes, it do."], why: "גוף שלישי יחיד בהווה — Does." },
-      { type: "order", answer: ["yes,", "she", "does"], punct: ".", why: "תשובה קצרה: Yes, נושא, ואותו פועל עזר שבשאלה (Does)." },
-      { type: "order", answer: ["no,", "I", "don't"], punct: ".", why: "עם I בשלילה: Don't." },
-      { type: "order", answer: ["yes,", "they", "did"], punct: ".", why: "Did נשאר Did בתשובה הקצרה." },
-      { type: "order", answer: ["no,", "he", "doesn't"], punct: ".", why: "גוף שלישי יחיד בהווה בשלילה: Doesn't." },
-      { type: "order", answer: ["yes,", "we", "do"], punct: ".", why: "We בהווה: Do." },
-      { type: "order", answer: ["no,", "she", "didn't"], punct: ".", why: "עבר בשלילה: Didn't." },
-      { type: "order", answer: ["no,", "it", "doesn't"], punct: ".", why: "גוף שלישי יחיד (it) בהווה בשלילה: Doesn't." },
-      { type: "order", answer: ["yes,", "they", "do"], punct: ".", why: "גוף רבים בהווה: Do." },
-      { type: "order", answer: ["yes,", "I", "did"], punct: ".", why: "עבר: Did, והנושא הופך ל-I." },
-      { type: "order", answer: ["yes,", "he", "does"], punct: ".", why: "גוף שלישי יחיד בהווה: Does." },
-      { type: "translate", direction: "toEnglish", prompt: "כן, היא אוהבת.", answers: ["yes she does", "yes, she does"], display: "Yes, she does." },
-      { type: "translate", direction: "toEnglish", prompt: "לא, אני לא.", answers: ["no i dont", "no, i don't"], display: "No, I don't." },
-      { type: "translate", direction: "toEnglish", prompt: "כן, הם סיימו.", answers: ["yes they did", "yes, they did"], display: "Yes, they did." },
-      { type: "translate", direction: "toEnglish", prompt: "לא, הוא לא.", answers: ["no he doesnt", "no, he doesn't"], display: "No, he doesn't." },
-      { type: "translate", direction: "toEnglish", prompt: "כן, אנחנו כן.", answers: ["yes we do", "yes, we do"], display: "Yes, we do." },
-      { type: "translate", direction: "toHebrew", prompt: "No, she didn't.", answers: ["לא, היא לא"], display: "לא, היא לא." },
-      { type: "translate", direction: "toHebrew", prompt: "No, it doesn't.", answers: ["לא, זה לא"], display: "לא, זה לא." },
-      { type: "translate", direction: "toHebrew", prompt: "Yes, they do.", answers: ["כן, הם כן"], display: "כן, הם כן." },
-      { type: "translate", direction: "toHebrew", prompt: "Yes, I did.", answers: ["כן, אני כן"], display: "כן, אני כן." },
-      { type: "translate", direction: "toHebrew", prompt: "Yes, he does.", answers: ["כן, הוא כן"], display: "כן, הוא כן." },
-      { type: "dialogue", theyAsk: "Do you like coffee?", yesReply: "Nice — how many cups do you usually have in a day?", noReply: "Really? What do you drink in the morning instead?" },
-      { type: "dialogue", theyAsk: "Does your best friend live nearby?", yesReply: "That's convenient — do you see each other often?", noReply: "Oh, how far away do they live?" },
-      { type: "dialogue", theyAsk: "Did you sleep well last night?", yesReply: "Good to hear — what time did you wake up?", noReply: "Sorry to hear that — what kept you up?" },
-      { type: "dialogue", theyAsk: "Do your parents like traveling?", yesReply: "Nice — where was the last place they went?", noReply: "Interesting — what do they prefer doing instead?" },
-      { type: "dialogue", theyAsk: "Did your team win the game?", yesReply: "Congratulations! Was it a close game?", noReply: "That's a shame — what went wrong?" }
+      { type: "order", answer: ["no,", "we", "don't"], punct: ".", why: "We בהווה בשלילה: Don't." },
+      { type: "order", answer: ["yes,", "it", "does"], punct: ".", why: "It בהווה: Does." },
+      { type: "order", answer: ["no,", "they", "didn't"], punct: ".", why: "עבר בשלילה: Didn't, לא משתנה לפי גוף." },
+      { type: "order", answer: ["yes,", "she", "did"], punct: ".", why: "עבר: Did, לא משתנה לפי גוף." },
+      { type: "order", answer: ["yes,", "I", "do"], punct: ".", why: "I בהווה: Do." },
+      { type: "order", answer: ["no,", "we", "didn't"], punct: ".", why: "עבר בשלילה: Didn't." },
+      { type: "order", answer: ["no,", "she", "doesn't"], punct: ".", why: "גוף שלישי יחיד בהווה בשלילה: Doesn't." },
+      { type: "order", answer: ["no,", "I", "didn't"], punct: ".", why: "עבר בשלילה: Didn't — גם עם I." },
+      { type: "order", answer: ["no,", "he", "didn't"], punct: ".", why: "עבר בשלילה: Didn't, לא Doesn't, כי מדובר בעבר." },
+      { type: "order", answer: ["yes,", "it", "did"], punct: ".", why: "עבר: Did — גם עם It." },
+      { type: "translate", direction: "toEnglish", prompt: "כן, אתה אוהב את זה.", answers: ["yes you do", "yes, you do"], display: "Yes, you do." },
+      { type: "translate", direction: "toEnglish", prompt: "לא, אתה לא אוהב את זה.", answers: ["no you dont", "no, you don't"], display: "No, you don't." },
+      { type: "translate", direction: "toEnglish", prompt: "כן, הוא הלך לשם.", answers: ["yes he did", "yes, he did"], display: "Yes, he did." },
+      { type: "translate", direction: "toEnglish", prompt: "לא, זה לא הצליח.", answers: ["no it didnt", "no, it didn't"], display: "No, it didn't." },
+      { type: "translate", direction: "toEnglish", prompt: "לא, הם לא רוצים לבוא.", answers: ["no they dont", "no, they don't"], display: "No, they don't." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, we did.", answers: ["כן, אנחנו כן"], display: "כן, אנחנו כן." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, you did.", answers: ["כן, אתה כן"], display: "כן, אתה כן." },
+      { type: "translate", direction: "toHebrew", prompt: "No, you didn't.", answers: ["לא, אתה לא"], display: "לא, אתה לא." },
+      { type: "translate", direction: "toHebrew", prompt: "Yes, they did.", answers: ["כן, הם כן"], display: "כן, הם כן." },
+      { type: "translate", direction: "toHebrew", prompt: "No, he doesn't.", answers: ["לא, הוא לא"], display: "לא, הוא לא." },
+      { type: "dialogue", theyAsk: "Do you like coffee?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Nice — how many cups do you usually have in a day?", noReply: "Really? What do you drink in the morning instead?" },
+      { type: "dialogue", theyAsk: "Does your best friend live nearby?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "That's convenient — do you see each other often?", noReply: "Oh, how far away do they live?" },
+      { type: "dialogue", theyAsk: "Did you sleep well last night?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Good to hear — what time did you wake up?", noReply: "Sorry to hear that — what kept you up?" },
+      { type: "dialogue", theyAsk: "Do your parents like traveling?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Nice — where was the last place they went?", noReply: "Interesting — what do they prefer doing instead?" },
+      { type: "dialogue", theyAsk: "Did your team win the game?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Congratulations! Was it a close game?", noReply: "That's a shame — what went wrong?" }
     ]
   }
 ];
@@ -1003,7 +1005,7 @@ function render() {
     card.innerHTML = `
       <div class="dialogue-scenario">${stage.dialogueScenario}</div>
       <div class="dialogue-log">${renderDialogueLog(log.concat(liveTurn))}</div>
-      ${q.hint ? `<div class="dialogue-cue">${q.hint}</div>` : ""}
+      <div class="dialogue-cue"><strong>${q.theyAsk ? "מה לענות:" : "מה להגיד:"}</strong> ${q.instruction}</div>
       <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
       <div class="hint" id="hint"></div>
       <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
@@ -1288,6 +1290,12 @@ function pickReply(stage) {
   return pool[idx];
 }
 
+function checkTopic(tokens, topic) {
+  if (!topic || !topic.length) return true;
+  const joined = tokens.join(" ");
+  return topic.some(kw => joined.includes(kw));
+}
+
 function renderDialogueQuestion(q, stage) {
   const input = document.getElementById("translateInput");
   const btn = document.getElementById("checkBtn");
@@ -1309,14 +1317,21 @@ function renderDialogueQuestion(q, stage) {
     } else {
       const tokens = tokenize(raw);
       const checker = GRAMMAR_CHECKERS[stage.dialogueGrammar];
-      result = checker ? checker(tokens, q.theyAsk) : { ok: true };
-      reply = (q.yesReply || q.noReply) ? (result.answerType === "no" ? q.noReply : q.yesReply) : pickReply(stage);
+      const grammarResult = checker ? checker(tokens, q.theyAsk) : { ok: true };
+      if (!grammarResult.ok) {
+        result = grammarResult;
+      } else if (!checkTopic(tokens, q.topic)) {
+        result = { ok: false, note: `דקדוקית זה תקין, אבל זה לא מה שהתבקשתם לומר. ${q.display ? `דוגמה: "${q.display}"` : ""}` };
+      } else {
+        result = grammarResult;
+      }
+      reply = (q.yesReply || q.noReply) ? (result.answerType === "no" ? q.noReply : q.yesReply) : (q.reply || pickReply(stage));
     }
 
     btn.disabled = false;
     input.classList.add(result.ok ? "correct" : "wrong");
     document.getElementById("hint").innerHTML = result.ok
-      ? "Looks good grammatically!"
+      ? "Looks good!"
       : `Grammar note: ${result.note}`;
 
     if (result.ok) { score++; playCorrectSound(); }
