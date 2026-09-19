@@ -371,6 +371,27 @@ const questions = [
 let current = 0;
 let score = 0;
 
+const STORAGE_KEY = "doAreQuizProgress";
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ current, score }));
+  } catch (e) {}
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (typeof data.current === "number" && typeof data.score === "number" &&
+        data.current >= 0 && data.current <= questions.length) {
+      current = data.current;
+      score = data.score;
+    }
+  } catch (e) {}
+}
+
 let audioCtx = null;
 function playTone(freqStart, freqEnd, duration, type, gainStart) {
   try {
@@ -410,6 +431,7 @@ function shuffle(arr) {
 }
 
 function render() {
+  saveProgress();
   const card = document.getElementById("quizCard");
   document.getElementById("qnum").textContent = current + 1;
   document.getElementById("qtotal").textContent = questions.length;
@@ -514,6 +536,7 @@ function renderOrderQuestion(q) {
     if (isCorrect) { score++; playCorrectSound(); }
     else { playWrongSound(); }
     document.getElementById("scorelive").textContent = score;
+    saveProgress();
     document.getElementById("nextBtn").classList.add("show");
     document.getElementById("nextBtn").onclick = () => {
       current++;
@@ -540,6 +563,7 @@ function selectAnswer(btn, correctAnswer) {
 
   if (isCorrect) score++;
   document.getElementById("scorelive").textContent = score;
+  saveProgress();
   document.getElementById("nextBtn").classList.add("show");
   document.getElementById("nextBtn").onclick = () => {
     current++;
@@ -550,9 +574,11 @@ function selectAnswer(btn, correctAnswer) {
 function restart() {
   current = 0;
   score = 0;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   document.getElementById("levelTag").textContent = "INTERMEDIATE";
   render();
 }
 
+loadProgress();
 render();
 </script>

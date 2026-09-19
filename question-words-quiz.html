@@ -282,8 +282,8 @@
   .dialogue-scenario {
     font-style: italic;
     color: var(--ink-soft);
-    direction: rtl;
-    text-align: right;
+    direction: ltr;
+    text-align: left;
     font-size: .92rem;
     margin: 0 0 1rem;
     padding-bottom: .75rem;
@@ -517,16 +517,9 @@ const stages = [
     legend: "<strong>What</strong> – מה (דבר) &nbsp;·&nbsp; <strong>Who</strong> – מי (אדם) &nbsp;·&nbsp; <strong>Where</strong> – איפה (מקום) &nbsp;·&nbsp; <strong>When</strong> – מתי (זמן) &nbsp;·&nbsp; <strong>Why</strong> – למה (סיבה) &nbsp;·&nbsp; <strong>How</strong> – איך / כמה (אופן, כמות, גיל, משך, תדירות, מחיר) &nbsp;·&nbsp; <strong>Which</strong> – איזה (בחירה מתוך אפשרויות ידועות) &nbsp;·&nbsp; <strong>Whose</strong> – של מי (בעלות)",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "אתם מראיינים מועמד לעבודה. שאלו אותו כל שאלה שתרצו.",
     dialogueGrammar: "questionWords",
-    dialogueReplies: [
-      "That's a good question — I'd say my last role really shaped how I think about this.",
-      "Honestly, it depends on the day, but I always try to stay curious.",
-      "I've thought about that a lot, actually — feel free to ask me more.",
-      "Good one. Short answer: yes. Long answer: it's a bit more complicated than that.",
-      "I like that you're asking that — most interviewers don't."
-    ],
+    storyCount: 4,
+    storyScenario: "A close friend of yours just got back from a week-long team-building trip in the mountains, and he has a fascinating story to tell. Ask him questions to find out all the details.",
     questions: [
       { sentence: "___ is your name?", answer: "What", options: ["What", "Who", "Where", "When"], why: "שואלים על <em>דבר</em> (השם עצמו) ולא על אדם או מקום, לכן What ולא Who." },
       { sentence: "___ do you live?", answer: "Where", options: ["Where", "What", "Why", "Who"], why: "שואלים על <em>מקום</em> המגורים, לכן Where." },
@@ -554,15 +547,14 @@ const stages = [
       { type: "translate", direction: "toEnglish", prompt: "מתי אתה חוזר הביתה?", answers: ["when are you coming home"], display: "When are you coming home?" },
       { type: "translate", direction: "toEnglish", prompt: "של מי המפתחות האלה?", answers: ["whose keys are these"], display: "Whose keys are these?" },
       { type: "translate", direction: "toHebrew", prompt: "Why is he crying?", answers: ["למה הוא בוכה"], display: "למה הוא בוכה?" },
-      { type: "translate", direction: "toHebrew", prompt: "Which way should I go?", answers: ["לאיזה כיוון עלי ללכת", "לאיזה כיוון אני צריך ללכת"], display: "לאיזה כיוון עלי ללכת?" },
-      { type: "translate", direction: "toHebrew", prompt: "How often do you exercise?", answers: ["כמה פעמים אתה מתאמן", "כמה פעמים את מתאמנת"], display: "כמה פעמים אתה מתאמן?" },
+      { type: "translate", direction: "toHebrew", prompt: "Which way should I go?", answers: ["לאיזה כיוון עלי ללכת", "לאיזה כיוון אני צריך ללכת", "באיזה דרך כדאי ללכת", "באיזו דרך כדאי לי ללכת"], display: "לאיזה כיוון עלי ללכת?" },
+      { type: "translate", direction: "toHebrew", prompt: "How often do you exercise?", answers: ["כמה פעמים אתה מתאמן", "כמה פעמים את מתאמנת", "באיזה תדירות אתה מתאמן", "באיזו תדירות את מתאמנת"], display: "כמה פעמים אתה מתאמן?" },
       { type: "translate", direction: "toHebrew", prompt: "Who is your best friend?", answers: ["מי החבר הכי טוב שלך", "מי החברה הכי טובה שלך"], display: "מי החבר הכי טוב שלך?" },
       { type: "translate", direction: "toHebrew", prompt: "Whose idea was this?", answers: ["של מי היה הרעיון הזה"], display: "של מי היה הרעיון הזה?" },
-      { type: "dialogue", instruction: "שאלו אותו על התפקיד הקודם שלו — למשל מה הוא עשה בעבודה הקודמת.", topic: ["previous", "before", "last", "past", "role", "job", "work"], display: "What was your previous role?", reply: "That's a good question — I spent the last three years leading a small design team before this." },
-      { type: "dialogue", instruction: "שאלו אותו למה הוא רוצה לעבוד כאן.", topic: ["why"], display: "Why do you want to work here?", reply: "Honestly, I've always admired this company's projects, and I want to be part of that." },
-      { type: "dialogue", instruction: "שאלו אותו מתי הוא יכול להתחיל לעבוד.", topic: ["when"], display: "When can you start?", reply: "I could start as soon as two weeks from now, once I wrap up my notice period." },
-      { type: "dialogue", instruction: "שאלו אותו איך הוא מתמודד עם לחץ בעבודה.", topic: ["how"], display: "How do you handle pressure?", reply: "I usually break the problem into smaller steps and take a short walk if I need to reset." },
-      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שמעניינת אתכם." }
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו לאן הוא נסע בטיול.", topic: ["where", "go", "trip", "hike"], display: "Where did you go on the trip?", reply: "We hiked up in the northern mountains for five days. On the third night, a huge storm hit our camp and we had to move everyone into one big tent until morning." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו מתי קרתה הסערה.", topic: ["when", "storm", "happen"], display: "When did the storm happen?", reply: "It happened right in the middle of the night, around two or three in the morning — everyone woke up soaked and freezing." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו למה הם לא חזרו הביתה מוקדם יותר, למרות הסערה.", topic: ["why", "go", "back", "home", "return", "leave"], display: "Why didn't you go back home earlier?", reply: "Actually, by morning the sky was completely clear again, so the guide decided it was safe to keep going — and honestly, it became the best part of the whole trip." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו איך הם התחממו באוהל באותו לילה.", topic: ["how", "warm", "tent"], display: "How did you stay warm in the tent?", reply: "We all huddled together with every blanket and jacket we had, and someone had a small stove to heat water for tea — it actually turned into a really fun night." }
     ]
   },
   {
@@ -571,16 +563,9 @@ const stages = [
     legend: "<strong>Are</strong> – משמש עם הפועל to be, כשאחרי המילה מגיע שם עצם, תואר או ביטוי מקום (בלי פועל פעולה נוסף) &nbsp;·&nbsp; <strong>Do</strong> – משמש כפועל עזר כשיש במשפט <em>פועל פעולה</em> נוסף (like, work, study, need, walk, fit...)",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "אתם פוגשים שכן חדש שעבר לבניין. שאלו אותו כל שאלה שתרצו כדי להכיר אותו.",
     dialogueGrammar: "doAre",
-    dialogueReplies: [
-      "Yes, I just moved in last week from across town.",
-      "That's a great question — the honest answer is, it depends on the day.",
-      "I love that you asked — feel free to ask me something else too.",
-      "Good question! I think you'll find out soon enough.",
-      "Ha, sure — go ahead and ask me anything else."
-    ],
+    storyCount: 4,
+    storyScenario: "The new neighbor from upstairs invites you over for dinner and tells you about his family. Ask him questions to get to know them better.",
     questions: [
       { sentence: "___ you a teacher?", answer: "Are", options: ["Are", "Do"], why: "אחרי Are מגיע שם עצם (a teacher), אין פועל פעולה נוסף במשפט." },
       { sentence: "___ you like pizza?", answer: "Do", options: ["Do", "Are"], why: "\"like\" הוא פועל פעולה, ולכן צריך את פועל העזר Do." },
@@ -612,11 +597,10 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Are your parents strict?", answers: ["ההורים שלך מחמירים", "ההורים שלך קפדנים"], display: "ההורים שלך מחמירים?" },
       { type: "translate", direction: "toHebrew", prompt: "Do you two get along?", answers: ["אתם שניכם מסתדרים", "אתם מסתדרים"], display: "אתם שניכם מסתדרים?" },
       { type: "translate", direction: "toHebrew", prompt: "Are we allowed to swim here?", answers: ["מותר לנו לשחות כאן"], display: "מותר לנו לשחות כאן?" },
-      { type: "dialogue", instruction: "שאלו אותו אם הוא חדש בבניין.", topic: ["new"], display: "Are you new to the building?", reply: "Yes, I just moved in last week from across town." },
-      { type: "dialogue", instruction: "שאלו אותו אם הוא עובד מהבית.", topic: ["work", "home"], display: "Do you work from home?", reply: "I do, actually — I've been freelancing from home for about a year now." },
-      { type: "dialogue", instruction: "שאלו אותו אם הוא אוהב בעלי חיים.", topic: ["animal", "pet"], display: "Do you like animals?", reply: "I love them — I actually have two cats waiting for me upstairs." },
-      { type: "dialogue", instruction: "שאלו אותו אם הוא צריך עזרה עם משהו.", topic: ["need", "help"], display: "Do you need help with anything?", reply: "That's kind of you to ask — I could actually use a hand carrying some boxes later." },
-      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שתרצו." }
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו אם ההורים שלו גרים בעיר הזאת.", topic: ["parents", "live"], display: "Do your parents live in this city?", reply: "They do, actually — just ten minutes from here. My mom still cooks Friday dinner for the whole family every week." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו אם האחים שלו חברותיים.", topic: ["siblings", "brother", "sister", "friendly"], display: "Are your siblings friendly?", reply: "Very friendly — my younger sister actually organizes a big family game night every month, and everyone always shows up." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו אם הוא מבשל בעצמו בדרך כלל.", topic: ["cook", "yourself"], display: "Do you usually cook yourself?", reply: "Not really — I'm still learning. My mom's the real chef in the family; I mostly just set the table." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותו אם הוא נרגש לקראת החג המשפחתי הקרוב.", topic: ["excited", "holiday"], display: "Are you excited about the family holiday?", reply: "Extremely — we're hosting everyone this year for the first time, so it's a big deal for us." }
     ]
   },
   {
@@ -625,16 +609,9 @@ const stages = [
     legend: "<strong>Am I</strong> – שואלים על עצמכם (הדובר) &nbsp;·&nbsp; <strong>Is she</strong> – שואלים על אישה/בחורה שכבר הוזכרה בהקשר, ולא נמצאת מולכם &nbsp;·&nbsp; <strong>Is this</strong> – מצביעים או מראים על משהו/מישהו שנמצא ממש לפניכם עכשיו",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "אתם במסיבה. מצביעים ושואלים כל שאלה שתרצו על אנשים וחפצים סביבכם.",
     dialogueGrammar: "isAmThis",
-    dialogueReplies: [
-      "No, that's my cousin — my sister couldn't make it tonight.",
-      "Yeah, she just texted me — everything's fine.",
-      "Yes, that one's yours — I saved it for you earlier.",
-      "Careful, it's spicier than it looks!",
-      "She just left, so she should be here soon."
-    ],
+    storyCount: 4,
+    storyScenario: "You're on a hiking trip with a group, and the guide tells you a story about something strange that happened on a previous trip. Ask questions with Is she / Is this / Am I to understand the story.",
     questions: [
       { sentence: "Emma just got back from her trip. ___ tired?", answer: "Is she", options: ["Is she", "Is this", "Am I"], why: "מדובר על Emma (אישה) שכבר הוזכרה במשפט הקודם ואינה נוכחת מולכם, לכן Is she." },
       { sentence: "<em>(מצביעים על מחשב נייד על השולחן)</em> ___ yours?", answer: "Is this", options: ["Is she", "Is this", "Am I"], why: "מצביעים על חפץ ספציפי שנמצא ממש לפניכם, לכן Is this." },
@@ -666,11 +643,10 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Is she busy right now?", answers: ["היא עסוקה כרגע"], display: "היא עסוקה כרגע?" },
       { type: "translate", direction: "toHebrew", prompt: "Am I invited too?", answers: ["גם אני מוזמן", "גם אני מוזמנת"], display: "גם אני מוזמן?" },
       { type: "translate", direction: "toHebrew", prompt: "Is this the last one?", answers: ["זה האחרון", "זאת האחרונה"], display: "זה האחרון?" },
-      { type: "dialogue", instruction: "מצביעים על מישהו שנמצא ממש לידכם במסיבה — שאלו עליו, למשל האם זה חבר שלכם.", topic: ["this"], display: "Is this your friend?", reply: "No, that's my cousin — my sister couldn't make it tonight." },
-      { type: "dialogue", instruction: "מישהי שהזכרתם קודם ואינה נמצאת כאן — שאלו האם היא בסדר.", topic: ["she"], display: "Is she okay?", reply: "Yeah, she just texted me — everything's fine." },
-      { type: "dialogue", instruction: "שאלו שאלה על עצמכם — למשל האם אתם לבושים מתאים למסיבה.", display: "Am I dressed okay for this party?", reply: "You look great — no need to worry!" },
-      { type: "dialogue", instruction: "מצביעים על משהו שרואים ממש לפניכם, למשל אוכל על השולחן — שאלו עליו.", topic: ["this"], display: "Is this spicy?", reply: "Careful, it's spicier than it looks!" },
-      { type: "dialogue", instruction: "מצביעים על מישהו או משהו נוסף — שאלו כל שאלה שתרצו." }
+      { type: "dialogue", thread: "story", instruction: "מצביעים על שביל לפניכם ושואלים אם זה השביל הנכון להמשך הטיול.", topic: ["this", "trail", "path", "right"], display: "Is this the right trail?", reply: "Yes, this is exactly the trail I got lost on the last time — but don't worry, today the weather is much better." },
+      { type: "dialogue", thread: "story", instruction: "שאלתם על בחורה בקבוצה שהמדריך הזכיר קודם והלכה לאיבוד באותו טיול — שאלו אם היא בסדר עכשיו.", topic: ["she", "okay", "fine"], display: "Is she okay now?", reply: "She's totally fine now — we found her after about an hour, just sitting calmly by a big rock waiting for us." },
+      { type: "dialogue", thread: "story", instruction: "שואלים על עצמכם — האם אתם הולכים בקצב טוב.", topic: ["pace", "fast", "slow", "walking"], display: "Am I walking at a good pace?", reply: "You're doing great — actually a bit faster than most people on their first hike here." },
+      { type: "dialogue", thread: "story", instruction: "מצביעים על ענן כהה מרוחק ושואלים אם זו סערה שמתקרבת.", topic: ["this", "storm", "cloud", "coming"], display: "Is this a storm coming this way?", reply: "Good eye — that is a storm, but it's still far off. We'll be back at camp long before it reaches us." }
     ]
   },
   {
@@ -679,16 +655,9 @@ const stages = [
     legend: "<strong>Did</strong> – פועל עזר לשאלות בזמן עבר (yesterday, last night, already, this morning...) &nbsp;·&nbsp; <strong>Do</strong> – פועל עזר לשאלות בזמן הווה / הרגלים (usually, every day, always...)",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "אתם נפגשים עם חבר ותיק אחרי הרבה זמן. שאלו אותו כל שאלה שתרצו על העבר ועל ההווה.",
     dialogueGrammar: "didDo",
-    dialogueReplies: [
-      "Yes, finally — it took an extra year, but I got there.",
-      "No, I actually moved about a year ago.",
-      "I ran into a couple of them last month, actually.",
-      "Not every day anymore, but most weekends.",
-      "Not yet, but I keep meaning to — want to join me sometime?"
-    ],
+    storyCount: 4,
+    storyScenario: "An old friend tells you about the crazy year she's had — some things in the past, some things she still does today. Ask her questions with Did or Do to hear the whole story.",
     questions: [
       { sentence: "___ you go to the party last night?", answer: "Did", options: ["Did", "Do"], why: "המילה \"last night\" מציינת זמן עבר, לכן Did." },
       { sentence: "___ you like chocolate?", answer: "Do", options: ["Do", "Did"], why: "השאלה כללית בהווה ולא מציינת זמן עבר, לכן Do." },
@@ -720,11 +689,10 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Did he lose his keys?", answers: ["הוא איבד את המפתחות שלו"], display: "הוא איבד את המפתחות שלו?" },
       { type: "translate", direction: "toHebrew", prompt: "Do they celebrate this holiday?", answers: ["הם חוגגים את החג הזה"], display: "הם חוגגים את החג הזה?" },
       { type: "translate", direction: "toHebrew", prompt: "Did you enjoy the trip?", answers: ["נהנית מהטיול"], display: "נהנית מהטיול?" },
-      { type: "dialogue", instruction: "שאלו אותו משהו על העבר — למשל האם הוא סיים את התואר שלו.", topic: ["finish", "degree", "graduate"], display: "Did you finish your degree?", reply: "Yes, finally — it took an extra year, but I got there." },
-      { type: "dialogue", instruction: "שאלו אותו על ההווה שלו — למשל האם הוא עדיין גר באותה שכונה.", topic: ["live", "still"], display: "Do you still live in the same neighborhood?", reply: "No, I actually moved about a year ago." },
-      { type: "dialogue", instruction: "שאלו אותו עוד שאלה על העבר — למשל האם נתקל בחברים משותפים לאחרונה.", topic: ["friend", "run", "meet", "see"], display: "Did you run into any old friends recently?", reply: "I ran into a couple of them last month, actually." },
-      { type: "dialogue", instruction: "שאלו אותו עוד שאלה על הרגלים בהווה — למשל האם הוא עדיין משחק כדורגל.", topic: ["play", "still"], display: "Do you still play soccer?", reply: "Not every day anymore, but most weekends." },
-      { type: "dialogue", instruction: "שאלו אותו כל שאלה נוספת שתרצו." }
+      { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא עברה דירה השנה (עבר).", topic: ["move", "house", "apartment"], display: "Did you move this year?", reply: "I did — twice, actually! First to a tiny studio downtown, and then a few months later to a bigger place with my partner." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא עדיין עובדת באותה עבודה (הווה).", topic: ["still", "work", "job"], display: "Do you still work at the same job?", reply: "Nope, I actually quit in the spring and started my own small business — it's terrifying but exciting." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא נסעה לחו״ל השנה (עבר).", topic: ["travel", "abroad", "trip"], display: "Did you travel abroad this year?", reply: "Just once, to visit my sister in Portugal — we spent two weeks exploring the coast together." },
+      { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא עדיין מדברת עם החברים מהעבודה הישנה (הווה).", topic: ["still", "talk", "friends", "old"], display: "Do you still talk to your friends from the old job?", reply: "Every week, actually — we even started a small group chat just to keep each other updated on everything." }
     ]
   },
   {
@@ -733,16 +701,9 @@ const stages = [
     legend: "<strong>Didn't</strong> – שלילה בזמן עבר, מתאים לכל הגופים (I, you, he, she, we, they) &nbsp;·&nbsp; <strong>Doesn't</strong> – שלילה בזמן הווה, רק עם גוף שלישי יחיד (he / she / it)",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "החבר שלכם שואל אתכם כמה שאלות. ענו לו בכל משפט שלילי שתרצו עם Didn't או Doesn't.",
     dialogueGrammar: "negatives",
-    dialogueReplies: [
-      "Ah, I see — thanks for explaining.",
-      "Got it, that makes sense.",
-      "Oh really? Good to know.",
-      "No worries at all.",
-      "Fair enough!"
-    ],
+    storyCount: 4,
+    storyScenario: "Your friend tells you why you two missed each other on the last trip. Answer him with negative sentences using Didn't or Doesn't to understand what happened.",
     questions: [
       { sentence: "She ___ like spicy food.", answer: "Doesn't", options: ["Doesn't", "Didn't"], why: "זמן הווה עם גוף שלישי יחיד (She), לכן Doesn't." },
       { sentence: "She ___ go to work yesterday because she was sick.", answer: "Didn't", options: ["Didn't", "Doesn't"], why: "המילה \"yesterday\" מציינת זמן עבר, לכן Didn't." },
@@ -774,11 +735,10 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "You didn't answer my question.", answers: ["לא ענית על השאלה שלי"], display: "לא ענית על השאלה שלי." },
       { type: "translate", direction: "toHebrew", prompt: "This app doesn't work offline.", answers: ["האפליקציה הזאת לא עובדת אופליין", "האפליקציה הזאת לא עובדת בלי אינטרנט"], display: "האפליקציה הזאת לא עובדת אופליין." },
       { type: "translate", direction: "toHebrew", prompt: "I didn't notice the mistake.", answers: ["לא שמתי לב לטעות"], display: "לא שמתי לב לטעות." },
-      { type: "dialogue", theyAsk: "Why didn't you come to the party?", instruction: "ענו לו שלא הגעתם כי הייתם חולים.", display: "I didn't come because I was sick.", reply: "Ah, I see — thanks for explaining." },
-      { type: "dialogue", theyAsk: "Does your brother like spicy food?", instruction: "עני/ה שהאח שלך לא אוהב אוכל חריף.", display: "No, he doesn't like spicy food.", reply: "Got it, that makes sense." },
-      { type: "dialogue", theyAsk: "Did you two finish the project?", instruction: "עני/ה שלא סיימתם את הפרויקט.", display: "No, we didn't finish the project.", reply: "No worries at all." },
-      { type: "dialogue", theyAsk: "Does the store open on Sundays?", instruction: "עני/ה שהחנות לא פתוחה בימי ראשון.", display: "No, it doesn't open on Sundays.", reply: "Fair enough!" },
-      { type: "dialogue", theyAsk: "Did she call you back yet?", instruction: "עני/ה שהיא עדיין לא התקשרה בחזרה.", display: "No, she didn't call me back yet.", reply: "Oh really? Good to know." }
+      { type: "dialogue", thread: "story", theyAsk: "Did you get my message about the trip?", instruction: "עני/ה שלא קיבלת את ההודעה שלו (בגלל זה פספסת את הטיול).", display: "No, I didn't get your message.", reply: "That explains it! I texted you the new meeting time, but I guess it never went through." },
+      { type: "dialogue", thread: "story", theyAsk: "Does your phone usually work fine?", instruction: "עני/ה שהטלפון שלך בדרך כלל לא עובד טוב באזורים כאלה (בלי קליטה).", display: "No, it doesn't work well in areas without signal.", reply: "Ah, that makes sense — we were pretty deep in the mountains." },
+      { type: "dialogue", thread: "story", theyAsk: "Did the rest of the group wait for you?", instruction: "עני/ה שהם לא חיכו לך, כי הם לא ידעו שפספסת את ההודעה.", display: "No, they didn't wait for me.", reply: "I felt so bad when I realized — I promise we'll plan better next time." },
+      { type: "dialogue", thread: "story", theyAsk: "Does this kind of thing happen to you a lot?", instruction: "עני/ה שזה לא קורה לך הרבה, זו הייתה פשוט ביש מזל.", display: "No, it doesn't happen to me a lot.", reply: "Good to know — let's just double check everyone's signal before the next trip." }
     ]
   },
   {
@@ -787,9 +747,9 @@ const stages = [
     legend: "<strong>Yes, ... do/does/did.</strong> – תשובה חיובית, אותו פועל עזר שהופיע בשאלה &nbsp;·&nbsp; <strong>No, ... don't/doesn't/didn't.</strong> – תשובה שלילית, אותו פועל עזר בצורה שלילית &nbsp;·&nbsp; שימו לב: כששואלים עם You, עונים עם I.",
     mcCount: 10,
     orderCount: 10,
-    dialogueCount: 5,
-    dialogueScenario: "עונים בקצרה על שאלות Yes/No — ובהתאם לתשובה שלכם, השיחה ממשיכה לכיוון אחר.",
     dialogueGrammar: "shortAnswers",
+    storyCount: 4,
+    storyScenario: "Your friend asks you about your last camping trip. Answer with correct short answers and find out where the conversation goes.",
     questions: [
       { sentence: "Does she like coffee?", answer: "Yes, she does.", options: ["Yes, she does.", "Yes, she do.", "Yes, she doesn't."], why: "בתשובה קצרה חוזרים על אותו פועל עזר שבשאלה (Does), בלי לשנות אותו." },
       { sentence: "Do you speak French?", answer: "No, I don't.", options: ["No, I don't.", "No, I doesn't.", "No, you don't."], why: "עם I משתמשים ב-Do/Don't; והנושא בתשובה הוא I, לא You." },
@@ -821,11 +781,10 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "No, you didn't.", answers: ["לא, אתה לא"], display: "לא, אתה לא." },
       { type: "translate", direction: "toHebrew", prompt: "Yes, they did.", answers: ["כן, הם כן"], display: "כן, הם כן." },
       { type: "translate", direction: "toHebrew", prompt: "No, he doesn't.", answers: ["לא, הוא לא"], display: "לא, הוא לא." },
-      { type: "dialogue", theyAsk: "Do you like coffee?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Nice — how many cups do you usually have in a day?", noReply: "Really? What do you drink in the morning instead?" },
-      { type: "dialogue", theyAsk: "Does your best friend live nearby?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "That's convenient — do you see each other often?", noReply: "Oh, how far away do they live?" },
-      { type: "dialogue", theyAsk: "Did you sleep well last night?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Good to hear — what time did you wake up?", noReply: "Sorry to hear that — what kept you up?" },
-      { type: "dialogue", theyAsk: "Do your parents like traveling?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Nice — where was the last place they went?", noReply: "Interesting — what do they prefer doing instead?" },
-      { type: "dialogue", theyAsk: "Did your team win the game?", instruction: "ענו בתשובה קצרה נכונה — Yes או No, לפי בחירתכם, עם אותו פועל עזר מהשאלה.", yesReply: "Congratulations! Was it a close game?", noReply: "That's a shame — what went wrong?" }
+      { type: "dialogue", thread: "story", theyAsk: "Did you enjoy the camping trip?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "That's great to hear — was the campfire story time your favorite part?", noReply: "Oh no, what happened — was it the weather?" },
+      { type: "dialogue", thread: "story", theyAsk: "Does your family usually go camping every summer?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "That's a lovely tradition — do you always go to the same spot?", noReply: "Ah, so this was something new for you all?" },
+      { type: "dialogue", thread: "story", theyAsk: "Did you see any wildlife out there?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "Really? What kind of animals did you spot?", noReply: "Too bad — maybe next time you'll get lucky." },
+      { type: "dialogue", thread: "story", theyAsk: "Do you think you'll go camping again next year?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "Nice — maybe you'll have an even better story to tell next time!", noReply: "Fair enough — camping isn't for everyone." }
     ]
   }
 ];
@@ -835,6 +794,37 @@ let current = 0;
 let score = 0;
 let dialogueLog = {};
 let dialogueLastReply = {};
+let stageProgress = {};
+let sectionProgress = {};
+
+const STORAGE_KEY = "questionWordsQuizProgress";
+
+function saveProgress() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress }));
+  } catch (e) {}
+}
+
+function loadProgress() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (typeof data.stageIndex === "number" && typeof data.current === "number" && typeof data.score === "number" &&
+        data.stageIndex >= 0 && data.stageIndex < stages.length &&
+        data.current >= 0 && data.current <= stages[data.stageIndex].questions.length) {
+      stageIndex = data.stageIndex;
+      current = data.current;
+      score = data.score;
+      if (data.stageProgress && typeof data.stageProgress === "object") {
+        stageProgress = data.stageProgress;
+      }
+      if (data.sectionProgress && typeof data.sectionProgress === "object") {
+        sectionProgress = data.sectionProgress;
+      }
+    }
+  } catch (e) {}
+}
 
 const DIALOGUE_API_URL = ""; // paste your deployed Cloudflare Worker URL here to enable AI-powered replies
 
@@ -844,7 +834,7 @@ async function getDialogueResponse(stage, log, message) {
     const resp = await fetch(DIALOGUE_API_URL, {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ scenario: stage.dialogueScenario, grammarFocus: stage.title, history: log, message })
+      body: JSON.stringify({ scenario: stage.storyScenario, grammarFocus: stage.title, history: log, message })
     });
     if (!resp.ok) return null;
     const data = await resp.json();
@@ -904,12 +894,15 @@ function renderTabs() {
 }
 
 function goToStage(i) {
+  stageProgress[stageIndex] = current;
   stageIndex = i;
-  current = 0;
+  current = stageProgress[i] || 0;
   render();
 }
 
 function render() {
+  stageProgress[stageIndex] = current;
+  saveProgress();
   const card = document.getElementById("quizCard");
   const stage = stages[stageIndex];
   renderTabs();
@@ -919,6 +912,10 @@ function render() {
   document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} / ${stages.length}`;
 
   const sections = getSections(stage);
+  if (current < stage.questions.length) {
+    const activeSec = sections.find(s => current >= s.start && current < s.start + s.len) || sections[sections.length - 1];
+    sectionProgress[stageIndex + ":" + activeSec.start] = current;
+  }
   renderSubTabs(sections);
 
   if (current < stage.questions.length) {
@@ -998,19 +995,21 @@ function render() {
   }
 
   if (q.type === "dialogue") {
-    const sec = sections.find(s => s.label === "Dialogue");
-    if (current === sec.start) dialogueLog[stageIndex] = [];
-    const log = dialogueLog[stageIndex] || [];
+    const logKey = stageIndex + ":" + (q.thread || "story");
+    const sec = sections.find(s => current >= s.start && current < s.start + s.len) || sections[sections.length - 1];
+    if (current === sec.start) dialogueLog[logKey] = [];
+    const log = dialogueLog[logKey] || [];
+    const scenarioText = q.scenario || stage.storyScenario;
     const liveTurn = q.theyAsk ? [{ who: "them", text: q.theyAsk }] : [];
     card.innerHTML = `
-      <div class="dialogue-scenario">${stage.dialogueScenario}</div>
+      <div class="dialogue-scenario">${scenarioText}</div>
       <div class="dialogue-log">${renderDialogueLog(log.concat(liveTurn))}</div>
       <div class="dialogue-cue"><strong>${q.theyAsk ? "מה לענות:" : "מה להגיד:"}</strong> ${q.instruction}</div>
       <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
       <div class="hint" id="hint"></div>
       <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
     `;
-    renderDialogueQuestion(q, stage);
+    renderDialogueQuestion(q, stage, logKey);
     return;
   }
 
@@ -1033,15 +1032,21 @@ function render() {
 function getSections(stage) {
   const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
   const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
-  const dialogueCount = typeof stage.dialogueCount === "number" ? stage.dialogueCount : 0;
-  const translateCount = stage.questions.length - mcCount - orderCount - dialogueCount;
+  const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
+  const translateCount = stage.questions.length - mcCount - orderCount - storyCount;
 
   const sections = [];
   let pos = 0;
   if (mcCount > 0) { sections.push({ label: "Regular Questions", start: pos, len: mcCount }); pos += mcCount; }
   if (orderCount > 0) { sections.push({ label: "Word Order", start: pos, len: orderCount }); pos += orderCount; }
-  if (translateCount > 0) { sections.push({ label: "Translation", start: pos, len: translateCount }); pos += translateCount; }
-  if (dialogueCount > 0) { sections.push({ label: "Dialogue", start: pos, len: dialogueCount }); pos += dialogueCount; }
+  if (translateCount > 0) {
+    const translateQs = stage.questions.slice(pos, pos + translateCount);
+    const toEnglishLen = translateQs.filter(q => q.direction === "toEnglish").length;
+    const toHebrewLen = translateCount - toEnglishLen;
+    if (toEnglishLen > 0) { sections.push({ label: "Hebrew → English", start: pos, len: toEnglishLen }); pos += toEnglishLen; }
+    if (toHebrewLen > 0) { sections.push({ label: "English → Hebrew", start: pos, len: toHebrewLen }); pos += toHebrewLen; }
+  }
+  if (storyCount > 0) { sections.push({ label: "Dialogue", start: pos, len: storyCount }); pos += storyCount; }
   return sections;
 }
 
@@ -1055,7 +1060,12 @@ function renderSubTabs(sections) {
     return `<button class="sub-tab${active ? " active" : ""}" data-start="${s.start}">${s.label}</button>`;
   }).join("");
   el.querySelectorAll(".sub-tab").forEach(btn => {
-    btn.onclick = () => { current = Number(btn.dataset.start); render(); };
+    btn.onclick = () => {
+      const start = Number(btn.dataset.start);
+      const key = stageIndex + ":" + start;
+      current = sectionProgress[key] !== undefined ? sectionProgress[key] : start;
+      render();
+    };
   });
 }
 
@@ -1243,6 +1253,7 @@ function renderTranslateQuestion(q) {
     if (isCorrect) { score++; playCorrectSound(); }
     else { playWrongSound(); }
     document.getElementById("scorelive").textContent = score;
+    saveProgress();
 
     btn.textContent = "Next →";
     btn.onclick = () => { current++; render(); };
@@ -1290,13 +1301,7 @@ function pickReply(stage) {
   return pool[idx];
 }
 
-function checkTopic(tokens, topic) {
-  if (!topic || !topic.length) return true;
-  const joined = tokens.join(" ");
-  return topic.some(kw => joined.includes(kw));
-}
-
-function renderDialogueQuestion(q, stage) {
+function renderDialogueQuestion(q, stage, logKey) {
   const input = document.getElementById("translateInput");
   const btn = document.getElementById("checkBtn");
 
@@ -1307,7 +1312,7 @@ function renderDialogueQuestion(q, stage) {
     btn.disabled = true;
     document.getElementById("hint").textContent = DIALOGUE_API_URL ? "…" : "";
 
-    const log = dialogueLog[stageIndex] || (dialogueLog[stageIndex] = []);
+    const log = dialogueLog[logKey] || (dialogueLog[logKey] = []);
     const aiResult = await getDialogueResponse(stage, log, raw);
 
     let result, reply;
@@ -1317,14 +1322,7 @@ function renderDialogueQuestion(q, stage) {
     } else {
       const tokens = tokenize(raw);
       const checker = GRAMMAR_CHECKERS[stage.dialogueGrammar];
-      const grammarResult = checker ? checker(tokens, q.theyAsk) : { ok: true };
-      if (!grammarResult.ok) {
-        result = grammarResult;
-      } else if (!checkTopic(tokens, q.topic)) {
-        result = { ok: false, note: `דקדוקית זה תקין, אבל זה לא מה שהתבקשתם לומר. ${q.display ? `דוגמה: "${q.display}"` : ""}` };
-      } else {
-        result = grammarResult;
-      }
+      result = checker ? checker(tokens, q.theyAsk) : { ok: true };
       reply = (q.yesReply || q.noReply) ? (result.answerType === "no" ? q.noReply : q.yesReply) : (q.reply || pickReply(stage));
     }
 
@@ -1337,6 +1335,7 @@ function renderDialogueQuestion(q, stage) {
     if (result.ok) { score++; playCorrectSound(); }
     else { playWrongSound(); }
     document.getElementById("scorelive").textContent = score;
+    saveProgress();
 
     btn.textContent = "Next →";
     btn.onclick = () => {
@@ -1403,6 +1402,7 @@ function renderOrderQuestion(q) {
     if (isCorrect) { score++; playCorrectSound(); }
     else { playWrongSound(); }
     document.getElementById("scorelive").textContent = score;
+    saveProgress();
     document.getElementById("nextBtn").classList.add("show");
     document.getElementById("nextBtn").onclick = () => {
       current++;
@@ -1435,6 +1435,7 @@ function selectAnswer(btn, q) {
     playWrongSound();
   }
   document.getElementById("scorelive").textContent = score;
+  saveProgress();
   document.getElementById("nextBtn").classList.add("show");
   document.getElementById("nextBtn").onclick = () => {
     current++;
@@ -1446,8 +1447,12 @@ function restart() {
   stageIndex = 0;
   current = 0;
   score = 0;
+  stageProgress = {};
+  sectionProgress = {};
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   render();
 }
 
+loadProgress();
 render();
 </script>
