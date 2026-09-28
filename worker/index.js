@@ -29,6 +29,10 @@ export default {
       return new Response("Method not allowed", { status: 405, headers: corsHeaders() });
     }
 
+    if (env.APP_TOKEN && request.headers.get("x-app-token") !== env.APP_TOKEN) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders(), "content-type": "application/json" } });
+    }
+
     let body;
     try {
       body = await request.json();
@@ -36,7 +40,8 @@ export default {
       return new Response(JSON.stringify({ error: "Invalid JSON" }), { status: 400, headers: { ...corsHeaders(), "content-type": "application/json" } });
     }
 
-    const { scenario, grammarFocus, history, message } = body || {};
+    const { scenario, grammarFocus, history, message, mode } = body || {};
+    const isFree = mode === "free";
     if (typeof message !== "string" || !message.trim() || message.length > 300) {
       return new Response(JSON.stringify({ error: "Invalid message" }), { status: 400, headers: { ...corsHeaders(), "content-type": "application/json" } });
     }
@@ -48,15 +53,19 @@ export default {
 Scenario: ${scenario}
 The student is practicing this grammar point: ${grammarFocus}
 
-Stay fully in character. Look at the student's latest message and judge whether it is grammatically correct with respect to the target grammar point above (minor unrelated issues can be ignored). Then write a short, natural, in-character reply that responds to what they actually asked or said, and that invites a follow-up question. Keep the reply to 1-2 short sentences of plain English.`;
+Stay fully in character. Look at the student's latest message and judge whether it is grammatically correct with respect to the target grammar point above (minor unrelated issues can be ignored). Then write a short, natural, in-character reply that responds to what they actually asked or said, and that invites a follow-up question. Keep the reply to 1-2 short sentences of plain English.${isFree ? `
+
+This is a FREE conversation: the student can ask you anything at all. Always answer exactly what they asked, directly and specifically. Invent realistic personal details when needed and stay consistent with everything you said earlier in the conversation. If the question is off-topic, still answer it in character. Judge grammar_ok on general English grammar as well as the target grammar point; ignore missing capital letters and punctuation. Use simple English suitable for an intermediate learner.` : ""}`;
 
     const messages = [
-      ...(Array.isArray(history) ? history.slice(-8).map(h => ({
+      ...(Array.isArray(history) ? history.slice(isFree ? -30 : -8).map(h => ({
         role: h.who === "you" ? "user" : "assistant",
         content: String(h.text || "").slice(0, 500)
       })) : []),
       { role: "user", content: message }
     ];
+    // The Messages API requires the conversation to start with a user turn
+    while (messages.length > 1 && messages[0].role === "assistant") messages.shift();
 
     try {
       const apiResp = await fetch("https://api.anthropic.com/v1/messages", {

@@ -246,6 +246,7 @@
 
   .sub-tabs {
     display: flex;
+    flex-wrap: wrap;
     gap: .5rem;
     margin-bottom: 1.25rem;
   }
@@ -361,6 +362,133 @@
     border-color: var(--wrong);
     background: var(--wrong-bg);
     color: var(--wrong);
+  }
+
+  .speak-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .6rem;
+    margin-bottom: .5rem;
+  }
+  .mic-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: 2px solid var(--accent);
+    background: var(--accent-soft);
+    font-size: 1.9rem;
+    cursor: pointer;
+    transition: transform .12s ease, background .15s;
+  }
+  .mic-btn:hover:not(:disabled) { transform: scale(1.05); }
+  .mic-btn:disabled { opacity: .4; cursor: default; }
+  .mic-btn.listening {
+    background: var(--wrong-bg);
+    border-color: var(--wrong);
+    animation: pulse 1.1s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 0 var(--wrong-bg); }
+    50% { box-shadow: 0 0 0 10px transparent; }
+  }
+  .speak-status {
+    font-size: .88rem;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .heard {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1rem;
+    direction: ltr;
+    text-align: center;
+  }
+  .chat-input-row {
+    display: flex;
+    gap: .5rem;
+    align-items: flex-start;
+  }
+  .chat-input-row .translate-input { flex: 1; margin-bottom: 0; }
+  .chat-send, .chat-mic {
+    padding: .75rem 1rem;
+    border-radius: 3px;
+    border: 1.5px solid var(--accent);
+    background: var(--accent);
+    color: var(--paper);
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .chat-mic { background: var(--accent-soft); padding: .7rem .8rem; }
+  .chat-mic.listening { background: var(--wrong-bg); border-color: var(--wrong); }
+  .chat-send:disabled, .chat-mic:disabled { opacity: .4; cursor: default; }
+  .chat-note {
+    align-self: flex-end;
+    font-size: .8rem;
+    direction: rtl;
+    text-align: right;
+    max-width: 80%;
+    margin-top: -.3rem;
+  }
+  .chat-note.ok { color: var(--correct); }
+  .chat-note.bad { color: var(--wrong); }
+  .chat-footer {
+    justify-content: space-between;
+    align-items: center;
+    font-size: .8rem;
+    color: var(--ink-soft);
+  }
+  .speak-head { display: flex; justify-content: space-between; gap: 1rem; }
+  .speak-head #speakAvg { color: var(--accent); font-weight: 700; }
+  .speak-result:not(:empty) {
+    border-top: 1px solid var(--rule);
+    margin-top: .75rem;
+    padding-top: 1rem;
+    text-align: center;
+  }
+  .speak-score {
+    font-family: Georgia, serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .speak-score.good { color: var(--correct); }
+  .speak-score.mid { color: var(--highlight); }
+  .speak-score.low { color: var(--wrong); }
+  .speak-breakdown {
+    font-size: .8rem;
+    color: var(--ink-soft);
+    margin-bottom: .75rem;
+  }
+  .speak-target {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 1.15rem;
+    direction: ltr;
+    margin-bottom: .75rem;
+  }
+  .word-ok { color: var(--correct); }
+  .word-bad {
+    color: var(--wrong);
+    font-weight: 700;
+    text-decoration: underline wavy;
+    text-underline-offset: 4px;
+  }
+  .speak-notes {
+    direction: rtl;
+    text-align: right;
+    font-size: .88rem;
+    color: var(--wrong);
+    margin: 0;
+    padding: 0 1.2rem 0 0;
+    line-height: 1.6;
+  }
+  .speak-notes.perfect { color: var(--correct); text-align: center; padding: 0; }
+  .skip-link {
+    background: none;
+    border: none;
+    color: var(--ink-soft);
+    font-size: .8rem;
+    text-decoration: underline;
+    cursor: pointer;
   }
 
   .order-label {
@@ -484,6 +612,7 @@
 
   @media (prefers-reduced-motion: reduce) {
     .bar-fill, button.next { transition: none; }
+    .mic-btn.listening { animation: none; }
   }
 </style>
 
@@ -518,6 +647,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "questionWords",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "A close friend of yours just got back from a week-long team-building trip in the mountains, and he has a fascinating story to tell. Ask him questions to find out all the details.",
     questions: [
@@ -551,6 +681,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "How often do you exercise?", answers: ["כמה פעמים אתה מתאמן", "כמה פעמים את מתאמנת", "באיזה תדירות אתה מתאמן", "באיזו תדירות את מתאמנת"], display: "כמה פעמים אתה מתאמן?" },
       { type: "translate", direction: "toHebrew", prompt: "Who is your best friend?", answers: ["מי החבר הכי טוב שלך", "מי החברה הכי טובה שלך"], display: "מי החבר הכי טוב שלך?" },
       { type: "translate", direction: "toHebrew", prompt: "Whose idea was this?", answers: ["של מי היה הרעיון הזה"], display: "של מי היה הרעיון הזה?" },
+      { type: "speak", prompt: "איפה אתה עובד?", answers: ["where do you work"], display: "Where do you work?" },
+      { type: "speak", prompt: "למה אתה עצוב?", answers: ["why are you sad"], display: "Why are you sad?" },
+      { type: "speak", prompt: "מי זה?", answers: ["who is that", "who is this", "who is it"], display: "Who is that?" },
+      { type: "speak", prompt: "באיזו שעה אתה קם?", answers: ["what time do you wake up", "what time do you get up"], display: "What time do you wake up?" },
+      { type: "speak", prompt: "איך הגעת לכאן?", answers: ["how did you get here", "how did you come here"], display: "How did you get here?" },
+      { type: "speak", prompt: "מה השם של אחותך?", answers: ["what is your sister's name"], display: "What is your sister's name?" },
+      { type: "speak", prompt: "מתי הרכבת יוצאת?", answers: ["when does the train leave"], display: "When does the train leave?" },
+      { type: "speak", prompt: "למה הוא צוחק?", answers: ["why is he laughing"], display: "Why is he laughing?" },
+      { type: "speak", prompt: "של מי הכלב הזה?", answers: ["whose dog is this", "whose dog is that"], display: "Whose dog is this?" },
+      { type: "speak", prompt: "כמה זמן זה לוקח?", answers: ["how long does it take", "how long does this take", "how long does that take"], display: "How long does it take?" },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו לאן הוא נסע בטיול.", topic: ["where", "go", "trip", "hike"], display: "Where did you go on the trip?", reply: "We hiked up in the northern mountains for five days. On the third night, a huge storm hit our camp and we had to move everyone into one big tent until morning." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו מתי קרתה הסערה.", topic: ["when", "storm", "happen"], display: "When did the storm happen?", reply: "It happened right in the middle of the night, around two or three in the morning — everyone woke up soaked and freezing." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו למה הם לא חזרו הביתה מוקדם יותר, למרות הסערה.", topic: ["why", "go", "back", "home", "return", "leave"], display: "Why didn't you go back home earlier?", reply: "Actually, by morning the sky was completely clear again, so the guide decided it was safe to keep going — and honestly, it became the best part of the whole trip." },
@@ -564,6 +704,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "doAre",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "The new neighbor from upstairs invites you over for dinner and tells you about his family. Ask him questions to get to know them better.",
     questions: [
@@ -597,6 +738,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Are your parents strict?", answers: ["ההורים שלך מחמירים", "ההורים שלך קפדנים"], display: "ההורים שלך מחמירים?" },
       { type: "translate", direction: "toHebrew", prompt: "Do you two get along?", answers: ["אתם שניכם מסתדרים", "אתם מסתדרים"], display: "אתם שניכם מסתדרים?" },
       { type: "translate", direction: "toHebrew", prompt: "Are we allowed to swim here?", answers: ["מותר לנו לשחות כאן"], display: "מותר לנו לשחות כאן?" },
+      { type: "speak", prompt: "אתה עייף?", answers: ["are you tired"], display: "Are you tired?" },
+      { type: "speak", prompt: "אתה מדבר אנגלית?", answers: ["do you speak english"], display: "Do you speak English?" },
+      { type: "speak", prompt: "הם בבית?", answers: ["are they at home", "are they home"], display: "Are they at home?" },
+      { type: "speak", prompt: "אתם גרים קרוב?", answers: ["do you live nearby", "do you live close", "do you live close by", "do you live near here"], display: "Do you live nearby?" },
+      { type: "speak", prompt: "אתם חברים?", answers: ["are you friends"], display: "Are you friends?" },
+      { type: "speak", prompt: "אתה רעב?", answers: ["are you hungry"], display: "Are you hungry?" },
+      { type: "speak", prompt: "אתם משחקים כדורגל?", answers: ["do you play soccer", "do you play football"], display: "Do you play soccer?" },
+      { type: "speak", prompt: "הילדים בבית הספר?", answers: ["are the kids at school", "are the children at school", "are the kids in school", "are the children in school"], display: "Are the kids at school?" },
+      { type: "speak", prompt: "אתם צריכים עזרה?", answers: ["do you need help", "do you need any help"], display: "Do you need help?" },
+      { type: "speak", prompt: "אתם עסוקים?", answers: ["are you busy"], display: "Are you busy?" },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו אם ההורים שלו גרים בעיר הזאת.", topic: ["parents", "live"], display: "Do your parents live in this city?", reply: "They do, actually — just ten minutes from here. My mom still cooks Friday dinner for the whole family every week." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו אם האחים שלו חברותיים.", topic: ["siblings", "brother", "sister", "friendly"], display: "Are your siblings friendly?", reply: "Very friendly — my younger sister actually organizes a big family game night every month, and everyone always shows up." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותו אם הוא מבשל בעצמו בדרך כלל.", topic: ["cook", "yourself"], display: "Do you usually cook yourself?", reply: "Not really — I'm still learning. My mom's the real chef in the family; I mostly just set the table." },
@@ -610,6 +761,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "isAmThis",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "You're on a hiking trip with a group, and the guide tells you a story about something strange that happened on a previous trip. Ask questions with Is she / Is this / Am I to understand the story.",
     questions: [
@@ -643,6 +795,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Is she busy right now?", answers: ["היא עסוקה כרגע"], display: "היא עסוקה כרגע?" },
       { type: "translate", direction: "toHebrew", prompt: "Am I invited too?", answers: ["גם אני מוזמן", "גם אני מוזמנת"], display: "גם אני מוזמן?" },
       { type: "translate", direction: "toHebrew", prompt: "Is this the last one?", answers: ["זה האחרון", "זאת האחרונה"], display: "זה האחרון?" },
+      { type: "speak", prompt: "זה הטלפון שלך?", answers: ["is this your phone", "is that your phone"], display: "Is this your phone?" },
+      { type: "speak", prompt: "היא אחותך?", answers: ["is she your sister"], display: "Is she your sister?" },
+      { type: "speak", prompt: "אני צודק?", answers: ["am i right"], display: "Am I right?" },
+      { type: "speak", prompt: "הוא בבית?", answers: ["is he at home", "is he home"], display: "Is he at home?" },
+      { type: "speak", prompt: "אני בזמן?", answers: ["am i on time"], display: "Am I on time?" },
+      { type: "speak", prompt: "זה המפתח שלך?", answers: ["is this your key", "is that your key"], display: "Is this your key?" },
+      { type: "speak", prompt: "היא חולה?", answers: ["is she sick", "is she ill"], display: "Is she sick?" },
+      { type: "speak", prompt: "אני במקום הנכון?", answers: ["am i in the right place", "am i at the right place"], display: "Am I in the right place?" },
+      { type: "speak", prompt: "זה רחוק?", answers: ["is it far", "is this far", "is that far"], display: "Is it far?" },
+      { type: "speak", prompt: "אני מדבר מהר מדי?", answers: ["am i talking too fast", "am i speaking too fast"], display: "Am I talking too fast?" },
       { type: "dialogue", thread: "story", instruction: "מצביעים על שביל לפניכם ושואלים אם זה השביל הנכון להמשך הטיול.", topic: ["this", "trail", "path", "right"], display: "Is this the right trail?", reply: "Yes, this is exactly the trail I got lost on the last time — but don't worry, today the weather is much better." },
       { type: "dialogue", thread: "story", instruction: "שאלתם על בחורה בקבוצה שהמדריך הזכיר קודם והלכה לאיבוד באותו טיול — שאלו אם היא בסדר עכשיו.", topic: ["she", "okay", "fine"], display: "Is she okay now?", reply: "She's totally fine now — we found her after about an hour, just sitting calmly by a big rock waiting for us." },
       { type: "dialogue", thread: "story", instruction: "שואלים על עצמכם — האם אתם הולכים בקצב טוב.", topic: ["pace", "fast", "slow", "walking"], display: "Am I walking at a good pace?", reply: "You're doing great — actually a bit faster than most people on their first hike here." },
@@ -656,6 +818,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "didDo",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "An old friend tells you about the crazy year she's had — some things in the past, some things she still does today. Ask her questions with Did or Do to hear the whole story.",
     questions: [
@@ -689,6 +852,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "Did he lose his keys?", answers: ["הוא איבד את המפתחות שלו"], display: "הוא איבד את המפתחות שלו?" },
       { type: "translate", direction: "toHebrew", prompt: "Do they celebrate this holiday?", answers: ["הם חוגגים את החג הזה"], display: "הם חוגגים את החג הזה?" },
       { type: "translate", direction: "toHebrew", prompt: "Did you enjoy the trip?", answers: ["נהנית מהטיול"], display: "נהנית מהטיול?" },
+      { type: "speak", prompt: "ראית את הסרט?", answers: ["did you see the movie", "did you watch the movie", "did you see the film", "did you watch the film"], display: "Did you see the movie?" },
+      { type: "speak", prompt: "אתה שותה קפה?", answers: ["do you drink coffee"], display: "Do you drink coffee?" },
+      { type: "speak", prompt: "הם הגיעו בזמן?", answers: ["did they arrive on time", "did they come on time", "did they get here on time"], display: "Did they arrive on time?" },
+      { type: "speak", prompt: "אתה עובד כל יום?", answers: ["do you work every day"], display: "Do you work every day?" },
+      { type: "speak", prompt: "היא התקשרה אליך?", answers: ["did she call you"], display: "Did she call you?" },
+      { type: "speak", prompt: "אכלת ארוחת בוקר?", answers: ["did you eat breakfast", "did you have breakfast"], display: "Did you eat breakfast?" },
+      { type: "speak", prompt: "אתה מכיר אותו?", answers: ["do you know him"], display: "Do you know him?" },
+      { type: "speak", prompt: "הוא סיים את העבודה?", answers: ["did he finish the work", "did he finish the job", "did he finish work"], display: "Did he finish the work?" },
+      { type: "speak", prompt: "אתה אוהב לרקוד?", answers: ["do you like to dance", "do you like dancing"], display: "Do you like to dance?" },
+      { type: "speak", prompt: "שמעת את החדשות?", answers: ["did you hear the news"], display: "Did you hear the news?" },
       { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא עברה דירה השנה (עבר).", topic: ["move", "house", "apartment"], display: "Did you move this year?", reply: "I did — twice, actually! First to a tiny studio downtown, and then a few months later to a bigger place with my partner." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא עדיין עובדת באותה עבודה (הווה).", topic: ["still", "work", "job"], display: "Do you still work at the same job?", reply: "Nope, I actually quit in the spring and started my own small business — it's terrifying but exciting." },
       { type: "dialogue", thread: "story", instruction: "שאלו אותה אם היא נסעה לחו״ל השנה (עבר).", topic: ["travel", "abroad", "trip"], display: "Did you travel abroad this year?", reply: "Just once, to visit my sister in Portugal — we spent two weeks exploring the coast together." },
@@ -702,6 +875,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "negatives",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "Your friend tells you why you two missed each other on the last trip. Answer him with negative sentences using Didn't or Doesn't to understand what happened.",
     questions: [
@@ -735,6 +909,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "You didn't answer my question.", answers: ["לא ענית על השאלה שלי"], display: "לא ענית על השאלה שלי." },
       { type: "translate", direction: "toHebrew", prompt: "This app doesn't work offline.", answers: ["האפליקציה הזאת לא עובדת אופליין", "האפליקציה הזאת לא עובדת בלי אינטרנט"], display: "האפליקציה הזאת לא עובדת אופליין." },
       { type: "translate", direction: "toHebrew", prompt: "I didn't notice the mistake.", answers: ["לא שמתי לב לטעות"], display: "לא שמתי לב לטעות." },
+      { type: "speak", prompt: "הוא לא אוהב קפה.", answers: ["he doesn't like coffee"], display: "He doesn't like coffee." },
+      { type: "speak", prompt: "לא ראיתי אותו.", answers: ["i didn't see him"], display: "I didn't see him." },
+      { type: "speak", prompt: "היא לא גרה כאן.", answers: ["she doesn't live here"], display: "She doesn't live here." },
+      { type: "speak", prompt: "הם לא הגיעו.", answers: ["they didn't come", "they didn't arrive", "they didn't show up"], display: "They didn't come." },
+      { type: "speak", prompt: "זה לא עובד.", answers: ["it doesn't work"], display: "It doesn't work." },
+      { type: "speak", prompt: "הוא לא צריך עזרה.", answers: ["he doesn't need help", "he doesn't need any help"], display: "He doesn't need help." },
+      { type: "speak", prompt: "לא אכלתי ארוחת צהריים.", answers: ["i didn't eat lunch", "i didn't have lunch"], display: "I didn't eat lunch." },
+      { type: "speak", prompt: "היא לא מדברת עברית.", answers: ["she doesn't speak hebrew"], display: "She doesn't speak Hebrew." },
+      { type: "speak", prompt: "לא שמענו כלום.", answers: ["we didn't hear anything"], display: "We didn't hear anything." },
+      { type: "speak", prompt: "המחשב לא נדלק.", answers: ["the computer doesn't turn on", "the computer doesn't start"], display: "The computer doesn't turn on." },
       { type: "dialogue", thread: "story", theyAsk: "Did you get my message about the trip?", instruction: "עני/ה שלא קיבלת את ההודעה שלו (בגלל זה פספסת את הטיול).", display: "No, I didn't get your message.", reply: "That explains it! I texted you the new meeting time, but I guess it never went through." },
       { type: "dialogue", thread: "story", theyAsk: "Does your phone usually work fine?", instruction: "עני/ה שהטלפון שלך בדרך כלל לא עובד טוב באזורים כאלה (בלי קליטה).", display: "No, it doesn't work well in areas without signal.", reply: "Ah, that makes sense — we were pretty deep in the mountains." },
       { type: "dialogue", thread: "story", theyAsk: "Did the rest of the group wait for you?", instruction: "עני/ה שהם לא חיכו לך, כי הם לא ידעו שפספסת את ההודעה.", display: "No, they didn't wait for me.", reply: "I felt so bad when I realized — I promise we'll plan better next time." },
@@ -748,6 +932,7 @@ const stages = [
     mcCount: 10,
     orderCount: 10,
     dialogueGrammar: "shortAnswers",
+    speakCount: 10,
     storyCount: 4,
     storyScenario: "Your friend asks you about your last camping trip. Answer with correct short answers and find out where the conversation goes.",
     questions: [
@@ -781,6 +966,16 @@ const stages = [
       { type: "translate", direction: "toHebrew", prompt: "No, you didn't.", answers: ["לא, אתה לא"], display: "לא, אתה לא." },
       { type: "translate", direction: "toHebrew", prompt: "Yes, they did.", answers: ["כן, הם כן"], display: "כן, הם כן." },
       { type: "translate", direction: "toHebrew", prompt: "No, he doesn't.", answers: ["לא, הוא לא"], display: "לא, הוא לא." },
+      { type: "speak", prompt: "כן, אני אוהב את זה.", answers: ["yes i do"], display: "Yes, I do." },
+      { type: "speak", prompt: "לא, היא לא הלכה לשם.", answers: ["no she didn't"], display: "No, she didn't." },
+      { type: "speak", prompt: "כן, הם עשו את זה.", answers: ["yes they did"], display: "Yes, they did." },
+      { type: "speak", prompt: "לא, אני לא אוהב את זה.", answers: ["no i don't"], display: "No, I don't." },
+      { type: "speak", prompt: "כן, היא עובדת שם.", answers: ["yes she does"], display: "Yes, she does." },
+      { type: "speak", prompt: "לא, הוא לא אוהב את זה.", answers: ["no he doesn't"], display: "No, he doesn't." },
+      { type: "speak", prompt: "כן, אני עשיתי את זה.", answers: ["yes i did"], display: "Yes, I did." },
+      { type: "speak", prompt: "כן, הם גרים כאן.", answers: ["yes they do"], display: "Yes, they do." },
+      { type: "speak", prompt: "לא, לא ראינו את זה.", answers: ["no we didn't"], display: "No, we didn't." },
+      { type: "speak", prompt: "כן, זה עובד.", answers: ["yes it does"], display: "Yes, it does." },
       { type: "dialogue", thread: "story", theyAsk: "Did you enjoy the camping trip?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "That's great to hear — was the campfire story time your favorite part?", noReply: "Oh no, what happened — was it the weather?" },
       { type: "dialogue", thread: "story", theyAsk: "Does your family usually go camping every summer?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "That's a lovely tradition — do you always go to the same spot?", noReply: "Ah, so this was something new for you all?" },
       { type: "dialogue", thread: "story", theyAsk: "Did you see any wildlife out there?", instruction: "ענו בתשובה קצרה נכונה לפי מה שבאמת תרצו לומר.", yesReply: "Really? What kind of animals did you spot?", noReply: "Too bad — maybe next time you'll get lucky." },
@@ -789,19 +984,37 @@ const stages = [
   }
 ];
 
+const FREE_CHAT_SCENARIOS = [
+  "You meet Daniel, a tour guide who just got back from a year-long trip around the world. Ask him anything you want — use question words (What / Where / When / Why / How / Who / Which / Whose).",
+  "At a party you meet Maya, who just moved to Israel from Canada with her family. Ask her anything you want — use Do and Are questions.",
+  "Your friend Noa is showing you photos on her phone of her family, her pets and her new apartment. Ask about anything you like — use Is she / Is this / Is he / Am I questions.",
+  "You bump into your old English teacher, Mr. Cohen, who tells you about his life back then and what he does today. Ask him anything — use Did (past) and Do (present) questions.",
+  "Your friend Tom had a terrible day where nothing went right. Chat with him about it — ask what happened and practice sentences with Didn't / Doesn't.",
+  "Chat with your curious friend Alex, who loves asking yes/no questions. Ask Alex anything you want, and when Alex asks you something, answer with correct short answers (Yes, I do / No, I didn't...)."
+];
+const FREE_CHAT_PASS_MESSAGES = 3;
+const FREE_CHAT_PASS_GRAMMAR = 70;
+
+stages.forEach((s, i) => {
+  s.freeChat = { scenario: FREE_CHAT_SCENARIOS[i] };
+  s.questions.push({ type: "freechat" });
+});
+
 let stageIndex = 0;
+let freeChatLogs = {};
 let current = 0;
 let score = 0;
 let dialogueLog = {};
 let dialogueLastReply = {};
 let stageProgress = {};
 let sectionProgress = {};
+let speakScores = {};
 
 const STORAGE_KEY = "questionWordsQuizProgress";
 
 function saveProgress() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress, speakScores }));
   } catch (e) {}
 }
 
@@ -822,19 +1035,29 @@ function loadProgress() {
       if (data.sectionProgress && typeof data.sectionProgress === "object") {
         sectionProgress = data.sectionProgress;
       }
+      if (data.speakScores && typeof data.speakScores === "object") {
+        speakScores = data.speakScores;
+      }
     }
   } catch (e) {}
 }
 
 const DIALOGUE_API_URL = ""; // paste your deployed Cloudflare Worker URL here to enable AI-powered replies
+const DIALOGUE_API_TOKEN = ""; // must match the Worker's APP_TOKEN secret
 
-async function getDialogueResponse(stage, log, message) {
+async function getDialogueResponse(stage, log, message, opts = {}) {
   if (!DIALOGUE_API_URL) return null;
   try {
     const resp = await fetch(DIALOGUE_API_URL, {
       method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ scenario: stage.storyScenario, grammarFocus: stage.title, history: log, message })
+      headers: { "content-type": "application/json", "x-app-token": DIALOGUE_API_TOKEN },
+      body: JSON.stringify({
+        scenario: opts.scenario || stage.storyScenario,
+        grammarFocus: stage.title,
+        mode: opts.mode || "guided",
+        history: log.map(m => ({ who: m.who, text: m.text })),
+        message
+      })
     });
     if (!resp.ok) return null;
     const data = await resp.json();
@@ -994,6 +1217,40 @@ function render() {
     return;
   }
 
+  if (q.type === "freechat") {
+    card.innerHTML = `
+      <div class="dialogue-scenario">${stage.freeChat.scenario}</div>
+      <div class="dialogue-cue"><strong>צ'אט חופשי:</strong> שאלו כל שאלה שבא לכם באנגלית — הדמות תענה לפי מה ששאלתם, ותקבלו משוב על הדקדוק בכל הודעה.</div>
+      <div class="dialogue-log" id="chatLog"></div>
+      <div class="chat-input-row">
+        <input type="text" class="translate-input" id="chatInput" dir="ltr" autocomplete="off" spellcheck="false" maxlength="300" placeholder="Ask anything in English..." />
+        <button class="chat-mic" id="chatMic" title="Speak instead of typing" aria-label="Speak instead of typing">🎤</button>
+        <button class="chat-send" id="chatSend">Send</button>
+      </div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row chat-footer"><span id="chatStats"></span><button class="next show" id="nextBtn">Finish chat →</button></div>
+    `;
+    renderFreeChat(stage);
+    return;
+  }
+
+  if (q.type === "speak") {
+    card.innerHTML = `
+      <div class="order-label speak-head"><span>Say it in English</span><span id="speakAvg"></span></div>
+      <div class="translate-prompt" dir="rtl">${q.prompt}</div>
+      <div class="speak-area">
+        <button class="mic-btn" id="micBtn" aria-label="Start speaking">🎤</button>
+        <div class="speak-status" id="speakStatus">Tap the mic and say the sentence in English</div>
+        <div class="heard" id="heard"></div>
+      </div>
+      <div class="speak-result" id="speakResult"></div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+    `;
+    renderSpeakQuestion(q);
+    return;
+  }
+
   if (q.type === "dialogue") {
     const logKey = stageIndex + ":" + (q.thread || "story");
     const sec = sections.find(s => current >= s.start && current < s.start + s.len) || sections[sections.length - 1];
@@ -1033,7 +1290,9 @@ function getSections(stage) {
   const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
   const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
-  const translateCount = stage.questions.length - mcCount - orderCount - storyCount;
+  const speakCount = typeof stage.speakCount === "number" ? stage.speakCount : 0;
+  const freeCount = stage.questions.filter(q => q.type === "freechat").length;
+  const translateCount = stage.questions.length - mcCount - orderCount - speakCount - storyCount - freeCount;
 
   const sections = [];
   let pos = 0;
@@ -1046,7 +1305,9 @@ function getSections(stage) {
     if (toEnglishLen > 0) { sections.push({ label: "Hebrew → English", start: pos, len: toEnglishLen }); pos += toEnglishLen; }
     if (toHebrewLen > 0) { sections.push({ label: "English → Hebrew", start: pos, len: toHebrewLen }); pos += toHebrewLen; }
   }
+  if (speakCount > 0) { sections.push({ label: "Speaking", start: pos, len: speakCount }); pos += speakCount; }
   if (storyCount > 0) { sections.push({ label: "Dialogue", start: pos, len: storyCount }); pos += storyCount; }
+  if (freeCount > 0) { sections.push({ label: "Free Chat", start: pos, len: freeCount }); pos += freeCount; }
   return sections;
 }
 
@@ -1301,6 +1562,113 @@ function pickReply(stage) {
   return pool[idx];
 }
 
+function renderFreeChatLog(log) {
+  return log.map(m => {
+    const bubble = `<div class="dialogue-msg ${m.who}">${escapeHtml(m.text)} <button class="speak-btn" onclick="speak(this.dataset.text)" data-text="${escapeAttr(m.text)}" title="Listen" aria-label="Listen">🔊</button></div>`;
+    if (m.who !== "you" || m.ok === undefined) return bubble;
+    const note = m.ok
+      ? `<div class="chat-note ok">✓ Grammar looks good</div>`
+      : `<div class="chat-note bad">✗ ${escapeHtml(m.note || "יש כאן טעות דקדוק.")}</div>`;
+    return bubble + note;
+  }).join("");
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+function renderFreeChat(stage) {
+  const logKey = String(stageIndex);
+  const log = freeChatLogs[logKey] || (freeChatLogs[logKey] = []);
+  const logEl = document.getElementById("chatLog");
+  const input = document.getElementById("chatInput");
+  const sendBtn = document.getElementById("chatSend");
+  const micBtn = document.getElementById("chatMic");
+  const hint = document.getElementById("hint");
+  const stats = document.getElementById("chatStats");
+  const nextBtn = document.getElementById("nextBtn");
+  let busy = false;
+
+  function grammarPercent() {
+    const mine = log.filter(m => m.who === "you" && m.ok !== undefined);
+    if (!mine.length) return null;
+    return Math.round(100 * mine.filter(m => m.ok).length / mine.length);
+  }
+
+  function draw() {
+    logEl.innerHTML = renderFreeChatLog(log);
+    const sent = log.filter(m => m.who === "you").length;
+    const g = grammarPercent();
+    stats.textContent = sent ? `Messages: ${sent} · Grammar: ${g}%` : "";
+    logEl.lastElementChild && logEl.lastElementChild.scrollIntoView({ block: "nearest" });
+  }
+
+  if (!DIALOGUE_API_URL) {
+    input.disabled = sendBtn.disabled = micBtn.disabled = true;
+    hint.innerHTML = `<span class="why">הצ'אט החופשי צריך חיבור לשרת ה-AI (Cloudflare Worker), והוא עדיין לא מוגדר.</span>`;
+  }
+
+  async function send() {
+    const text = input.value.trim();
+    if (!text || busy) return;
+    busy = true;
+    input.value = "";
+    input.disabled = sendBtn.disabled = true;
+    const history = log.slice();
+    const entry = { who: "you", text: formatUserLine(text, !/^(what|where|when|why|how|who|which|whose|do|does|did|is|are|am|was|were|can|could|will|would|should|have|has)\b/i.test(text)) };
+    log.push(entry);
+    draw();
+    hint.textContent = "…";
+
+    const ai = await getDialogueResponse(stage, history, text, { scenario: stage.freeChat.scenario, mode: "free" });
+    busy = false;
+    input.disabled = sendBtn.disabled = false;
+    input.focus();
+    if (!ai) {
+      log.pop();
+      input.value = text;
+      draw();
+      hint.innerHTML = `<span class="why">לא הצלחתי לקבל תשובה מהשרת — בדקו את החיבור לאינטרנט ונסו שוב.</span>`;
+      return;
+    }
+    entry.ok = ai.ok;
+    entry.note = ai.note;
+    log.push({ who: "them", text: ai.reply });
+    if (ai.ok) playCorrectSound(); else playWrongSound();
+    hint.textContent = "";
+    draw();
+  }
+
+  sendBtn.onclick = send;
+  input.addEventListener("keydown", e => { if (e.key === "Enter") send(); });
+
+  if (SpeechRecognitionCtor) {
+    let rec = null;
+    micBtn.onclick = () => {
+      if (rec) { rec.stop(); return; }
+      rec = new SpeechRecognitionCtor();
+      rec.lang = "en-US";
+      rec.interimResults = false;
+      rec.onresult = e => { input.value = e.results[0][0].transcript; input.focus(); };
+      rec.onend = () => { rec = null; micBtn.classList.remove("listening"); };
+      try { rec.start(); micBtn.classList.add("listening"); } catch (e) { rec = null; }
+    };
+  } else {
+    micBtn.style.display = "none";
+  }
+
+  nextBtn.onclick = () => {
+    const sent = log.filter(m => m.who === "you" && m.ok !== undefined).length;
+    const g = grammarPercent();
+    if (sent >= FREE_CHAT_PASS_MESSAGES && g >= FREE_CHAT_PASS_GRAMMAR) { score++; saveProgress(); }
+    current++;
+    render();
+  };
+
+  draw();
+  if (!input.disabled) input.focus();
+}
+
 function renderDialogueQuestion(q, stage, logKey) {
   const input = document.getElementById("translateInput");
   const btn = document.getElementById("checkBtn");
@@ -1351,6 +1719,241 @@ function renderDialogueQuestion(q, stage, logKey) {
     if (e.key === "Enter") check();
   });
   input.focus();
+}
+
+const SPEAK_MAX_TRIES = 3;
+const SPEAK_PASS = 80;
+const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+function normalizeSpoken(str) {
+  return str.toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/[?.!,]/g, "")
+    .replace(/\b(did|does|do|is|are|was|were)nt\b/g, "$1n't")
+    .replace(/\bcan't\b/g, "can not")
+    .replace(/\bwon't\b/g, "will not")
+    .replace(/n't\b/g, " not")
+    .replace(/'m\b/g, " am")
+    .replace(/'re\b/g, " are")
+    .replace(/\b(he|she|it|that|this|what|where|who|how|there|here)'s\b/g, "$1 is")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function sameWord(a, b) {
+  return a.replace(/'/g, "") === b.replace(/'/g, "");
+}
+
+// Word-level edit distance, plus the list of edits (match / sub / del / ins)
+function wordDiff(target, said) {
+  const n = target.length, m = said.length;
+  const d = Array.from({ length: n + 1 }, (_, i) => Array.from({ length: m + 1 }, (_, j) => i + j));
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const cost = sameWord(target[i - 1], said[j - 1]) ? 0 : 1;
+      d[i][j] = Math.min(d[i - 1][j - 1] + cost, d[i - 1][j] + 1, d[i][j - 1] + 1);
+    }
+  }
+  const ops = [];
+  let i = n, j = m;
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && d[i][j] === d[i - 1][j - 1] + (sameWord(target[i - 1], said[j - 1]) ? 0 : 1)) {
+      ops.unshift({ op: sameWord(target[i - 1], said[j - 1]) ? "match" : "sub", target: target[i - 1], said: said[j - 1] });
+      i--; j--;
+    } else if (i > 0 && d[i][j] === d[i - 1][j] + 1) {
+      ops.unshift({ op: "del", target: target[i - 1] });
+      i--;
+    } else {
+      ops.unshift({ op: "ins", said: said[j - 1] });
+      j--;
+    }
+  }
+  return { dist: d[n][m], ops };
+}
+
+function charDistance(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      d[i][j] = Math.min(d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1), d[i - 1][j] + 1, d[i][j - 1] + 1);
+    }
+  }
+  return d[a.length][b.length];
+}
+
+// Words = share of the sentence said correctly. Pronunciation = how confidently
+// the recognizer understood you (Web Speech has no per-sound scoring).
+function evaluateSpeech(alts, answers) {
+  let best = null;
+  alts.forEach((alt, altIdx) => {
+    const said = normalizeSpoken(alt.transcript).split(" ").filter(Boolean);
+    answers.forEach(ans => {
+      const target = normalizeSpoken(ans).split(" ");
+      const { dist, ops } = wordDiff(target, said);
+      const accuracy = Math.max(0, 1 - dist / target.length);
+      if (!best || accuracy > best.accuracy) best = { accuracy, ops, altIdx, transcript: alt.transcript };
+    });
+  });
+  const conf = alts[0].confidence;
+  let pron = null;
+  if (typeof conf === "number" && conf > 0) {
+    pron = Math.min(1, Math.max(0, (conf - 0.5) / 0.42));
+    if (best.altIdx > 0) pron *= 0.85;
+  }
+  const percent = Math.round(100 * best.accuracy * (pron === null ? 1 : 0.7 + 0.3 * pron));
+  return { ...best, pron, percent };
+}
+
+const GRAMMAR_WORDS = new Set(["do", "does", "did", "is", "are", "am", "was", "were", "not", "a", "an", "the"]);
+
+function speakFeedback(result) {
+  const notes = [];
+  if (result.accuracy < 0.4) {
+    notes.push("זה לא התרגום של המשפט — הקשיבו לתשובה הנכונה ונסו שוב.");
+  } else {
+    result.ops.forEach(o => {
+      if (o.op === "sub") {
+        if (GRAMMAR_WORDS.has(o.target) || GRAMMAR_WORDS.has(o.said)) {
+          notes.push(`טעות דקדוק: אמרת "${o.said}" במקום "${o.target}".`);
+        } else if (o.target[0] === o.said[0] && charDistance(o.target, o.said) <= Math.max(1, Math.round(o.target.length / 2))) {
+          notes.push(`אמרת "${o.said}" במקום "${o.target}" — המילים דומות, כנראה בעיית הגייה. הקשיבו ל-"${o.target}" ונסו שוב.`);
+        } else {
+          notes.push(`אמרת "${o.said}" במקום "${o.target}".`);
+        }
+      } else if (o.op === "del") {
+        notes.push(`חסרה המילה "${o.target}".`);
+      } else if (o.op === "ins") {
+        notes.push(`מילה מיותרת: "${o.said}".`);
+      }
+    });
+  }
+  if (result.pron === null) {
+    notes.push("הדפדפן הזה לא מחזיר נתוני הגייה, אז הציון מבוסס רק על המילים.");
+  } else if (result.accuracy >= 0.4 && result.pron < 0.6) {
+    notes.push("ההגייה לא הייתה מספיק ברורה — לחצו 🔊, הקשיבו איך אומרים את המשפט, ונסו שוב לאט ובבירור.");
+  }
+  return notes;
+}
+
+function renderDiffWords(ops) {
+  return ops.filter(o => o.op !== "ins").map((o, i) => {
+    const w = i === 0 ? cap(o.target) : o.target;
+    return `<span class="${o.op === "match" ? "word-ok" : "word-bad"}">${w}</span>`;
+  }).join(" ");
+}
+
+function speakAverage() {
+  const vals = stages[stageIndex].questions
+    .map((q, i) => q.type === "speak" ? speakScores[stageIndex + ":" + i] : undefined)
+    .filter(v => typeof v === "number");
+  if (!vals.length) return null;
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+}
+
+function renderSpeakQuestion(q) {
+  const micBtn = document.getElementById("micBtn");
+  const status = document.getElementById("speakStatus");
+  const heard = document.getElementById("heard");
+  const result = document.getElementById("speakResult");
+  const hint = document.getElementById("hint");
+  const nextBtn = document.getElementById("nextBtn");
+  const key = stageIndex + ":" + current;
+  const avg = speakAverage();
+  document.getElementById("speakAvg").textContent = avg === null ? "" : `Speaking average: ${avg}%`;
+  let tries = 0;
+  let bestPercent = 0;
+  let done = false;
+  let recognition = null;
+
+  const skip = document.createElement("button");
+  skip.className = "skip-link";
+  skip.textContent = "Show answer";
+  status.after(skip);
+
+  function finish() {
+    if (done) return;
+    done = true;
+    skip.remove();
+    micBtn.disabled = true;
+    micBtn.classList.remove("listening");
+    if (recognition) recognition.abort();
+    speakScores[key] = bestPercent;
+    if (bestPercent >= SPEAK_PASS) score++;
+    document.getElementById("scorelive").textContent = score;
+    saveProgress();
+    hint.innerHTML = `Final score: <strong>${bestPercent}%</strong> · The answer: <strong>${q.display}</strong> <button class="speak-btn" onclick="speak(this.dataset.text)" data-text="${escapeAttr(q.display)}" title="Listen" aria-label="Listen">🔊</button>`;
+    nextBtn.classList.add("show");
+    nextBtn.onclick = () => { current++; render(); };
+  }
+
+  nextBtn.onclick = () => { finish(); current++; render(); };
+
+  skip.onclick = () => {
+    if (!tries) playWrongSound();
+    finish();
+  };
+
+  if (!SpeechRecognitionCtor) {
+    micBtn.disabled = true;
+    status.innerHTML = "זיהוי דיבור לא נתמך בדפדפן הזה — פתחו את האפליקציה ב-Chrome או Edge.";
+    return;
+  }
+
+  micBtn.onclick = () => {
+    if (done) return;
+    if (recognition) { recognition.stop(); return; }
+    recognition = new SpeechRecognitionCtor();
+    recognition.lang = "en-US";
+    recognition.interimResults = false;
+    recognition.maxAlternatives = 5;
+
+    recognition.onresult = e => {
+      const alts = Array.from(e.results[0]).map(a => ({ transcript: a.transcript, confidence: a.confidence }));
+      const r = evaluateSpeech(alts, q.answers);
+      tries++;
+      bestPercent = Math.max(bestPercent, r.percent);
+      heard.textContent = `You said: "${r.transcript.trim()}"`;
+      const level = r.percent >= SPEAK_PASS ? "good" : r.percent >= 50 ? "mid" : "low";
+      const notes = speakFeedback(r);
+      const pronLine = r.pron === null ? "" : ` · Pronunciation: ${Math.round(r.pron * 100)}%`;
+      result.innerHTML = `
+        <div class="speak-score ${level}">${r.percent}%</div>
+        <div class="speak-breakdown">Words: ${Math.round(r.accuracy * 100)}%${pronLine}</div>
+        <div class="speak-target">${renderDiffWords(r.ops)}</div>
+        ${notes.length ? `<ul class="speak-notes">${notes.map(n => `<li>${n}</li>`).join("")}</ul>` : `<div class="speak-notes perfect">מושלם! 🎉</div>`}`;
+      if (r.percent >= SPEAK_PASS) playCorrectSound(); else playWrongSound();
+
+      if (r.percent >= 95 || tries >= SPEAK_MAX_TRIES) { finish(); return; }
+      const left = SPEAK_MAX_TRIES - tries;
+      status.textContent = `Try again to improve your score (${left} ${left === 1 ? "try" : "tries"} left) — or press Next`;
+      nextBtn.classList.add("show");
+    };
+    recognition.onerror = e => {
+      if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        status.textContent = "צריך לאשר גישה למיקרופון בדפדפן כדי לתרגל דיבור.";
+      } else if (e.error === "no-speech") {
+        status.textContent = "Didn't hear anything — tap the mic and try again.";
+      } else if (e.error === "network") {
+        status.textContent = "זיהוי הדיבור צריך חיבור לאינטרנט.";
+      } else if (e.error !== "aborted") {
+        status.textContent = "Something went wrong — tap the mic and try again.";
+      }
+    };
+    recognition.onend = () => {
+      recognition = null;
+      micBtn.classList.remove("listening");
+      if (!done && status.textContent === "Listening…") status.textContent = "Tap the mic and say the sentence in English";
+    };
+
+    try {
+      recognition.start();
+      micBtn.classList.add("listening");
+      status.textContent = "Listening…";
+    } catch (e) {
+      recognition = null;
+    }
+  };
 }
 
 function renderOrderQuestion(q) {
@@ -1449,6 +2052,7 @@ function restart() {
   score = 0;
   stageProgress = {};
   sectionProgress = {};
+  speakScores = {};
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   render();
 }
