@@ -137,6 +137,96 @@ async function handleLiveToken(req, res) {
   });
 }
 
+// --- Accent samples ------------------------------------------------------
+// A short clip per accent, so the learner can hear it before starting.
+// Generated once with the same Live model, voice and accent instruction as
+// a real conversation, then cached on disk (keyed by voice + instruction,
+// so editing an accent regenerates it).
+const SAMPLES_DIR = path.join(__dirname, "accent-samples");
+const SAMPLE_TEXT = "Hi there! This is how I sound. Let's practice English together.";
+const samplesInProgress = new Map();
+
+function wavFile(pcm, rate) {
+  const header = Buffer.alloc(44);
+  header.write("RIFF", 0); header.writeUInt32LE(36 + pcm.length, 4); header.write("WAVE", 8);
+  header.write("fmt ", 12); header.writeUInt32LE(16, 16); header.writeUInt16LE(1, 20); header.writeUInt16LE(1, 22);
+  header.writeUInt32LE(rate, 24); header.writeUInt32LE(rate * 2, 28); header.writeUInt16LE(2, 32); header.writeUInt16LE(16, 34);
+  header.write("data", 36); header.writeUInt32LE(pcm.length, 40);
+  return Buffer.concat([header, pcm]);
+}
+
+function generateSample(accent, key) {
+  return new Promise((resolve, reject) => {
+    const ws = new WebSocket("wss://generativelanguage.googleapis.com/ws/" +
+      `google.ai.generativelanguage.v1beta.GenerativeService.BidiGenerateContent?key=${encodeURIComponent(key)}`);
+    const chunks = [];
+    const timer = setTimeout(() => { ws.close(); reject(new Error("Sample generation timed out")); }, 30000);
+    ws.onopen = () => ws.send(JSON.stringify({ setup: {
+      model: LIVE_MODEL,
+      generationConfig: {
+        responseModalities: ["AUDIO"],
+        speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: accent.voice } } },
+      },
+      systemInstruction: { parts: [{ text: `${LIVE_BASE_PROMPT}
+
+Accent:
+- ${accent.instruction}
+
+This is a short voice sample. When you receive a sentence, say exactly that sentence, word for word, and nothing else.` }] },
+    } }));
+    ws.onmessage = async ev => {
+      const msg = JSON.parse(typeof ev.data === "string" ? ev.data : await ev.data.text());
+      if (msg.setupComplete) ws.send(JSON.stringify({ realtimeInput: { text: SAMPLE_TEXT } }));
+      const c = msg.serverContent;
+      for (const part of (c && c.modelTurn && c.modelTurn.parts) || []) {
+        if (part.inlineData && part.inlineData.data) chunks.push(Buffer.from(part.inlineData.data, "base64"));
+      }
+      if (c && c.turnComplete) {
+        clearTimeout(timer);
+        ws.close(1000);
+        chunks.length ? resolve(wavFile(Buffer.concat(chunks), 24000)) : reject(new Error("No audio in sample"));
+      }
+    };
+    ws.onclose = ev => {
+      clearTimeout(timer);
+      reject(new Error(ev.reason || `Connection closed (${ev.code})`));
+    };
+  });
+}
+
+async function handleAccentSample(req, res) {
+  const fail = (status, error) => {
+    res.writeHead(status, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error }));
+  };
+  if (!ALLOWED_ORIGINS.includes(req.headers.origin) && !ALLOWED_ORIGINS.some(o => (req.headers.referer || "").startsWith(o + "/"))) {
+    return fail(403, "Forbidden origin");
+  }
+  const id = new URL(req.url, "http://localhost").searchParams.get("accent");
+  const topics = JSON.parse(fs.readFileSync(TOPICS_FILE, "utf8"));
+  const accent = topics.accents.find(a => a.id === id);
+  if (!accent) return fail(404, "Unknown accent");
+
+  const hash = require("crypto").createHash("sha1").update(accent.voice + "|" + accent.instruction + "|" + SAMPLE_TEXT).digest("hex").slice(0, 10);
+  const file = path.join(SAMPLES_DIR, `${accent.id}-${hash}.wav`);
+  if (!fs.existsSync(file)) {
+    const key = geminiKey();
+    if (!key) return fail(503, "Missing GEMINI_API_KEY: fill it in the .env file");
+    if (!samplesInProgress.has(file)) {
+      samplesInProgress.set(file, generateSample(accent, key).then(wav => {
+        fs.mkdirSync(SAMPLES_DIR, { recursive: true });
+        for (const old of fs.readdirSync(SAMPLES_DIR)) {
+          if (old.startsWith(accent.id + "-")) fs.unlinkSync(path.join(SAMPLES_DIR, old));
+        }
+        fs.writeFileSync(file, wav);
+      }).finally(() => samplesInProgress.delete(file)));
+    }
+    await samplesInProgress.get(file);
+  }
+  res.writeHead(200, { "Content-Type": "audio/wav", "Cache-Control": "no-cache" });
+  res.end(fs.readFileSync(file));
+}
+
 // The Anthropic key is read on every request, so pasting it into
 // api-key.txt takes effect without restarting the server.
 function apiKey() {
@@ -185,6 +275,13 @@ http.createServer((req, res) => {
     handleDialogue(req, res).catch(err => {
       res.writeHead(500, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: String(err) }));
+    });
+    return;
+  }
+  if (req.url.split("?")[0] === "/api/accent-sample") {
+    handleAccentSample(req, res).catch(err => {
+      res.writeHead(502, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(err.message || err) }));
     });
     return;
   }

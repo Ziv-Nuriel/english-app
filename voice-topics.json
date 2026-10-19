@@ -29,6 +29,12 @@
       "label": "הודי",
       "voice": "Fenrir",
       "instruction": "Speak with a clear Indian English accent, keeping your words easy to understand."
+    },
+    {
+      "id": "israeli",
+      "label": "ישראלי",
+      "voice": "Leda",
+      "instruction": "Speak English with a mild, natural Israeli accent — the way a fluent Israeli (native Hebrew speaker) sounds in English: a slightly rolled or guttural R, crisp vowels, and Hebrew-like rhythm. Keep your grammar and vocabulary fully correct, and stay easy to understand."
     }
   ],
   "stages": [

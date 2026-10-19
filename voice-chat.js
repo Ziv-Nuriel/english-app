@@ -97,6 +97,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
   try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY)) || {}); } catch (e) {}
   let topicsReady = null;
   let ui = null; // elements of the mounted section
+  let preview = null; // accent sample currently playing
   let s = null;  // current session state, null when idle
 
   // Only one conversation at a time: starting in another tab stops this one.
@@ -118,6 +119,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
   // ---- UI ----------------------------------------------------------------
   function mount(container, opts) {
     end();
+    stopSample();
     if (!document.getElementById("vc-style")) {
       const style = document.createElement("style");
       style.id = "vc-style";
@@ -157,6 +159,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
       prefs.accent = btn.dataset.accent;
       savePrefs();
       renderAccents();
+      playSample(btn.dataset.accent);
     };
     loadTopics().then(topics => {
       if (ui !== mine) return;
@@ -166,6 +169,37 @@ registerProcessor("pcm-capture", PcmCapture);`;
       ui.toggle.disabled = false;
       setStatus("מוכן");
     }).catch(() => setStatus("לא הצלחתי לטעון את הגדרות השיחה", "error"));
+  }
+
+  // Plays a short clip in the chosen accent (generated once by the server).
+  async function playSample(id) {
+    stopSample();
+    const mine = preview = { audio: null };
+    const label = ui.topics.accents.find(a => a.id === id).label;
+    setStatus(`טוען דוגמה של מבטא ${label}…`);
+    try {
+      const res = await fetch("api/accent-sample?accent=" + encodeURIComponent(id));
+      if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || `שגיאה ${res.status}`);
+      const url = URL.createObjectURL(await res.blob());
+      if (preview !== mine || s) { URL.revokeObjectURL(url); return; }
+      mine.audio = new Audio(url);
+      mine.audio.onended = () => {
+        URL.revokeObjectURL(url);
+        if (preview === mine) { preview = null; setStatus("מוכן"); }
+      };
+      setStatus(`מבטא ${label} — דוגמה`, "speaking");
+      await mine.audio.play();
+    } catch (err) {
+      if (preview === mine) {
+        preview = null;
+        setStatus(err.message === "Failed to fetch" ? "דוגמאות עובדות רק דרך השרת המקומי" : "לא הצלחתי להשמיע דוגמה: " + err.message, "error");
+      }
+    }
+  }
+
+  function stopSample() {
+    if (preview && preview.audio) preview.audio.pause();
+    preview = null;
   }
 
   function renderAccents() {
@@ -365,6 +399,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
   // ---- Start / stop ------------------------------------------------------
   async function start() {
     if (!ui) return;
+    stopSample();
     ui.toggle.disabled = true;
     ui.log.textContent = "";
     ui.timer.classList.remove("low");
@@ -446,5 +481,5 @@ registerProcessor("pcm-capture", PcmCapture);`;
     setStatus(message, mode);
   }
 
-  window.VoiceChat = { mount, stop: () => end() };
+  window.VoiceChat = { mount, stop: () => { stopSample(); end(); } };
 })();
