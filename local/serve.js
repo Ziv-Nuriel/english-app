@@ -19,7 +19,9 @@ const ALLOWED_ORIGINS = [`http://localhost:${PORT}`, `http://127.0.0.1:${PORT}`]
 const LIVE_API_VERSION = "v1alpha"; // ephemeral tokens + constrained endpoint
 const LIVE_MODEL = "models/gemini-3.8-live";
 const LIVE_SESSION_SECONDS = 10 * 60;
-const LIVE_SYSTEM_PROMPT = `You are a friendly English conversation partner for a native Hebrew speaker who is practicing spoken English.
+// Stages and accents the learner can pick; the page reads the same file.
+const TOPICS_FILE = path.join(ROOT, "voice-topics.json");
+const LIVE_BASE_PROMPT = `You are a friendly English conversation partner for a native Hebrew speaker who is practicing spoken English.
 
 How you speak:
 - Speak clearly and a little slower than normal, with natural pauses between sentences.
@@ -33,28 +35,41 @@ Correcting mistakes:
 
 Language:
 - Speak English only. If the learner speaks Hebrew or is stuck, you may give a very short Hebrew hint (a word or two), then return to English.
-- Be warm and encouraging. Start by greeting the learner and asking what they would like to talk about.`;
+- Be warm and encouraging.`;
 
-const LIVE_SETUP = {
-  model: LIVE_MODEL,
-  generationConfig: {
-    responseModalities: ["AUDIO"],
-    speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } },
-  },
-  systemInstruction: { parts: [{ text: LIVE_SYSTEM_PROMPT }] },
-  // Room noise must not count as speech: start less eagerly, and end the
-  // learner's turn after 0.7 s of quiet so the partner replies promptly.
-  realtimeInputConfig: {
-    automaticActivityDetection: {
-      startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
-      endOfSpeechSensitivity: "END_SENSITIVITY_HIGH",
-      prefixPaddingMs: 300,
-      silenceDurationMs: 700,
+// Builds the locked session setup for one stage + accent.
+function liveSetup(stage, accent) {
+  const prompt = `${LIVE_BASE_PROMPT}
+
+Accent:
+- ${accent.instruction}
+
+Today's role-play (stage: ${stage.title}):
+- ${stage.scenario} Stay in this role for the whole conversation.
+- Practice focus: ${stage.focus}
+- Pay special attention to mistakes related to this focus.
+- Start by greeting the learner in character and setting the scene in one or two short sentences, then invite them to speak.`;
+  return {
+    model: LIVE_MODEL,
+    generationConfig: {
+      responseModalities: ["AUDIO"],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: accent.voice } } },
     },
-  },
-  inputAudioTranscription: {},
-  outputAudioTranscription: {},
-};
+    systemInstruction: { parts: [{ text: prompt }] },
+    // Room noise must not count as speech: start less eagerly, and end the
+    // learner's turn after 0.7 s of quiet so the partner replies promptly.
+    realtimeInputConfig: {
+      automaticActivityDetection: {
+        startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
+        endOfSpeechSensitivity: "END_SENSITIVITY_HIGH",
+        prefixPaddingMs: 300,
+        silenceDurationMs: 700,
+      },
+    },
+    inputAudioTranscription: {},
+    outputAudioTranscription: {},
+  };
+}
 
 // Same field-mask rule as the @google/genai SDK: lock every field set above
 // (one level deep), leaving sessionResumption free for the client.
@@ -86,6 +101,15 @@ async function handleLiveToken(req, res) {
   const key = geminiKey();
   if (!key) return send(503, { error: "Missing GEMINI_API_KEY: fill it in the .env file" });
 
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  let choice = {};
+  try { choice = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch (e) {}
+  const topics = JSON.parse(fs.readFileSync(TOPICS_FILE, "utf8"));
+  const stage = (Number.isInteger(choice.stage) && topics.stages[choice.stage]) || topics.stages[0];
+  const accent = topics.accents.find(a => a.id === choice.accent) || topics.accents[0];
+  const setup = liveSetup(stage, accent);
+
   const now = Date.now();
   const response = await fetch(`https://generativelanguage.googleapis.com/${LIVE_API_VERSION}/auth_tokens`, {
     method: "POST",
@@ -96,8 +120,8 @@ async function handleLiveToken(req, res) {
       // may reuse the token until it expires); must be started within 1 minute.
       expireTime: new Date(now + (LIVE_SESSION_SECONDS + 120) * 1000).toISOString(),
       newSessionExpireTime: new Date(now + 60 * 1000).toISOString(),
-      bidiGenerateContentSetup: LIVE_SETUP,
-      fieldMask: fieldMask(LIVE_SETUP),
+      bidiGenerateContentSetup: setup,
+      fieldMask: fieldMask(setup),
     }),
   });
   const data = await response.json().catch(() => ({}));
@@ -109,7 +133,7 @@ async function handleLiveToken(req, res) {
     model: LIVE_MODEL,
     apiVersion: LIVE_API_VERSION,
     maxSeconds: LIVE_SESSION_SECONDS,
-    setup: LIVE_SETUP, // the token enforces these fields anyway
+    setup, // the token enforces these fields anyway
   });
 }
 

@@ -35,7 +35,7 @@
     color: var(--ink);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
     margin: 0;
-    padding: 2rem 1rem;
+    padding: 2rem 1rem 0;
     min-height: 100vh;
     display: flex;
     justify-content: center;
@@ -51,7 +51,31 @@
     margin: .6rem 0 1rem;
   }
   .intro { color: var(--ink-soft); font-size: .92rem; line-height: 1.5; margin: 0 0 1.25rem; }
-  .controls { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  .label { font-size: .8rem; font-weight: 600; color: var(--ink-soft); margin: 0 0 .4rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: 1rem; }
+  .chip {
+    font-weight: 500;
+    font-size: .85rem;
+    padding: .4rem .75rem;
+    background: var(--card);
+    color: var(--ink);
+    border: 1px solid var(--rule);
+  }
+  .chip:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .chip.active { background: var(--accent); border-color: var(--accent); color: var(--paper); }
+  .chip:disabled:not(.active) { opacity: .45; }
+  .chip:disabled.active { opacity: 1; }
+  .chip .num { font-variant-numeric: tabular-nums; opacity: .7; }
+  .stage-sub { font-size: .88rem; color: var(--ink-soft); margin: -.5rem 0 1.25rem; min-height: 1.2rem; }
+  .bar {
+    position: sticky;
+    bottom: 0;
+    background: var(--paper);
+    border-top: 1px solid var(--rule);
+    margin-top: 1rem;
+    padding: .75rem 0 1rem;
+  }
+  .controls { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: .6rem; }
   button {
     font: inherit;
     font-weight: 600;
@@ -78,7 +102,7 @@
     font-size: .92rem;
     color: var(--ink-soft);
     min-height: 1.4rem;
-    margin-bottom: 1rem;
+    flex: 1;
   }
   .status.error { color: var(--danger); }
   .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--rule); flex: none; }
@@ -90,7 +114,6 @@
     background: var(--rule);
     border-radius: 3px;
     overflow: hidden;
-    margin: -.4rem 0 1rem;
   }
   .meter span {
     display: block;
@@ -112,6 +135,8 @@
   }
   .log:empty::before {
     content: "התמלול של השיחה יופיע כאן";
+    direction: rtl;
+    text-align: right;
     color: var(--ink-soft);
     font-size: .9rem;
   }
@@ -123,6 +148,7 @@
     border-radius: 6px;
     line-height: 1.45;
     overflow-wrap: anywhere;
+    scroll-margin-bottom: 8rem; /* keep new lines visible above the bottom bar */
   }
   .msg.ai { background: var(--accent-soft); align-self: flex-start; }
   .msg.user { border: 1px solid var(--rule); align-self: flex-end; }
@@ -142,17 +168,24 @@
     <a class="back" href="index.html">→ חזרה</a>
     <h1>Voice Conversation</h1>
     <p class="intro">
-      שיחה חופשית באנגלית בזמן אמת. השותף מדבר לאט וברור ומתקן טעויות בעדינות.
-      אפשר לקטוע אותו באמצע משפט — פשוט מתחילים לדבר. כל שיחה מוגבלת ל-10 דקות.
-      מומלץ להשתמש באוזניות.
+      שיחה באנגלית בזמן אמת. בכל שיחה השותף משחק דמות ומתמקד בנושא של שלב אחר,
+      מדבר לאט וברור ומתקן טעויות בעדינות. אפשר לקטוע אותו באמצע משפט — פשוט מתחילים לדבר.
+      כל שיחה מוגבלת ל-10 דקות. מומלץ להשתמש באוזניות.
     </p>
-    <div class="controls">
-      <button id="toggle">התחלת שיחה</button>
-      <span class="timer" id="timer">10:00</span>
+    <p class="label">מבטא</p>
+    <div class="chips" id="accents"></div>
+    <p class="label">שלב</p>
+    <div class="chips" id="stages" dir="ltr"></div>
+    <p class="stage-sub" id="stageSub"></p>
+    <div class="log" id="log" dir="ltr"></div>
+    <div class="bar">
+      <div class="controls">
+        <button id="toggle" disabled>התחלת שיחה</button>
+        <span class="timer" id="timer">10:00</span>
+        <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">טוען…</span></div>
+      </div>
+      <div class="meter" id="meter" title="עוצמת המיקרופון"><span id="meterBar"></span></div>
     </div>
-    <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">מוכן</span></div>
-    <div class="meter" id="meter" title="עוצמת המיקרופון"><span id="meterBar"></span></div>
-    <div class="log" id="log"></div>
   </div>
 
 <script>
@@ -190,6 +223,58 @@ const $ = id => document.getElementById(id);
 const toggleBtn = $("toggle"), timerEl = $("timer"), logEl = $("log");
 
 let s = null; // current session state, null when idle
+
+// ---- Stage & accent pickers ------------------------------------------
+const PREFS_KEY = "voiceChatPrefs";
+let topics = null;
+let prefs = { stage: 0, accent: "american" };
+try { Object.assign(prefs, JSON.parse(localStorage.getItem(PREFS_KEY)) || {}); } catch (e) {}
+
+function savePrefs() {
+  try { localStorage.setItem(PREFS_KEY, JSON.stringify(prefs)); } catch (e) {}
+}
+
+function renderPickers() {
+  const busy = !!s;
+  $("accents").innerHTML = topics.accents.map(a =>
+    `<button class="chip${a.id === prefs.accent ? " active" : ""}" data-accent="${a.id}"${busy ? " disabled" : ""}>${a.label}</button>`
+  ).join("");
+  $("stages").innerHTML = topics.stages.map((st, i) =>
+    `<button class="chip${i === prefs.stage ? " active" : ""}" data-stage="${i}"${busy ? " disabled" : ""}>` +
+    `<span class="num">${i + 1}.</span> ${st.title}</button>`
+  ).join("");
+  $("stageSub").textContent = topics.stages[prefs.stage].sub;
+}
+
+$("accents").addEventListener("click", e => {
+  const btn = e.target.closest("[data-accent]");
+  if (!btn || s) return;
+  prefs.accent = btn.dataset.accent;
+  savePrefs();
+  renderPickers();
+});
+$("stages").addEventListener("click", e => {
+  const btn = e.target.closest("[data-stage]");
+  if (!btn || s) return;
+  prefs.stage = Number(btn.dataset.stage);
+  savePrefs();
+  renderPickers();
+});
+
+fetch("voice-topics.json").then(r => r.json()).then(data => {
+  topics = data;
+  if (!topics.stages[prefs.stage]) prefs.stage = 0;
+  if (!topics.accents.some(a => a.id === prefs.accent)) prefs.accent = topics.accents[0].id;
+  renderPickers();
+  toggleBtn.disabled = false;
+  setStatus("מוכן");
+}).catch(() => setStatus("לא הצלחתי לטעון את רשימת השלבים", "error"));
+
+// Only one conversation at a time: starting in another tab stops this one.
+const tabs = "BroadcastChannel" in window ? new BroadcastChannel("voice-chat") : null;
+if (tabs) tabs.onmessage = ev => {
+  if (ev.data === "started" && s) end("השיחה נעצרה כי התחילה שיחה בלשונית אחרת");
+};
 
 function setStatus(text, mode = "") {
   $("statusText").textContent = text;
@@ -381,6 +466,7 @@ async function start() {
   logEl.textContent = "";
   timerEl.classList.remove("low");
   setStatus("מתחבר…");
+  if (tabs) tabs.postMessage("started");
   // Create the audio contexts inside the click so Chrome lets them play.
   s = {
     micCtx: new AudioContext({ sampleRate: IN_RATE }),
@@ -389,10 +475,15 @@ async function start() {
     resumeHandle: null, startedAt: 0, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
   };
   const session = s;
+  renderPickers();
   try {
     let res;
     try {
-      res = await fetch("api/live-token", { method: "POST" });
+      res = await fetch("api/live-token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stage: prefs.stage, accent: prefs.accent }),
+      });
     } catch (e) {
       throw new Error("שיחה קולית עובדת רק דרך השרת המקומי (open.vbs)");
     }
@@ -444,6 +535,13 @@ function end(message = "השיחה הסתיימה", mode = "") {
   toggleBtn.textContent = "התחלת שיחה";
   toggleBtn.classList.remove("stop");
   toggleBtn.disabled = false;
+  // A real conversation (1+ minute) moves on to the next stage's topic.
+  if (old.startedAt && Date.now() - old.startedAt >= 60 * 1000) {
+    prefs.stage = (prefs.stage + 1) % topics.stages.length;
+    savePrefs();
+    message += ` · הבא בתור: ${topics.stages[prefs.stage].title}`;
+  }
+  renderPickers();
   setStatus(message, mode);
 }
 
