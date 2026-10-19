@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#1f6f78">
+<title>Voice Conversation</title>
+<style>
+  :root {
+    color-scheme: light dark;
+    --paper: #f6f3ec;
+    --ink: #2b2a28;
+    --ink-soft: #6b6558;
+    --rule: #d8d2c4;
+    --card: #fffefb;
+    --accent: #1f6f78;
+    --accent-soft: #e3eeee;
+    --danger: #a8402f;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #1c1b18;
+      --ink: #ece7dc;
+      --ink-soft: #a49c8a;
+      --rule: #3a382f;
+      --card: #23221e;
+      --accent: #6bc2cb;
+      --accent-soft: #1e3336;
+      --danger: #e07a66;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    margin: 0;
+    padding: 2rem 1rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { width: 100%; max-width: 560px; }
+  .back { color: var(--ink-soft); font-size: .88rem; text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.6rem;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: .6rem;
+    margin: .6rem 0 1rem;
+  }
+  .intro { color: var(--ink-soft); font-size: .92rem; line-height: 1.5; margin: 0 0 1.25rem; }
+  .controls { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
+  button {
+    font: inherit;
+    font-weight: 600;
+    border: none;
+    border-radius: 6px;
+    padding: .75rem 1.4rem;
+    cursor: pointer;
+    background: var(--accent);
+    color: var(--paper);
+  }
+  button:disabled { opacity: .5; cursor: default; }
+  button.stop { background: var(--danger); }
+  .timer {
+    font-family: Georgia, serif;
+    font-size: 1.3rem;
+    font-variant-numeric: tabular-nums;
+    direction: ltr;
+  }
+  .timer.low { color: var(--danger); }
+  .status {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    font-size: .92rem;
+    color: var(--ink-soft);
+    min-height: 1.4rem;
+    margin-bottom: 1rem;
+  }
+  .status.error { color: var(--danger); }
+  .dot { width: .7rem; height: .7rem; border-radius: 50%; background: var(--rule); flex: none; }
+  .dot.live { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
+  .dot.speaking { background: var(--accent); }
+  @keyframes pulse { 50% { opacity: .35; } }
+  .log {
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem;
+    min-height: 12rem;
+    display: flex;
+    flex-direction: column;
+    gap: .6rem;
+  }
+  .log:empty::before {
+    content: "התמלול של השיחה יופיע כאן";
+    color: var(--ink-soft);
+    font-size: .9rem;
+  }
+  .msg {
+    direction: ltr;
+    text-align: left;
+    max-width: 85%;
+    padding: .55rem .8rem;
+    border-radius: 6px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+  }
+  .msg.ai { background: var(--accent-soft); align-self: flex-start; }
+  .msg.user { border: 1px solid var(--rule); align-self: flex-end; }
+  .msg .who {
+    display: block;
+    font-size: .72rem;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--ink-soft);
+    margin-bottom: .15rem;
+  }
+  .msg.interrupted .text::after { content: " …"; color: var(--ink-soft); }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <a class="back" href="index.html">→ חזרה</a>
+    <h1>Voice Conversation</h1>
+    <p class="intro">
+      שיחה חופשית באנגלית בזמן אמת. השותף מדבר לאט וברור ומתקן טעויות בעדינות.
+      אפשר לקטוע אותו באמצע משפט — פשוט מתחילים לדבר. כל שיחה מוגבלת ל-10 דקות.
+      מומלץ להשתמש באוזניות.
+    </p>
+    <div class="controls">
+      <button id="toggle">התחלת שיחה</button>
+      <span class="timer" id="timer">10:00</span>
+    </div>
+    <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">מוכן</span></div>
+    <div class="log" id="log"></div>
+  </div>
+
+<script>
+const IN_RATE = 16000;   // Live API input: 16-bit PCM, 16 kHz
+const OUT_RATE = 24000;  // Live API output: 16-bit PCM, 24 kHz
+const CHUNK_SAMPLES = 1600; // 100 ms of mic audio per message
+
+// AudioWorklet: converts mic audio (already at 16 kHz) to Int16 chunks.
+const CAPTURE_WORKLET = `
+class PcmCapture extends AudioWorkletProcessor {
+  constructor() { super(); this.buf = new Int16Array(${CHUNK_SAMPLES}); this.n = 0; }
+  process(inputs) {
+    const ch = inputs[0][0];
+    if (ch) for (let i = 0; i < ch.length; i++) {
+      const s = Math.max(-1, Math.min(1, ch[i]));
+      this.buf[this.n++] = s < 0 ? s * 0x8000 : s * 0x7fff;
+      if (this.n === this.buf.length) {
+        this.port.postMessage(this.buf.buffer, [this.buf.buffer]);
+        this.buf = new Int16Array(${CHUNK_SAMPLES});
+        this.n = 0;
+      }
+    }
+    return true;
+  }
+}
+registerProcessor("pcm-capture", PcmCapture);`;
+
+const $ = id => document.getElementById(id);
+const toggleBtn = $("toggle"), timerEl = $("timer"), logEl = $("log");
+
+let s = null; // current session state, null when idle
+
+function setStatus(text, mode = "") {
+  $("statusText").textContent = text;
+  $("status").className = "status" + (mode === "error" ? " error" : "");
+  $("dot").className = "dot" + (mode === "live" ? " live" : mode === "speaking" ? " speaking" : "");
+}
+
+function fmt(sec) {
+  sec = Math.max(0, Math.ceil(sec));
+  return `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, "0")}`;
+}
+
+function toBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let bin = "";
+  for (let i = 0; i < bytes.length; i += 0x8000) {
+    bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
+  }
+  return btoa(bin);
+}
+
+// ---- Transcript --------------------------------------------------------
+function bubble(role) {
+  const el = document.createElement("div");
+  el.className = "msg " + role;
+  el.innerHTML = `<span class="who">${role === "ai" ? "Partner" : "You"}</span><span class="text"></span>`;
+  logEl.appendChild(el);
+  return el;
+}
+function appendText(role, text) {
+  if (!text) return;
+  const key = role === "ai" ? "aiBubble" : "userBubble";
+  if (!s[key]) s[key] = bubble(role);
+  s[key].querySelector(".text").textContent += text;
+  s[key].scrollIntoView({ block: "nearest" });
+}
+
+// ---- Playback ----------------------------------------------------------
+function playChunk(b64) {
+  const bin = atob(b64);
+  const pcm = new Int16Array(bin.length >> 1);
+  for (let i = 0; i < pcm.length; i++) {
+    pcm[i] = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8);
+  }
+  const buf = s.playCtx.createBuffer(1, pcm.length, OUT_RATE);
+  const data = buf.getChannelData(0);
+  for (let i = 0; i < pcm.length; i++) data[i] = pcm[i] / 0x8000;
+  const src = s.playCtx.createBufferSource();
+  src.buffer = buf;
+  src.connect(s.playCtx.destination);
+  const now = s.playCtx.currentTime;
+  s.nextPlayTime = Math.max(s.nextPlayTime, now + 0.05);
+  src.start(s.nextPlayTime);
+  s.nextPlayTime += buf.duration;
+  s.sources.add(src);
+  src.onended = () => {
+    if (!s) return;
+    s.sources.delete(src);
+    if (!s.sources.size) setStatus("מקשיב — אפשר לדבר", "live");
+  };
+  setStatus("השותף מדבר — אפשר לקטוע", "speaking");
+}
+
+// Barge-in: drop everything queued so the AI goes quiet immediately.
+function stopPlayback() {
+  for (const src of s.sources) { try { src.stop(); } catch (e) {} }
+  s.sources.clear();
+  s.nextPlayTime = 0;
+}
+
+// ---- Server messages ---------------------------------------------------
+function onServerMessage(msg) {
+  if (msg.setupComplete) {
+    s.ready = true;
+    if (!s.startedAt) {
+      s.startedAt = Date.now();
+      s.timerId = setInterval(tick, 250);
+      // Native audio models wait for input; nudge the partner to open.
+      send({ realtimeInput: { text: "Hi! I'm ready to practice." } });
+    }
+    setStatus("מקשיב — אפשר לדבר", "live");
+    return;
+  }
+  if (msg.sessionResumptionUpdate) {
+    const u = msg.sessionResumptionUpdate;
+    if (u.resumable && u.newHandle) s.resumeHandle = u.newHandle;
+    return;
+  }
+  if (msg.goAway) {
+    // The connection (not the session) is about to end: resume on a new one.
+    reconnect();
+    return;
+  }
+  const c = msg.serverContent;
+  if (!c) return;
+  if (c.interrupted) {
+    stopPlayback();
+    if (s.aiBubble) s.aiBubble.classList.add("interrupted");
+    s.aiBubble = null;
+    setStatus("מקשיב — אפשר לדבר", "live");
+  }
+  if (c.inputTranscription) appendText("user", c.inputTranscription.text);
+  if (c.modelTurn || c.outputTranscription) s.userBubble = null; // user's turn is over
+  for (const part of (c.modelTurn && c.modelTurn.parts) || []) {
+    if (part.inlineData && part.inlineData.data) playChunk(part.inlineData.data);
+  }
+  if (c.outputTranscription) appendText("ai", c.outputTranscription.text);
+  if (c.turnComplete) s.aiBubble = null;
+}
+
+function send(obj) {
+  if (s && s.ws && s.ws.readyState === WebSocket.OPEN) s.ws.send(JSON.stringify(obj));
+}
+
+// ---- Connection --------------------------------------------------------
+function connect() {
+  const { token, apiVersion, setup } = s.auth;
+  const url = "wss://generativelanguage.googleapis.com/ws/google.ai.generativelanguage." +
+    `${apiVersion}.GenerativeService.BidiGenerateContentConstrained?access_token=${encodeURIComponent(token)}`;
+  const ws = new WebSocket(url);
+  s.ws = ws;
+  s.ready = false;
+  ws.onopen = () => {
+    ws.send(JSON.stringify({
+      setup: { ...setup, sessionResumption: s.resumeHandle ? { handle: s.resumeHandle } : {} },
+    }));
+  };
+  ws.onmessage = async ev => {
+    if (!s || s.ws !== ws) return;
+    const text = typeof ev.data === "string" ? ev.data : await ev.data.text();
+    try { onServerMessage(JSON.parse(text)); } catch (e) { console.error(e, text); }
+  };
+  ws.onclose = ev => {
+    if (!s || s.ws !== ws) return; // an old connection we replaced on purpose
+    if (s.resumeHandle && ev.code !== 1000 && s.reconnects < 3 && remaining() > 5) {
+      reconnect();
+    } else {
+      const why = ev.reason ? ` (${ev.reason})` : ev.code !== 1000 ? ` (code ${ev.code})` : "";
+      end(s.startedAt ? "השיחה נותקה" + why : "החיבור נכשל" + why, "error");
+    }
+  };
+}
+
+function reconnect() {
+  if (!s || !s.resumeHandle) { end("החיבור הסתיים", "error"); return; }
+  s.reconnects++;
+  const old = s.ws;
+  s.ws = null;
+  try { old.close(); } catch (e) {}
+  stopPlayback();
+  setStatus("מתחבר מחדש…");
+  connect();
+}
+
+function remaining() {
+  return s.startedAt ? s.auth.maxSeconds - (Date.now() - s.startedAt) / 1000 : s.auth.maxSeconds;
+}
+
+function tick() {
+  if (!s) return;
+  const left = remaining();
+  timerEl.textContent = fmt(left);
+  timerEl.classList.toggle("low", left <= 60);
+  if (left <= 0) end("נגמרו 10 הדקות — כל הכבוד!");
+}
+
+// ---- Start / stop ------------------------------------------------------
+async function start() {
+  toggleBtn.disabled = true;
+  logEl.textContent = "";
+  timerEl.classList.remove("low");
+  setStatus("מתחבר…");
+  // Create the audio contexts inside the click so Chrome lets them play.
+  s = {
+    micCtx: new AudioContext({ sampleRate: IN_RATE }),
+    playCtx: new AudioContext({ sampleRate: OUT_RATE }),
+    sources: new Set(), nextPlayTime: 0, reconnects: 0,
+    resumeHandle: null, startedAt: 0, aiBubble: null, userBubble: null,
+  };
+  const session = s;
+  try {
+    let res;
+    try {
+      res = await fetch("api/live-token", { method: "POST" });
+    } catch (e) {
+      throw new Error("שיחה קולית עובדת רק דרך השרת המקומי (open.vbs)");
+    }
+    const auth = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(auth.error || `שגיאה ${res.status}`);
+    if (s !== session) return;
+    s.auth = auth;
+    timerEl.textContent = fmt(auth.maxSeconds);
+
+    s.stream = await navigator.mediaDevices.getUserMedia({
+      audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
+    });
+    if (s !== session) { s.stream.getTracks().forEach(t => t.stop()); return; }
+    const workletUrl = URL.createObjectURL(new Blob([CAPTURE_WORKLET], { type: "text/javascript" }));
+    await s.micCtx.audioWorklet.addModule(workletUrl);
+    URL.revokeObjectURL(workletUrl);
+    const node = new AudioWorkletNode(s.micCtx, "pcm-capture");
+    node.port.onmessage = ev => {
+      if (s && s.ready) {
+        send({ realtimeInput: { audio: { data: toBase64(ev.data), mimeType: `audio/pcm;rate=${IN_RATE}` } } });
+      }
+    };
+    s.micCtx.createMediaStreamSource(s.stream).connect(node);
+
+    connect();
+    toggleBtn.textContent = "סיום שיחה";
+    toggleBtn.classList.add("stop");
+    toggleBtn.disabled = false;
+  } catch (err) {
+    const msg = err.name === "NotAllowedError" ? "אין הרשאה למיקרופון" : err.message;
+    if (s === session) end(msg, "error");
+  }
+}
+
+function end(message = "השיחה הסתיימה", mode = "") {
+  if (!s) return;
+  const old = s;
+  s = null;
+  clearInterval(old.timerId);
+  if (old.ws) { old.ws.onclose = null; try { old.ws.close(1000); } catch (e) {} }
+  for (const src of old.sources) { try { src.stop(); } catch (e) {} }
+  if (old.stream) old.stream.getTracks().forEach(t => t.stop());
+  old.micCtx.close().catch(() => {});
+  old.playCtx.close().catch(() => {});
+  toggleBtn.textContent = "התחלת שיחה";
+  toggleBtn.classList.remove("stop");
+  toggleBtn.disabled = false;
+  setStatus(message, mode);
+}
+
+toggleBtn.addEventListener("click", () => (s ? end() : start()));
+window.addEventListener("pagehide", () => end());
+</script>
+</body>
+</html>

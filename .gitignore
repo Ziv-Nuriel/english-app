@@ -1,2 +1,4 @@
 .wrangler/
 node_modules/
+local/api-key.txt
+.env

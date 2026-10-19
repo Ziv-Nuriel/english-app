@@ -1042,7 +1042,9 @@ function loadProgress() {
   } catch (e) {}
 }
 
-const DIALOGUE_API_URL = ""; // paste your deployed Cloudflare Worker URL here to enable AI-powered replies
+// When served by local/serve.js the AI runs through its /api/dialogue route;
+// otherwise paste your deployed Cloudflare Worker URL here.
+const DIALOGUE_API_URL = ["localhost", "127.0.0.1"].includes(location.hostname) ? "/api/dialogue" : "";
 const DIALOGUE_API_TOKEN = ""; // must match the Worker's APP_TOKEN secret
 
 async function getDialogueResponse(stage, log, message, opts = {}) {
@@ -1724,6 +1726,10 @@ function renderDialogueQuestion(q, stage, logKey) {
 const SPEAK_MAX_TRIES = 3;
 const SPEAK_PASS = 80;
 const SpeechRecognitionCtor = window.SpeechRecognition || window.webkitSpeechRecognition;
+// Hands-free: one tap turns the mic on and it keeps listening between tries
+// and across speaking questions until tapped off.
+let micHandsFree = false;
+const MIC_RESTART_DELAY = 700;
 
 function normalizeSpoken(str) {
   return str.toLowerCase()
@@ -1902,7 +1908,18 @@ function renderSpeakQuestion(q) {
 
   micBtn.onclick = () => {
     if (done) return;
-    if (recognition) { recognition.stop(); return; }
+    if (recognition || micHandsFree) {
+      micHandsFree = false;
+      if (recognition) recognition.stop();
+      else micBtn.classList.remove("listening");
+      return;
+    }
+    micHandsFree = true;
+    startListening();
+  };
+
+  function startListening() {
+    if (done || recognition || !micBtn.isConnected) return;
     recognition = new SpeechRecognitionCtor();
     recognition.lang = "en-US";
     recognition.interimResults = false;
@@ -1931,29 +1948,41 @@ function renderSpeakQuestion(q) {
     };
     recognition.onerror = e => {
       if (e.error === "not-allowed" || e.error === "service-not-allowed") {
+        micHandsFree = false;
         status.textContent = "צריך לאשר גישה למיקרופון בדפדפן כדי לתרגל דיבור.";
+      } else if (e.error === "no-speech" && micHandsFree) {
+        // Silence timeout — onend restarts listening.
+      } else if (e.error === "network") {
+        micHandsFree = false;
+        status.textContent = "זיהוי הדיבור צריך חיבור לאינטרנט.";
       } else if (e.error === "no-speech") {
         status.textContent = "Didn't hear anything — tap the mic and try again.";
-      } else if (e.error === "network") {
-        status.textContent = "זיהוי הדיבור צריך חיבור לאינטרנט.";
       } else if (e.error !== "aborted") {
+        micHandsFree = false;
         status.textContent = "Something went wrong — tap the mic and try again.";
       }
     };
     recognition.onend = () => {
       recognition = null;
+      if (micHandsFree && !done && micBtn.isConnected) {
+        // Short pause so the feedback sound isn't picked up as speech.
+        setTimeout(startListening, MIC_RESTART_DELAY);
+        return;
+      }
       micBtn.classList.remove("listening");
-      if (!done && status.textContent === "Listening…") status.textContent = "Tap the mic and say the sentence in English";
+      if (!done && status.textContent.startsWith("Listening…")) status.textContent = "Tap the mic and say the sentence in English";
     };
 
     try {
       recognition.start();
       micBtn.classList.add("listening");
-      status.textContent = "Listening…";
+      if (!tries) status.textContent = "Listening… (tap the mic to turn it off)";
     } catch (e) {
       recognition = null;
     }
-  };
+  }
+
+  if (micHandsFree) startListening();
 }
 
 function renderOrderQuestion(q) {
