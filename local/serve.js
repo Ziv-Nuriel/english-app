@@ -42,6 +42,16 @@ const LIVE_SETUP = {
     speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } },
   },
   systemInstruction: { parts: [{ text: LIVE_SYSTEM_PROMPT }] },
+  // Room noise must not count as speech: start less eagerly, and end the
+  // learner's turn after 0.7 s of quiet so the partner replies promptly.
+  realtimeInputConfig: {
+    automaticActivityDetection: {
+      startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
+      endOfSpeechSensitivity: "END_SENSITIVITY_HIGH",
+      prefixPaddingMs: 300,
+      silenceDurationMs: 700,
+    },
+  },
   inputAudioTranscription: {},
   outputAudioTranscription: {},
 };

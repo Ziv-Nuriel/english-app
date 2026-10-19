@@ -85,6 +85,21 @@
   .dot.live { background: var(--accent); animation: pulse 1.2s ease-in-out infinite; }
   .dot.speaking { background: var(--accent); }
   @keyframes pulse { 50% { opacity: .35; } }
+  .meter {
+    height: .35rem;
+    background: var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+    margin: -.4rem 0 1rem;
+  }
+  .meter span {
+    display: block;
+    height: 100%;
+    width: 0;
+    background: var(--ink-soft);
+    transition: width .08s linear;
+  }
+  .meter.open span { background: var(--accent); }
   .log {
     background: var(--card);
     border: 1px solid var(--rule);
@@ -136,6 +151,7 @@
       <span class="timer" id="timer">10:00</span>
     </div>
     <div class="status" id="status"><span class="dot" id="dot"></span><span id="statusText">מוכן</span></div>
+    <div class="meter" id="meter" title="עוצמת המיקרופון"><span id="meterBar"></span></div>
     <div class="log" id="log"></div>
   </div>
 
@@ -143,6 +159,12 @@
 const IN_RATE = 16000;   // Live API input: 16-bit PCM, 16 kHz
 const OUT_RATE = 24000;  // Live API output: 16-bit PCM, 24 kHz
 const CHUNK_SAMPLES = 1600; // 100 ms of mic audio per message
+
+// Noise gate: steady room noise (fans, hum) would keep the server's voice
+// detection "hearing speech" forever, so it would never reply. Below the
+// gate we send digital silence instead. The threshold follows the room's
+// noise floor, and the gate stays open briefly so word endings aren't cut.
+const GATE_MIN = 0.012, GATE_MAX = 0.08, GATE_RATIO = 2.5, GATE_HOLD_MS = 600;
 
 // AudioWorklet: converts mic audio (already at 16 kHz) to Int16 chunks.
 const CAPTURE_WORKLET = `
@@ -187,6 +209,21 @@ function toBase64(buffer) {
     bin += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000));
   }
   return btoa(bin);
+}
+
+function gate(chunk) {
+  let sum = 0;
+  for (let i = 0; i < chunk.length; i++) sum += chunk[i] * chunk[i];
+  const rms = Math.sqrt(sum / chunk.length) / 0x8000;
+  // Floor drops fast toward quiet levels and creeps up slowly (~1%/chunk).
+  s.noiseFloor = rms < s.noiseFloor ? s.noiseFloor * 0.8 + rms * 0.2 : s.noiseFloor * 1.01;
+  const threshold = Math.min(GATE_MAX, Math.max(GATE_MIN, s.noiseFloor * GATE_RATIO));
+  const now = performance.now();
+  if (rms > threshold) s.gateUntil = now + GATE_HOLD_MS;
+  const open = now < s.gateUntil;
+  $("meterBar").style.width = Math.min(100, rms * 400) + "%";
+  $("meter").classList.toggle("open", open);
+  return open ? chunk : new Int16Array(chunk.length);
 }
 
 // ---- Transcript --------------------------------------------------------
@@ -259,6 +296,10 @@ function onServerMessage(msg) {
   if (msg.goAway) {
     // The connection (not the session) is about to end: resume on a new one.
     reconnect();
+    return;
+  }
+  if (msg.voiceActivity && msg.voiceActivity.type === "ACTIVITY_START") {
+    s.userBubble = null; // each utterance gets its own bubble
     return;
   }
   const c = msg.serverContent;
@@ -345,7 +386,7 @@ async function start() {
     micCtx: new AudioContext({ sampleRate: IN_RATE }),
     playCtx: new AudioContext({ sampleRate: OUT_RATE }),
     sources: new Set(), nextPlayTime: 0, reconnects: 0,
-    resumeHandle: null, startedAt: 0, aiBubble: null, userBubble: null,
+    resumeHandle: null, startedAt: 0, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
   };
   const session = s;
   try {
@@ -370,8 +411,10 @@ async function start() {
     URL.revokeObjectURL(workletUrl);
     const node = new AudioWorkletNode(s.micCtx, "pcm-capture");
     node.port.onmessage = ev => {
-      if (s && s.ready) {
-        send({ realtimeInput: { audio: { data: toBase64(ev.data), mimeType: `audio/pcm;rate=${IN_RATE}` } } });
+      if (!s) return;
+      const pcm = gate(new Int16Array(ev.data));
+      if (s.ready) {
+        send({ realtimeInput: { audio: { data: toBase64(pcm.buffer), mimeType: `audio/pcm;rate=${IN_RATE}` } } });
       }
     };
     s.micCtx.createMediaStreamSource(s.stream).connect(node);
@@ -396,6 +439,8 @@ function end(message = "השיחה הסתיימה", mode = "") {
   if (old.stream) old.stream.getTracks().forEach(t => t.stop());
   old.micCtx.close().catch(() => {});
   old.playCtx.close().catch(() => {});
+  $("meterBar").style.width = "0";
+  $("meter").classList.remove("open");
   toggleBtn.textContent = "התחלת שיחה";
   toggleBtn.classList.remove("stop");
   toggleBtn.disabled = false;
