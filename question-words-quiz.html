@@ -638,6 +638,7 @@
   <div class="card" id="quizCard"></div>
 </div>
 
+<script src="voice-chat.js"></script>
 <script>
 const stages = [
   {
@@ -998,6 +999,7 @@ const FREE_CHAT_PASS_GRAMMAR = 70;
 stages.forEach((s, i) => {
   s.freeChat = { scenario: FREE_CHAT_SCENARIOS[i] };
   s.questions.push({ type: "freechat" });
+  s.questions.push({ type: "voicechat" });
 });
 
 let stageIndex = 0;
@@ -1126,6 +1128,7 @@ function goToStage(i) {
 }
 
 function render() {
+  VoiceChat.stop(); // leaving the card ends any live conversation
   stageProgress[stageIndex] = current;
   saveProgress();
   const card = document.getElementById("quizCard");
@@ -1236,6 +1239,23 @@ function render() {
     return;
   }
 
+  if (q.type === "voicechat") {
+    card.innerHTML = `
+      <div class="dialogue-scenario">${stage.freeChat.scenario}</div>
+      <div class="dialogue-cue"><strong>שיחה קולית:</strong> מדברים באנגלית בזמן אמת עם הדמות — היא מדברת לאט וברור, מכוונת לנושא של השלב ומתקנת טעויות בעדינות. אפשר לקטוע אותה באמצע משפט. עד 10 דקות לשיחה, מומלץ עם אוזניות.</div>
+      <div id="voiceChat"></div>
+    `;
+    VoiceChat.mount(document.getElementById("voiceChat"), {
+      stage: stageIndex,
+      onFinish(talkedSeconds) {
+        if (talkedSeconds >= 60) { score++; saveProgress(); }
+        current++;
+        render();
+      },
+    });
+    return;
+  }
+
   if (q.type === "speak") {
     card.innerHTML = `
       <div class="order-label speak-head"><span>Say it in English</span><span id="speakAvg"></span></div>
@@ -1294,7 +1314,8 @@ function getSections(stage) {
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
   const speakCount = typeof stage.speakCount === "number" ? stage.speakCount : 0;
   const freeCount = stage.questions.filter(q => q.type === "freechat").length;
-  const translateCount = stage.questions.length - mcCount - orderCount - speakCount - storyCount - freeCount;
+  const voiceCount = stage.questions.filter(q => q.type === "voicechat").length;
+  const translateCount = stage.questions.length - mcCount - orderCount - speakCount - storyCount - freeCount - voiceCount;
 
   const sections = [];
   let pos = 0;
@@ -1310,6 +1331,7 @@ function getSections(stage) {
   if (speakCount > 0) { sections.push({ label: "Speaking", start: pos, len: speakCount }); pos += speakCount; }
   if (storyCount > 0) { sections.push({ label: "Dialogue", start: pos, len: storyCount }); pos += storyCount; }
   if (freeCount > 0) { sections.push({ label: "Free Chat", start: pos, len: freeCount }); pos += freeCount; }
+  if (voiceCount > 0) { sections.push({ label: "Voice Chat", start: pos, len: voiceCount }); pos += voiceCount; }
   return sections;
 }
 

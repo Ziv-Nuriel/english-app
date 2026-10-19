@@ -1,10 +1,35 @@
 {
   "accents": [
-    { "id": "american", "label": "אמריקאי", "voice": "Kore", "instruction": "Speak with a clear, neutral General American accent." },
-    { "id": "british", "label": "בריטי", "voice": "Charon", "instruction": "Speak with a clear Standard Southern British (RP-style) accent, using British vocabulary and spelling choices (e.g. 'flat', 'holiday', 'lift')." },
-    { "id": "australian", "label": "אוסטרלי", "voice": "Puck", "instruction": "Speak with a clear, friendly Australian accent and occasional mild Australian expressions, but keep everything easy to understand." },
-    { "id": "irish", "label": "אירי", "voice": "Aoede", "instruction": "Speak with a gentle, clear Irish accent, keeping your words easy to understand." },
-    { "id": "indian", "label": "הודי", "voice": "Fenrir", "instruction": "Speak with a clear Indian English accent, keeping your words easy to understand." }
+    {
+      "id": "american",
+      "label": "אמריקאי",
+      "voice": "Kore",
+      "instruction": "Speak with a clear, neutral General American accent."
+    },
+    {
+      "id": "british",
+      "label": "בריטי",
+      "voice": "Charon",
+      "instruction": "Speak with a clear Standard Southern British (RP-style) accent, using British vocabulary and spelling choices (e.g. 'flat', 'holiday', 'lift')."
+    },
+    {
+      "id": "australian",
+      "label": "אוסטרלי",
+      "voice": "Puck",
+      "instruction": "Speak with a clear, friendly Australian accent and occasional mild Australian expressions, but keep everything easy to understand."
+    },
+    {
+      "id": "irish",
+      "label": "אירי",
+      "voice": "Aoede",
+      "instruction": "Speak with a gentle, clear Irish accent, keeping your words easy to understand."
+    },
+    {
+      "id": "indian",
+      "label": "הודי",
+      "voice": "Fenrir",
+      "instruction": "Speak with a clear Indian English accent, keeping your words easy to understand."
+    }
   ],
   "stages": [
     {
@@ -42,12 +67,6 @@
       "sub": "תשובות קצרות — Yes, I do / No, I didn't",
       "scenario": "You are Alex, the learner's curious friend, who loves asking yes/no questions.",
       "focus": "Ask the learner many yes/no questions with do/does/did/is/are and expect correct short answers (Yes, I do / No, she doesn't / Yes, I did / No, I'm not). Correct wrong auxiliaries (e.g. 'Did you sleep well?' 'Yes, I do' -> 'Yes, I did') and answers that are only 'Yes' or 'No', then encourage the learner to ask you questions too."
-    },
-    {
-      "title": "Free Conversation",
-      "sub": "שיחה חופשית על כל נושא",
-      "scenario": "You are a friendly conversation partner meeting the learner for a relaxed chat.",
-      "focus": "Let the learner choose the topic. Use a natural mix of grammar and correct the most important mistakes."
     }
   ]
 }
