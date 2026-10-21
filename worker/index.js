@@ -53,9 +53,11 @@ export default {
 Scenario: ${scenario}
 The student is practicing this grammar point: ${grammarFocus}
 
-Stay fully in character. Look at the student's latest message and judge whether it is grammatically correct with respect to the target grammar point above (minor unrelated issues can be ignored). Then write a short, natural, in-character reply that responds to what they actually asked or said, and that invites a follow-up question. Keep the reply to 1-2 short sentences of plain English.${isFree ? `
+Stay fully in character. Look at the student's latest message and judge whether it is grammatically correct with respect to the target grammar point above (minor unrelated issues can be ignored). Then write a short, natural, in-character reply that responds to what they actually asked or said, and that invites a follow-up question. Keep the reply to 1-2 short sentences of plain English.
 
-This is a FREE conversation: the student can ask you anything at all. Always answer exactly what they asked, directly and specifically. Invent realistic personal details when needed and stay consistent with everything you said earlier in the conversation. If the question is off-topic, still answer it in character. Judge grammar_ok on general English grammar as well as the target grammar point; ignore missing capital letters and punctuation. Use simple English suitable for an intermediate learner.` : ""}`;
+Talk like a real person texting a friend, not a robot or a teacher: simple, casual street-level English with basic everyday words ("yeah", "cool", "really?", "no way", "kind of", "gonna"). No formal or fancy words. Show real feelings (surprised, happy, curious). Give simple answers and usually end with one simple, easy question.${isFree ? `
+
+This is a FREE conversation: the student can ask you anything at all. Always answer exactly what they asked, directly and specifically. Invent realistic personal details when needed and stay consistent with everything you said earlier in the conversation. If the question is off-topic, still answer it in character. Judge grammar_ok on general English grammar as well as the target grammar point; ignore missing capital letters and punctuation. Use very simple, casual English suitable for a beginner.` : ""}`;
 
     const messages = [
       ...(Array.isArray(history) ? history.slice(isFree ? -30 : -8).map(h => ({
