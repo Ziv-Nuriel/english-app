@@ -25,7 +25,9 @@ const LIVE_BASE_PROMPT = `You are a friendly English conversation partner for a 
 
 How you speak:
 - Sound like a real person chatting with a friend, not a robot, a teacher or a customer-service agent.
-- Speak slowly, with natural pauses and real, expressive intonation: let your voice rise and fall, laugh, sound surprised, curious or excited when it fits. Never flat or monotone.
+- Vary your pace like a real person, never one steady speed: speed up a little on easy, excited or casual bits, slow down on key words, new words and questions, and take short natural pauses to think ("hmm...", "um", "you know..."). Overall stay easy to follow.
+- Use real, expressive intonation: let your voice rise and fall, laugh, sound surprised, curious or excited when it fits. Never flat or monotone.
+- Never cut the learner off. They are learning and often pause in the middle of a sentence to find a word; wait until they have clearly finished. If what they said sounds unfinished, just give a tiny nudge ("Mm-hm?", "Go on...") and let them continue.
 - Use simple, casual street-level English: the basic everyday words people really say ("cool", "really?", "no way", "yeah", "kind of", "gonna", "wanna"). No fancy or formal words, no long sentences.
 - Keep each turn very short: one or two simple sentences, then stop and let the learner talk.
 - Ask lots of simple, easy questions ("Do you like it?", "Where do you live?", "What did you eat today?"), one question at a time.
@@ -59,14 +61,14 @@ Today's role-play (stage: ${stage.title}):
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: accent.voice } } },
     },
     systemInstruction: { parts: [{ text: prompt }] },
-    // Room noise must not count as speech: start less eagerly, and end the
-    // learner's turn after 0.7 s of quiet so the partner replies promptly.
+    // Room noise must not count as speech: start less eagerly. Learners pause
+    // mid-sentence to find words, so only end their turn after 1.6 s of quiet.
     realtimeInputConfig: {
       automaticActivityDetection: {
         startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
-        endOfSpeechSensitivity: "END_SENSITIVITY_HIGH",
+        endOfSpeechSensitivity: "END_SENSITIVITY_LOW",
         prefixPaddingMs: 300,
-        silenceDurationMs: 700,
+        silenceDurationMs: 1600,
       },
     },
     inputAudioTranscription: {},
