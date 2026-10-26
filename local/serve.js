@@ -1,4 +1,4 @@
-// Tiny static server so Chrome treats the app as http://localhost:8137 —
+﻿// Tiny static server so Chrome treats the app as http://localhost:8137 ג€”
 // unlike file://, Chrome remembers the microphone permission for it.
 const http = require("http");
 const fs = require("fs");
@@ -61,14 +61,17 @@ Today's role-play (stage: ${stage.title}):
       speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: accent.voice } } },
     },
     systemInstruction: { parts: [{ text: prompt }] },
-    // Room noise must not count as speech: start less eagerly. Learners pause
-    // mid-sentence to find words, so only end their turn after 1.6 s of quiet.
+    // Room noise must not count as speech: start less eagerly, and keep end
+    // sensitivity HIGH (LOW lets background noise hold the turn open forever,
+    // so the partner never replies). Learners pause mid-sentence to find
+    // words, but a longer wait (1-1.6 s) also kept the turn open in noisy rooms,
+    // so end it after 0.7 s; the prompt tells the partner to wait if unfinished.
     realtimeInputConfig: {
       automaticActivityDetection: {
         startOfSpeechSensitivity: "START_SENSITIVITY_LOW",
-        endOfSpeechSensitivity: "END_SENSITIVITY_LOW",
+        endOfSpeechSensitivity: "END_SENSITIVITY_HIGH",
         prefixPaddingMs: 300,
-        silenceDurationMs: 1600,
+        silenceDurationMs: 700,
       },
     },
     inputAudioTranscription: {},
