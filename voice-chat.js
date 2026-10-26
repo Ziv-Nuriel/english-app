@@ -342,14 +342,13 @@ registerProcessor("pcm-capture", PcmCapture);`;
   function onServerMessage(msg) {
     if (msg.setupComplete) {
       s.ready = true;
-      if (!s.startedAt) {
+      // The learner opens the conversation: the partner waits for their hello.
+      const first = !s.startedAt;
+      if (first) {
         s.startedAt = Date.now();
         s.timerId = setInterval(tick, 250);
-        // Native audio models wait for input; nudge the partner to open
-        // (just a hello, so it starts with small talk, not the practice).
-        send({ realtimeInput: { text: "Hi!" } });
       }
-      setStatus("מקשיב — אפשר לדבר", "live");
+      setStatus(first ? "מקשיב — תפתחו אתם את השיחה" : "מקשיב — אפשר לדבר", "live");
       return;
     }
     if (msg.sessionResumptionUpdate) {
