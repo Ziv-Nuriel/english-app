@@ -47,6 +47,11 @@ registerProcessor("pcm-capture", PcmCapture);`;
   .vc-chip.active { background: var(--accent); border-color: var(--accent); color: var(--paper); }
   .vc-chip:disabled { cursor: default; }
   .vc-chip:disabled:not(.active) { opacity: .45; }
+  .vc-mic {
+    font: inherit; font-size: .85rem; max-width: 100%; margin-bottom: 1rem;
+    padding: .4rem .6rem; border-radius: 6px;
+    background: var(--card); color: var(--ink); border: 1px solid var(--rule);
+  }
   .vc-log {
     border: 1px solid var(--rule); border-radius: 6px; padding: 1rem;
     min-height: 10rem; display: flex; flex-direction: column; gap: .6rem;
@@ -134,6 +139,8 @@ registerProcessor("pcm-capture", PcmCapture);`;
     container.innerHTML = `
       <p class="vc-label">מבטא</p>
       <div class="vc-chips" data-vc="accents"></div>
+      <p class="vc-label">מיקרופון</p>
+      <select class="vc-mic" data-vc="mic"><option value="">ברירת המחדל של המחשב</option></select>
       <div class="vc-log" data-vc="log" dir="ltr"></div>
       <div class="vc-rec" data-vc="rec"></div>
       <div class="vc-bar">
@@ -148,7 +155,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     const q = name => container.querySelector(`[data-vc="${name}"]`);
     ui = {
       container, opts,
-      accents: q("accents"), log: q("log"), rec: q("rec"), toggle: q("toggle"), timer: q("timer"),
+      accents: q("accents"), mic: q("mic"), log: q("log"), rec: q("rec"), toggle: q("toggle"), timer: q("timer"),
       status: q("status"), dot: q("dot"), statusText: q("statusText"),
       meter: q("meter"), meterBar: q("meterBar"), finish: q("finish"),
     };
@@ -167,6 +174,11 @@ registerProcessor("pcm-capture", PcmCapture);`;
       renderAccents();
       playSample(btn.dataset.accent);
     };
+    ui.mic.onchange = () => {
+      prefs.micId = ui.mic.value;
+      savePrefs();
+    };
+    renderMics();
     loadTopics().then(topics => {
       if (ui !== mine) return;
       ui.topics = topics;
@@ -215,8 +227,24 @@ registerProcessor("pcm-capture", PcmCapture);`;
     ).join("");
   }
 
+  // Device names are only listed once the site has mic permission, so this
+  // runs again after each start.
+  async function renderMics() {
+    if (!ui || !navigator.mediaDevices || !navigator.mediaDevices.enumerateDevices) return;
+    const mine = ui;
+    const mics = (await navigator.mediaDevices.enumerateDevices().catch(() => []))
+      .filter(d => d.kind === "audioinput" && d.deviceId && d.deviceId !== "default" && d.deviceId !== "communications");
+    if (ui !== mine) return;
+    const esc = t => t.replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    ui.mic.innerHTML = `<option value="">ברירת המחדל של המחשב</option>` + mics.map((d, i) =>
+      `<option value="${esc(d.deviceId)}">${esc(d.label || "מיקרופון " + (i + 1))}</option>`).join("");
+    ui.mic.value = mics.some(d => d.deviceId === prefs.micId) ? prefs.micId : "";
+    ui.mic.disabled = !!s;
+  }
+
   function setStatus(text, mode = "") {
     if (!ui) return;
+    if (s && s.micWarned && mode !== "error") return; // keep the mic warning visible
     ui.statusText.textContent = text;
     ui.status.className = "vc-status" + (mode === "error" ? " error" : "");
     ui.dot.className = "vc-dot" + (mode === "live" ? " live" : mode === "speaking" ? " speaking" : "");
@@ -246,6 +274,14 @@ registerProcessor("pcm-capture", PcmCapture);`;
     const now = performance.now();
     if (rms > threshold) s.gateUntil = now + GATE_HOLD_MS;
     const open = now < s.gateUntil;
+    // A mic that stays at digital silence is the wrong device (e.g. a virtual
+    // VoiceMeeter input), not a quiet room: tell the learner to pick another.
+    s.micPeak = Math.max(s.micPeak, rms);
+    if (!s.micWarned && now - s.micSince > 4000 && s.micPeak < 0.001) {
+      s.micWarned = true;
+      const label = s.stream.getAudioTracks()[0].label;
+      setStatus(`לא מגיע קול מהמיקרופון${label ? ` "${label}"` : ""}: סיימו את השיחה ובחרו מיקרופון אחר`, "error");
+    }
     ui.meterBar.style.width = Math.min(100, rms * 400) + "%";
     ui.meter.classList.toggle("open", open);
     return open ? chunk : new Int16Array(chunk.length);
@@ -454,10 +490,11 @@ registerProcessor("pcm-capture", PcmCapture);`;
       micCtx: new AudioContext({ sampleRate: IN_RATE }),
       playCtx: new AudioContext({ sampleRate: OUT_RATE }),
       ui, sources: new Set(), nextPlayTime: 0, reconnects: 0,
-      resumeHandle: null, startedAt: 0, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
+      resumeHandle: null, startedAt: 0, micSince: 0, micPeak: 0, micWarned: false, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
     };
     const session = s;
     renderAccents();
+    ui.mic.disabled = true;
     try {
       let res;
       try {
@@ -475,11 +512,18 @@ registerProcessor("pcm-capture", PcmCapture);`;
       s.auth = auth;
       ui.timer.textContent = fmt(auth.maxSeconds);
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true },
-      });
+      // Chrome ignores an "ideal" deviceId, so ask for the chosen mic exactly
+      // and fall back to the default if it was unplugged.
+      const audio = { channelCount: 1, echoCancellation: true, noiseSuppression: true, autoGainControl: true };
+      const stream = await (prefs.micId
+        ? navigator.mediaDevices.getUserMedia({ audio: { ...audio, deviceId: { exact: prefs.micId } } })
+          .catch(e => e.name === "OverconstrainedError" || e.name === "NotFoundError"
+            ? navigator.mediaDevices.getUserMedia({ audio }) : Promise.reject(e))
+        : navigator.mediaDevices.getUserMedia({ audio }));
       if (s !== session) { stream.getTracks().forEach(t => t.stop()); return; }
       s.stream = stream;
+      s.micSince = performance.now();
+      renderMics();
       const workletUrl = URL.createObjectURL(new Blob([CAPTURE_WORKLET], { type: "text/javascript" }));
       await s.micCtx.audioWorklet.addModule(workletUrl);
       URL.revokeObjectURL(workletUrl);
@@ -523,6 +567,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     ui.toggle.textContent = "התחלת שיחה";
     ui.toggle.classList.remove("stop");
     ui.toggle.disabled = false;
+    ui.mic.disabled = false;
     renderAccents();
     setStatus(message, mode);
   }
