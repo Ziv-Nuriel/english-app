@@ -90,7 +90,11 @@ registerProcessor("pcm-capture", PcmCapture);`;
   .vc-meter { height: .35rem; background: var(--rule); border-radius: 3px; overflow: hidden; }
   .vc-meter span { display: block; height: 100%; width: 0; background: var(--ink-soft); transition: width .08s linear; }
   .vc-meter.open span { background: var(--accent); }
-  .vc-finish { margin-inline-start: auto; }`;
+  .vc-finish { margin-inline-start: auto; }
+  .vc-rec { margin-top: 1rem; display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; }
+  .vc-rec:empty { display: none; }
+  .vc-rec audio { flex: 1; min-width: 14rem; }
+  .vc-rec a { font-size: .85rem; color: var(--accent); }`;
 
   const PREFS_KEY = "voiceChatPrefs";
   let prefs = { accent: "american" };
@@ -120,6 +124,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
   function mount(container, opts) {
     end();
     stopSample();
+    clearRecording();
     if (!document.getElementById("vc-style")) {
       const style = document.createElement("style");
       style.id = "vc-style";
@@ -130,6 +135,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
       <p class="vc-label">מבטא</p>
       <div class="vc-chips" data-vc="accents"></div>
       <div class="vc-log" data-vc="log" dir="ltr"></div>
+      <div class="vc-rec" data-vc="rec"></div>
       <div class="vc-bar">
         <div class="vc-controls">
           <button class="vc-toggle" data-vc="toggle" disabled>התחלת שיחה</button>
@@ -142,7 +148,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     const q = name => container.querySelector(`[data-vc="${name}"]`);
     ui = {
       container, opts,
-      accents: q("accents"), log: q("log"), toggle: q("toggle"), timer: q("timer"),
+      accents: q("accents"), log: q("log"), rec: q("rec"), toggle: q("toggle"), timer: q("timer"),
       status: q("status"), dot: q("dot"), statusText: q("statusText"),
       meter: q("meter"), meterBar: q("meterBar"), finish: q("finish"),
     };
@@ -274,6 +280,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     const src = s.playCtx.createBufferSource();
     src.buffer = buf;
     src.connect(s.playCtx.destination);
+    if (s.recDest) src.connect(s.recDest);
     const now = s.playCtx.currentTime;
     s.nextPlayTime = Math.max(s.nextPlayTime, now + 0.05);
     src.start(s.nextPlayTime);
@@ -396,10 +403,47 @@ registerProcessor("pcm-capture", PcmCapture);`;
     if (left <= 0) end("נגמרו 10 הדקות — כל הכבוד!");
   }
 
+  // ---- Recording ---------------------------------------------------------
+  // The learner's mic and the partner's voice are mixed into one track in
+  // playCtx (the mic is not routed to the speakers). The clip lives only in
+  // memory and is replaced when the next conversation starts.
+  function startRecording(session) {
+    if (!("MediaRecorder" in window)) return;
+    session.recDest = session.playCtx.createMediaStreamDestination();
+    session.playCtx.createMediaStreamSource(session.stream).connect(session.recDest);
+    const type = ["audio/webm;codecs=opus", "audio/webm", "audio/mp4"].find(t => MediaRecorder.isTypeSupported(t)) || "";
+    const recorder = new MediaRecorder(session.recDest.stream, type ? { mimeType: type } : {});
+    const chunks = [];
+    recorder.ondataavailable = ev => { if (ev.data.size) chunks.push(ev.data); };
+    recorder.onstop = () => {
+      if (!chunks.length || !ui || ui !== session.ui || !ui.container.isConnected) return;
+      const blob = new Blob(chunks, { type: recorder.mimeType || "audio/webm" });
+      showRecording(URL.createObjectURL(blob), blob.type.includes("mp4") ? "m4a" : "webm");
+    };
+    recorder.start(1000);
+    session.recorder = recorder;
+  }
+
+  function showRecording(url, ext) {
+    clearRecording();
+    ui.recUrl = url;
+    ui.rec.innerHTML = `<span class="vc-label">הקלטת השיחה</span>
+      <audio controls src="${url}"></audio>
+      <a href="${url}" download="conversation.${ext}">הורדה</a>`;
+  }
+
+  function clearRecording() {
+    if (!ui) return;
+    if (ui.recUrl) URL.revokeObjectURL(ui.recUrl);
+    ui.recUrl = null;
+    ui.rec.textContent = "";
+  }
+
   // ---- Start / stop ------------------------------------------------------
   async function start() {
     if (!ui) return;
     stopSample();
+    clearRecording();
     ui.toggle.disabled = true;
     ui.log.textContent = "";
     ui.timer.classList.remove("low");
@@ -409,7 +453,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     s = {
       micCtx: new AudioContext({ sampleRate: IN_RATE }),
       playCtx: new AudioContext({ sampleRate: OUT_RATE }),
-      sources: new Set(), nextPlayTime: 0, reconnects: 0,
+      ui, sources: new Set(), nextPlayTime: 0, reconnects: 0,
       resumeHandle: null, startedAt: 0, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
     };
     const session = s;
@@ -449,6 +493,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
         }
       };
       s.micCtx.createMediaStreamSource(s.stream).connect(node);
+      try { startRecording(s); } catch (e) { console.warn("Recording unavailable", e); }
 
       connect();
       ui.toggle.textContent = "סיום שיחה";
@@ -467,6 +512,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     clearInterval(old.timerId);
     if (old.ws) { old.ws.onclose = null; try { old.ws.close(1000); } catch (e) {} }
     for (const src of old.sources) { try { src.stop(); } catch (e) {} }
+    if (old.recorder && old.recorder.state !== "inactive") old.recorder.stop();
     if (old.stream) old.stream.getTracks().forEach(t => t.stop());
     old.micCtx.close().catch(() => {});
     old.playCtx.close().catch(() => {});
