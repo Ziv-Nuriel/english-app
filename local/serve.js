@@ -1,4 +1,4 @@
-﻿// Tiny static server so Chrome treats the app as http://localhost:8137 ג€”
+// Tiny static server so Chrome treats the app as http://localhost:8137 ג€”
 // unlike file://, Chrome remembers the microphone permission for it.
 const http = require("http");
 const fs = require("fs");
