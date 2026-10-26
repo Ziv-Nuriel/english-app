@@ -345,8 +345,9 @@ registerProcessor("pcm-capture", PcmCapture);`;
       if (!s.startedAt) {
         s.startedAt = Date.now();
         s.timerId = setInterval(tick, 250);
-        // Native audio models wait for input; nudge the partner to open.
-        send({ realtimeInput: { text: "Hi! I'm ready to practice." } });
+        // Native audio models wait for input; nudge the partner to open
+        // (just a hello, so it starts with small talk, not the practice).
+        send({ realtimeInput: { text: "Hi!" } });
       }
       setStatus("מקשיב — אפשר לדבר", "live");
       return;

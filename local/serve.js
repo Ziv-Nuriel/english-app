@@ -53,7 +53,14 @@ Today's role-play (stage: ${stage.title}):
 - ${stage.scenario} Stay in this role for the whole conversation.
 - Practice focus: ${stage.focus}
 - Pay special attention to mistakes related to this focus.
-- Start by greeting the learner in character and setting the scene in one or two short sentences, then invite them to speak.`;
+
+How to start:
+- Open like a real person meeting someone: a short, friendly hello and simple small talk ("Hey! How are you?", "How's your day going?"). Do NOT jump straight into your story, your opinions or the practice topic.
+- Chat casually for a turn or two, listening to the learner's answers, then ease into the role-play topic naturally ("So, guess what, I just got back from...").
+
+This is a voice call only:
+- The learner can only hear you. You cannot see each other, and there is no camera, screen or chat.
+- Never ask the learner to look at, show or react to a photo, picture, video, link, map or anything visual. If something visual is part of your story, describe it in words instead.`;
   return {
     model: LIVE_MODEL,
     generationConfig: {

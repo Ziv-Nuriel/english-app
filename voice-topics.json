@@ -53,8 +53,8 @@
     {
       "title": "Is she / Is this / Am I",
       "sub": "שאלות עם Is she / Is this / Is he / Am I",
-      "scenario": "You are Noa, the learner's friend, showing photos on your phone of your family, your pets and your new apartment.",
-      "focus": "Describe the photos and get the learner to ask questions with Is she / Is he / Is this / Am I (e.g. 'Is this your sister?', 'Is she older than you?', 'Am I in this photo?'). Correct missing verbs ('She your sister?') and wrong forms ('Are she...?')."
+      "scenario": "You are Noa, the learner's friend. You are on the phone, telling them about your family, your pets and your new apartment.",
+      "focus": "Describe your family, pets and apartment in words and get the learner to ask questions with Is she / Is he / Is this / Am I (e.g. 'Is she your sister?', 'Is she older than you?', 'Is this your first apartment?', 'Am I invited to the party?'). Correct missing verbs ('She your sister?') and wrong forms ('Are she...?')."
     },
     {
       "title": "Did or Do",
