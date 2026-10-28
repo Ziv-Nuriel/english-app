@@ -8,6 +8,9 @@
   const IN_RATE = 16000;   // Live API input: 16-bit PCM, 16 kHz
   const OUT_RATE = 24000;  // Live API output: 16-bit PCM, 24 kHz
   const CHUNK_SAMPLES = 1600; // 100 ms of mic audio per message
+  // The model barely slows down when asked to, so the partner's voice is
+  // time-stretched in the browser (same pitch, 12% slower).
+  const PLAYBACK_SPEED = 0.88;
 
   // Noise gate: steady room noise (fans, hum) would keep the server's voice
   // detection "hearing speech" forever, so it would never reply. Below the
@@ -201,6 +204,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
       const url = URL.createObjectURL(await res.blob());
       if (preview !== mine || s) { URL.revokeObjectURL(url); return; }
       mine.audio = new Audio(url);
+      mine.audio.playbackRate = PLAYBACK_SPEED; // same pace as the conversation (pitch is kept)
       mine.audio.onended = () => {
         URL.revokeObjectURL(url);
         if (preview === mine) { preview = null; setStatus("מוכן"); }
@@ -304,15 +308,77 @@ registerProcessor("pcm-capture", PcmCapture);`;
   }
 
   // ---- Playback ----------------------------------------------------------
+  // Streaming WSOLA time-stretch: overlap-adds 20 ms Hann frames taken from
+  // the input at a smaller hop than they are written, picking each frame
+  // within ±5 ms where it best matches the previous frame's continuation, so
+  // speech gets slower without changing pitch.
+  class Stretcher {
+    constructor(speed) {
+      this.N = 480; this.Hs = this.N / 2; this.Ha = Math.round(this.Hs * speed); this.tol = 120;
+      this.win = Float32Array.from({ length: this.N }, (_, i) => 0.5 - 0.5 * Math.cos(2 * Math.PI * i / this.N));
+      this.buf = new Float32Array(0); this.base = 0; // buf[0] is absolute sample `base`
+      this.next = 0; this.prev = -1; this.tail = new Float32Array(this.Hs);
+    }
+    push(input) {
+      const merged = new Float32Array(this.buf.length + input.length);
+      merged.set(this.buf); merged.set(input, this.buf.length);
+      this.buf = merged;
+      const { N, Hs, tol, win } = this, end = this.base + this.buf.length, out = [];
+      const at = i => this.buf[i - this.base];
+      while (this.next + tol + N <= end && (this.prev < 0 || this.prev + Hs + N <= end)) {
+        let start = this.next;
+        if (this.prev >= 0) {
+          const target = this.prev + Hs;
+          let best = -Infinity;
+          for (let d = -tol; d <= tol; d++) {
+            const c = this.next + d;
+            if (c < this.base) continue;
+            let sum = 0;
+            for (let i = 0; i < N; i += 2) sum += at(c + i) * at(target + i);
+            if (sum > best) { best = sum; start = c; }
+          }
+        }
+        const frame = new Float32Array(Hs);
+        for (let i = 0; i < Hs; i++) frame[i] = this.tail[i] + at(start + i) * win[i];
+        for (let i = 0; i < Hs; i++) this.tail[i] = at(start + Hs + i) * win[Hs + i];
+        out.push(frame);
+        this.prev = start;
+        this.next += this.Ha;
+      }
+      const keep = Math.max(this.base, Math.min(this.next - tol, this.prev < 0 ? this.next : this.prev + Hs));
+      this.buf = this.buf.slice(keep - this.base);
+      this.base = keep;
+      return concat(out);
+    }
+    // End of a turn: release the last half-frame (it already fades out).
+    flush() {
+      const rest = this.tail;
+      this.tail = new Float32Array(this.Hs);
+      this.buf = new Float32Array(0); this.base = this.next = 0; this.prev = -1;
+      return rest;
+    }
+  }
+
+  function concat(parts) {
+    const all = new Float32Array(parts.reduce((n, p) => n + p.length, 0));
+    let o = 0;
+    for (const p of parts) { all.set(p, o); o += p.length; }
+    return all;
+  }
+
   function playChunk(b64) {
     const bin = atob(b64);
-    const pcm = new Int16Array(bin.length >> 1);
+    const pcm = new Float32Array(bin.length >> 1);
     for (let i = 0; i < pcm.length; i++) {
-      pcm[i] = bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8);
+      pcm[i] = ((bin.charCodeAt(2 * i) | (bin.charCodeAt(2 * i + 1) << 8)) << 16 >> 16) / 0x8000;
     }
-    const buf = s.playCtx.createBuffer(1, pcm.length, OUT_RATE);
-    const data = buf.getChannelData(0);
-    for (let i = 0; i < pcm.length; i++) data[i] = pcm[i] / 0x8000;
+    schedule(s.stretch.push(pcm));
+  }
+
+  function schedule(data) {
+    if (!data.length) return;
+    const buf = s.playCtx.createBuffer(1, data.length, OUT_RATE);
+    buf.copyToChannel(data, 0);
     const src = s.playCtx.createBufferSource();
     src.buffer = buf;
     src.connect(s.playCtx.destination);
@@ -336,6 +402,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     for (const src of s.sources) { try { src.stop(); } catch (e) {} }
     s.sources.clear();
     s.nextPlayTime = 0;
+    s.stretch = new Stretcher(PLAYBACK_SPEED);
   }
 
   // ---- Server messages ---------------------------------------------------
@@ -379,7 +446,10 @@ registerProcessor("pcm-capture", PcmCapture);`;
       if (part.inlineData && part.inlineData.data) playChunk(part.inlineData.data);
     }
     if (c.outputTranscription) appendText("ai", c.outputTranscription.text);
-    if (c.turnComplete) s.aiBubble = null;
+    if (c.turnComplete) {
+      if (!c.interrupted) schedule(s.stretch.flush());
+      s.aiBubble = null;
+    }
   }
 
   function send(obj) {
@@ -489,7 +559,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
     s = {
       micCtx: new AudioContext({ sampleRate: IN_RATE }),
       playCtx: new AudioContext({ sampleRate: OUT_RATE }),
-      ui, sources: new Set(), nextPlayTime: 0, reconnects: 0,
+      ui, sources: new Set(), nextPlayTime: 0, stretch: new Stretcher(PLAYBACK_SPEED), reconnects: 0,
       resumeHandle: null, startedAt: 0, micSince: 0, micPeak: 0, micWarned: false, noiseFloor: GATE_MIN, gateUntil: 0, aiBubble: null, userBubble: null,
     };
     const session = s;
