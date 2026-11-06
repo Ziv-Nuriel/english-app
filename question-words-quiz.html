@@ -685,6 +685,58 @@
   }
   .gloss-pop b { direction: ltr; unicode-bidi: isolate; }
   .unseen-title .speak-btn.playing { opacity: 1; }
+  .gloss-pop .speak-btn { color: inherit; opacity: .85; }
+  .glossary .gloss-say {
+    font: inherit;
+    background: none;
+    border: none;
+    padding: 0;
+    color: inherit;
+    cursor: pointer;
+  }
+  .glossary .gloss-say:hover b { color: var(--accent); }
+  .say-selection {
+    position: absolute;
+    z-index: 5;
+    background: var(--accent);
+    color: var(--paper);
+    border: none;
+    border-radius: 16px;
+    padding: .35rem .8rem;
+    font-size: .82rem;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+  }
+
+  .head-tools { display: flex; align-items: center; gap: .6rem; }
+  .icon-btn {
+    background: none;
+    border: 1.5px solid var(--rule);
+    border-radius: 50%;
+    width: 2rem;
+    height: 2rem;
+    font-size: .95rem;
+    line-height: 1;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .icon-btn:hover { border-color: var(--accent); }
+  .icon-btn[hidden] { display: none; }
+  .settings-panel {
+    direction: rtl;
+    text-align: right;
+    background: var(--card);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: .8rem 1rem;
+    margin: .5rem 0 1rem;
+    font-size: .9rem;
+  }
+  .settings-panel[hidden] { display: none; }
+  .settings-panel label { display: flex; align-items: center; gap: .5rem; padding: .3rem 0; cursor: pointer; }
+  .settings-panel small { display: block; color: var(--ink-soft); margin-top: .3rem; }
+  body.muted .speak-btn, body.muted .gloss-say { opacity: .25; }
   .glossary {
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
@@ -716,7 +768,16 @@
 <div class="wrap">
   <div class="masthead">
     <h1 id="stageTitle">Question Words Drill</h1>
-    <span class="level" id="levelTag">STAGE 1 / 2</span>
+    <div class="head-tools">
+      <span class="level" id="levelTag">STAGE 1 / 2</span>
+      <button class="icon-btn" id="muteQuick" title="האתר מושתק — לחצו לביטול ההשתקה" aria-label="Unmute" hidden>🔇</button>
+      <button class="icon-btn" id="settingsBtn" title="הגדרות" aria-label="Settings" aria-expanded="false">⚙️</button>
+    </div>
+  </div>
+  <div class="settings-panel" id="settingsPanel" hidden>
+    <label><input type="checkbox" id="setMuted"> השתקת האתר — בלי צלילים ובלי הקראה</label>
+    <label><input type="checkbox" id="setEffects"> צלילי נכון / לא נכון</label>
+    <small>השיחה הקולית בזמן אמת לא מושפעת מההשתקה.</small>
   </div>
   <div class="sub" id="stageSub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
 
@@ -1179,8 +1240,42 @@ async function getDialogueResponse(stage, log, message, opts = {}) {
   }
 }
 
+// Sound settings: "muted" silences every sound the site makes by itself
+// (feedback tones and text-to-speech); "effects" toggles only the tones.
+const SETTINGS_KEY = "appSettings";
+let settings = { muted: false, effects: true };
+try { Object.assign(settings, JSON.parse(localStorage.getItem(SETTINGS_KEY)) || {}); } catch (e) {}
+
+function applySettings() {
+  document.body.classList.toggle("muted", settings.muted);
+  document.getElementById("muteQuick").hidden = !settings.muted;
+  document.getElementById("setMuted").checked = settings.muted;
+  document.getElementById("setEffects").checked = settings.effects;
+  document.getElementById("setEffects").disabled = settings.muted;
+}
+
+function saveSettings() {
+  try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); } catch (e) {}
+  if (settings.muted) {
+    if (unseenReading) stopReadAloud();
+    if (window.speechSynthesis) speechSynthesis.cancel();
+  }
+  applySettings();
+}
+
+document.getElementById("settingsBtn").onclick = () => {
+  const panel = document.getElementById("settingsPanel");
+  panel.hidden = !panel.hidden;
+  document.getElementById("settingsBtn").setAttribute("aria-expanded", String(!panel.hidden));
+};
+document.getElementById("setMuted").onchange = e => { settings.muted = e.target.checked; saveSettings(); };
+document.getElementById("setEffects").onchange = e => { settings.effects = e.target.checked; saveSettings(); };
+document.getElementById("muteQuick").onclick = () => { settings.muted = false; saveSettings(); };
+applySettings();
+
 let audioCtx = null;
 function playTone(freqStart, freqEnd, duration, type, gainStart) {
+  if (settings.muted || !settings.effects) return;
   try {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const osc = audioCtx.createOscillator();
@@ -1670,12 +1765,13 @@ function escapeAttr(s) {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
-function speak(text) {
+function speak(text, rate) {
   try {
-    if (!window.speechSynthesis) return;
+    if (!window.speechSynthesis || settings.muted) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
+    if (rate) utter.rate = rate;
     window.speechSynthesis.speak(utter);
   } catch (e) {}
 }
@@ -2368,13 +2464,59 @@ function showGloss(btn) {
   btn.classList.add("open");
   const pop = document.createElement("div");
   pop.className = "gloss-pop";
-  pop.innerHTML = `<b>${escapeHtml(btn.dataset.word)}</b> – ${escapeHtml(btn.dataset.he)}`;
+  pop.innerHTML = `<b>${escapeHtml(btn.dataset.word)}</b> – ${escapeHtml(btn.dataset.he)} <button class="speak-btn" title="Listen" aria-label="Listen">🔊</button>`;
+  pop.querySelector(".speak-btn").onclick = () => sayWords(btn.dataset.word);
   document.body.appendChild(pop);
   const r = btn.getBoundingClientRect();
   const left = Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8));
   pop.style.left = left + "px";
   pop.style.top = (r.bottom + window.scrollY + 6) + "px";
 }
+
+// Says a word or a chosen part of the text, slowly; stops the full reading first.
+function sayWords(text) {
+  if (unseenReading) stopReadAloud();
+  speak(text, 0.8);
+}
+
+function hideSaySelection() {
+  const old = document.querySelector(".say-selection");
+  if (old) old.remove();
+}
+
+// Selecting words in the Unseen text shows a button that reads only them.
+function showSaySelection() {
+  hideSaySelection();
+  const sel = window.getSelection();
+  const text = sel && sel.rangeCount ? sel.toString().replace(/\s+/g, " ").trim() : "";
+  if (!text || text.length > 400) return;
+  const range = sel.getRangeAt(0);
+  const box = range.commonAncestorContainer;
+  const el = box.nodeType === 1 ? box : box.parentElement;
+  if (!el || !el.closest(".unseen-text, .unseen-title, .unseen-q")) return;
+  const r = range.getBoundingClientRect();
+  const btn = document.createElement("button");
+  btn.className = "say-selection";
+  btn.textContent = "🔊 השמע את הבחירה";
+  // mousedown would clear the selection before the click lands
+  btn.onmousedown = e => e.preventDefault();
+  btn.onclick = () => { sayWords(text); hideSaySelection(); };
+  document.body.appendChild(btn);
+  const left = Math.max(8, Math.min(r.left + window.scrollX + r.width / 2 - btn.offsetWidth / 2,
+    window.scrollX + document.documentElement.clientWidth - btn.offsetWidth - 8));
+  btn.style.left = left + "px";
+  btn.style.top = Math.max(window.scrollY + 4, r.top + window.scrollY - btn.offsetHeight - 8) + "px";
+}
+
+const onSelectEnd = e => {
+  if (!(e.target.closest && e.target.closest(".say-selection"))) setTimeout(showSaySelection, 0);
+};
+document.addEventListener("mouseup", onSelectEnd);
+document.addEventListener("touchend", onSelectEnd);
+document.addEventListener("selectionchange", () => {
+  const sel = window.getSelection();
+  if (!sel || sel.isCollapsed) hideSaySelection();
+});
 
 document.addEventListener("click", e => {
   const btn = e.target.closest(".gloss");
@@ -2409,7 +2551,7 @@ function stopReadAloud() {
 }
 
 function toggleReadAloud(parts) {
-  if (!window.speechSynthesis) return;
+  if (!window.speechSynthesis || settings.muted) return;
   if (unseenReading) return stopReadAloud();
   speechSynthesis.cancel();
   unseenReading = true;
@@ -2455,8 +2597,8 @@ function renderUnseenExercise(card) {
     <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}</div>
     <div class="unseen-title"><span>${escapeHtml(ex.title)}</span><button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button></div>
     <div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>
-    ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר גם ללחוץ עליהן בטקסט</summary>
-      ${ex.glossary.map(g => `<span><b>${escapeHtml(g.word)}</b> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
+    ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר ללחוץ עליהן בטקסט, או לסמן מילים כדי לשמוע רק אותן</summary>
+      ${ex.glossary.map(g => `<span><button class="gloss-say" data-say="${escapeAttr(g.word)}" title="Listen">🔊 <b>${escapeHtml(g.word)}</b></button> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
     ${ex.questions.map((q, i) => {
       const picked = unseen.answers[i];
       const done = picked != null;
@@ -2480,6 +2622,7 @@ function renderUnseenExercise(card) {
   `;
 
   syncListenButton();
+  card.querySelectorAll(".gloss-say").forEach(b => b.onclick = () => sayWords(b.dataset.say));
   document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
   card.querySelectorAll(".unseen-q").forEach(qEl => {
     const i = Number(qEl.dataset.q);
