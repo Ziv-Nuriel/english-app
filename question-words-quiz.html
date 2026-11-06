@@ -659,6 +659,32 @@
     margin-right: .5rem;
   }
   .unseen-text mark { background: var(--accent-soft); color: inherit; border-bottom: 2px solid var(--highlight); }
+  .gloss {
+    font: inherit;
+    color: var(--accent);
+    font-weight: 700;
+    background: none;
+    border: none;
+    border-bottom: 1.5px dotted var(--accent);
+    padding: 0;
+    cursor: pointer;
+  }
+  .gloss.open { background: var(--accent-soft); }
+  .gloss-pop {
+    position: absolute;
+    z-index: 5;
+    max-width: 240px;
+    background: var(--ink);
+    color: var(--paper);
+    border-radius: 4px;
+    padding: .4rem .7rem;
+    font-size: .9rem;
+    line-height: 1.4;
+    direction: rtl;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, .25);
+  }
+  .gloss-pop b { direction: ltr; unicode-bidi: isolate; }
+  .unseen-title .speak-btn.playing { opacity: 1; }
   .glossary {
     border-top: 1px solid var(--rule);
     border-bottom: 1px solid var(--rule);
@@ -1210,6 +1236,7 @@ function goToStage(i) {
 
 function render() {
   VoiceChat.stop(); // leaving the card ends any live conversation
+  if (unseenReading && !stages[stageIndex].unseen) stopReadAloud();
   stageProgress[stageIndex] = current;
   saveProgress();
   const card = document.getElementById("quizCard");
@@ -2318,6 +2345,88 @@ async function generateUnseen(card, avoid) {
   renderUnseenExercise(card);
 }
 
+// Turns the glossary words in the text into buttons that show the Hebrew
+// translation; only text outside tags is touched (escaped HTML in, HTML out).
+function glossWords(html, glossary) {
+  const words = glossary.filter(g => g.word && g.word.trim().length > 1).sort((a, b) => b.word.length - a.word.length);
+  if (!words.length) return html;
+  const byWord = new Map(words.map(g => [escapeHtml(g.word.trim()).toLowerCase(), g]));
+  const pattern = [...byWord.keys()].map(w => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("|");
+  const re = new RegExp("\\b(" + pattern + ")\\b", "gi");
+  return html.split(/(<[^>]+>)/).map(part => part.startsWith("<") ? part : part.replace(re, m => {
+    const g = byWord.get(m.toLowerCase());
+    return `<button class="gloss" data-he="${escapeAttr(g.hebrew)}" data-word="${escapeAttr(g.word)}">${m}</button>`;
+  })).join("");
+}
+
+function showGloss(btn) {
+  const old = document.querySelector(".gloss-pop");
+  const wasOpen = btn.classList.contains("open");
+  if (old) old.remove();
+  document.querySelectorAll(".gloss.open").forEach(b => b.classList.remove("open"));
+  if (wasOpen) return;
+  btn.classList.add("open");
+  const pop = document.createElement("div");
+  pop.className = "gloss-pop";
+  pop.innerHTML = `<b>${escapeHtml(btn.dataset.word)}</b> – ${escapeHtml(btn.dataset.he)}`;
+  document.body.appendChild(pop);
+  const r = btn.getBoundingClientRect();
+  const left = Math.max(8, Math.min(r.left + window.scrollX, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 8));
+  pop.style.left = left + "px";
+  pop.style.top = (r.bottom + window.scrollY + 6) + "px";
+}
+
+document.addEventListener("click", e => {
+  const btn = e.target.closest(".gloss");
+  if (btn) return showGloss(btn);
+  if (!e.target.closest(".gloss-pop")) {
+    const pop = document.querySelector(".gloss-pop");
+    if (pop) pop.remove();
+    document.querySelectorAll(".gloss.open").forEach(b => b.classList.remove("open"));
+  }
+});
+
+// Reads the text aloud paragraph by paragraph (Chrome cuts one long utterance
+// off after ~15 s); the same button stops it. The card re-renders on every
+// answer, so the button is looked up again whenever its state changes.
+let unseenReading = false;
+let readAloudRun = 0;
+
+function syncListenButton() {
+  const btn = document.getElementById("unseenListen");
+  if (!btn) return;
+  btn.textContent = unseenReading ? "⏹" : "🔊";
+  btn.title = unseenReading ? "Stop" : "Listen";
+  btn.setAttribute("aria-label", btn.title);
+  btn.classList.toggle("playing", unseenReading);
+}
+
+function stopReadAloud() {
+  readAloudRun++;
+  unseenReading = false;
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  syncListenButton();
+}
+
+function toggleReadAloud(parts) {
+  if (!window.speechSynthesis) return;
+  if (unseenReading) return stopReadAloud();
+  speechSynthesis.cancel();
+  unseenReading = true;
+  syncListenButton();
+  // A cancelled earlier reading fires its events late; only this run may reset.
+  const run = ++readAloudRun;
+  const reset = () => { if (run === readAloudRun) { unseenReading = false; syncListenButton(); } };
+  parts.forEach((text, i) => {
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    utter.rate = 0.9;
+    if (i === parts.length - 1) utter.onend = reset;
+    utter.onerror = reset;
+    speechSynthesis.speak(utter);
+  });
+}
+
 // Wraps the quote that proves an answer in <mark> (escaped text in, HTML out).
 function markQuote(html, quote) {
   const q = escapeHtml((quote || "").trim());
@@ -2338,7 +2447,7 @@ function renderUnseenExercise(card) {
   const paragraphs = ex.paragraphs.map(p => {
     let html = escapeHtml(p);
     ex.questions.forEach((q, i) => { if (unseen.answers[i] != null) html = markQuote(html, q.quote); });
-    return html;
+    return glossWords(html, ex.glossary);
   });
   const levelHe = (UNSEEN_LEVEL_LABELS.find(([id]) => id === ex.level) || [, ""])[1];
 
@@ -2346,7 +2455,7 @@ function renderUnseenExercise(card) {
     <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}</div>
     <div class="unseen-title"><span>${escapeHtml(ex.title)}</span><button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button></div>
     <div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>
-    ${ex.glossary.length ? `<details class="glossary"><summary>מילים שכדאי להכיר (${ex.glossary.length})</summary>
+    ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר גם ללחוץ עליהן בטקסט</summary>
       ${ex.glossary.map(g => `<span><b>${escapeHtml(g.word)}</b> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
     ${ex.questions.map((q, i) => {
       const picked = unseen.answers[i];
@@ -2370,7 +2479,8 @@ function renderUnseenExercise(card) {
     </div>` : `<div class="footer-row"><button class="restart" id="unseenPick">בחירת נושא אחר</button></div>`}
   `;
 
-  document.getElementById("unseenListen").onclick = () => speak(ex.title + ". " + ex.paragraphs.join(" "));
+  syncListenButton();
+  document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
   card.querySelectorAll(".unseen-q").forEach(qEl => {
     const i = Number(qEl.dataset.q);
     qEl.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
@@ -2386,7 +2496,7 @@ function renderUnseenExercise(card) {
     });
   });
   document.getElementById("unseenPick").onclick = () => {
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    stopReadAloud();
     unseen.exercise = null;
     unseen.answers = [];
     saveUnseen();
@@ -2394,7 +2504,7 @@ function renderUnseenExercise(card) {
   };
   const again = document.getElementById("unseenAgain");
   if (again) again.onclick = () => {
-    if (window.speechSynthesis) speechSynthesis.cancel();
+    stopReadAloud();
     unseen.exercise = null;
     unseen.answers = [];
     saveUnseen();

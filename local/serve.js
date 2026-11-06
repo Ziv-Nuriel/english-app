@@ -320,7 +320,10 @@ The questions (exactly 6, in the order the answers appear in the text):
 - "quote" is the exact sentence from the text (copied word for word) that proves the answer.
 - "explanation" is 1-2 short sentences IN HEBREW explaining why that answer is correct.
 
-The glossary: 6-8 words or phrases from the text that may be new at this level, each exactly as it appears in the text, with a short Hebrew translation.`;
+The glossary (the learner taps these words in the text to see the translation):
+- Every word or phrase in the text that is harder than CEFR B1 (B2, C1 or C2), up to 12. If there are fewer than 5 such words, add the hardest B1 words until there are 5.
+- "word" is copied exactly as it appears in the text (same form, e.g. "strides", not "stride").
+- "hebrew" is a short Hebrew translation that fits its meaning in this text.`;
 }
 
 async function handleUnseen(req, res) {
