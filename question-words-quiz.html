@@ -1190,13 +1190,13 @@ stages.push({
   questions: [{ type: "unseen" }]
 });
 
-// The podcast has its own card on the home page: ?mode=podcast shows only
-// that stage, and the regular drill leaves it out.
+// The podcast is stage 8 here and also has its own card on the home page:
+// ?mode=podcast shows only that stage (same saved podcast in both places).
 const PAGE_MODE = new URLSearchParams(location.search).get("mode") === "podcast" ? "podcast" : "quiz";
-for (let i = stages.length - 1; i >= 0; i--) {
-  if ((stages[i].kind === "podcast") !== (PAGE_MODE === "podcast")) stages.splice(i, 1);
+if (PAGE_MODE === "podcast") {
+  for (let i = stages.length - 1; i >= 0; i--) if (stages[i].kind !== "podcast") stages.splice(i, 1);
+  document.title = "Podcast";
 }
-if (PAGE_MODE === "podcast") document.title = "Podcast";
 
 let stageIndex = 0;
 let freeChatLogs = {};
