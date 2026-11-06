@@ -326,6 +326,150 @@ The glossary (the learner taps these words in the text to see the translation):
 - "hebrew" is a short Hebrew translation that fits its meaning in this text.`;
 }
 
+// Podcast: the same exercise, but a longer spoken episode that is turned
+// into audio. Lengths are for listening (about 130-150 spoken words a minute).
+const PODCAST_LEVELS = {
+  easy: "CEFR A2: short simple sentences, very common everyday words, about 380-420 words (about 3 minutes)",
+  medium: "CEFR B1: clear sentences, common vocabulary with a few new words, about 600-650 words (about 4-5 minutes)",
+  hard: "CEFR B2: richer vocabulary and some longer sentences, about 800-850 words (about 6 minutes)",
+};
+
+function podcastPrompt(field, subject, level, avoid, voice) {
+  return `Write a "listening comprehension" podcast episode in English for a native Hebrew speaker (Israeli high-school / adult learner).
+
+Field: ${field}
+Specific subject: ${subject || "(none given: choose an interesting, specific subject within the field)"}
+Level: ${PODCAST_LEVELS[level]}
+${avoid ? `The learner already heard an episode titled "${avoid}" on this subject: write a new one about a different side of it, with a different title.
+` : ""}
+The episode:
+- One host, a ${voice === "male" ? "man" : "woman"} with a first name, talking alone to the listener, like a real, friendly educational podcast.
+- It is spoken, not written: natural spoken English with contractions, short sentences, signposting ("So, here's the thing...", "Now, you might be wondering..."), a rhetorical question now and then, and a short personal comment or two. No sound effects, stage directions, music cues, brackets or speaker labels — only the words the host says.
+- Start with a short welcome and the topic of the episode, then 3-4 main parts, then a short recap and goodbye.
+- 8-12 paragraphs (each paragraph is read as one block of audio). "title" is the episode name.
+- If the subject is a real person, company, team or event, use only well-known, widely reported facts. Do not invent quotes, numbers or dates; if you are not sure of an exact detail, leave it out or keep it general.
+- The field and subject may be written in Hebrew (the learner typed them). Understand them and talk about exactly that subject, not a general episode about the field.
+- If the subject is inappropriate or makes no sense, talk about the closest sensible, appropriate subject in the field.
+
+The questions (exactly 8, in the order the answers come up in the episode):
+- These are listening questions: refer to what "the host says", never to paragraph or line numbers.
+- Mix the types: main idea, specific details, vocabulary in context ("When the host says X, she/he means..."), the host's opinion or attitude, cause/effect and one inference question.
+- Each question has exactly 4 options in English; only one is correct, and the wrong ones are plausible.
+- "answer" is the 0-based index of the correct option. Spread the correct answers across positions.
+- "quote" is the exact sentence from the episode (copied word for word) that proves the answer.
+- "explanation" is 1-2 short sentences IN HEBREW explaining why that answer is correct.
+
+The glossary (the learner taps these words in the transcript to see the translation):
+- Every word or phrase in the episode that is harder than CEFR B1 (B2, C1 or C2), up to 14. If there are fewer than 5 such words, add the hardest B1 words until there are 5.
+- "word" is copied exactly as it appears in the episode (same form).
+- "hebrew" is a short Hebrew translation that fits its meaning in this episode.`;
+}
+
+// Text-to-speech. gemini-3.8-flash-tts answered in ~7 s on 2026-11-07 (unlike
+// the 3.8 text model); the older TTS models are the fallback when it's busy.
+const PODCAST_TTS_MODELS = ["models/gemini-3.8-flash-tts", "models/gemini-3.1-flash-tts-preview", "models/gemini-2.5-flash-preview-tts"];
+const PODCAST_VOICES = { female: "Aoede", male: "Charon" };
+const PODCAST_DIR = path.join(__dirname, "podcast-audio");
+const PODCAST_KEEP = 30; // newest episodes kept on disk
+
+// Returns { rate, pcm } (16-bit mono) from a TTS inlineData part: either a
+// WAV file or raw little-endian PCM labelled audio/L16 with a rate parameter.
+function ttsPcm(inline) {
+  const buf = Buffer.from(inline.data, "base64");
+  if (buf.slice(0, 4).toString() === "RIFF") {
+    let rate = 24000, pos = 12;
+    while (pos + 8 <= buf.length) {
+      const id = buf.slice(pos, pos + 4).toString(), size = buf.readUInt32LE(pos + 4);
+      if (id === "fmt ") rate = buf.readUInt32LE(pos + 12);
+      if (id === "data") return { rate, pcm: buf.slice(pos + 8, pos + 8 + size) };
+      pos += 8 + size + (size % 2);
+    }
+    throw new Error("WAV without data");
+  }
+  const m = /rate=(\d+)/i.exec(inline.mimeType || "");
+  return { rate: m ? Number(m[1]) : 24000, pcm: buf };
+}
+
+async function speakPart(text, voiceName, key) {
+  const body = JSON.stringify({
+    contents: [{ parts: [{ text: `Read this aloud as a friendly podcast host: warm, relaxed and natural, clearly and a little slower than normal, for English learners. Say only the text after the colon:
+
+${text}` }] }],
+    generationConfig: {
+      responseModalities: ["AUDIO"],
+      speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName } } },
+    },
+  });
+  let lastError = "";
+  for (const model of PODCAST_TTS_MODELS) {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body,
+      signal: AbortSignal.timeout(90000),
+    });
+    const data = await response.json().catch(() => ({}));
+    const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+    const inline = parts.map(p => p.inlineData).find(Boolean);
+    if (response.ok && inline) return ttsPcm(inline);
+    lastError = (data.error && data.error.message) || `Speech failed (${response.status})`;
+    if (response.ok || ![429, 500, 503].includes(response.status)) break;
+  }
+  throw new Error(lastError);
+}
+
+// The free tier allows only a few TTS requests a minute, so the episode is
+// recorded in as few requests as possible: one per ~450 words (a 600-word
+// episode took one 33 s request on 2026-11-07), sent one after another.
+const PODCAST_WORDS_PER_REQUEST = 450;
+
+async function recordPodcast(paragraphs, voice, key) {
+  const voiceName = PODCAST_VOICES[voice];
+  const id = require("crypto").createHash("sha1").update(voiceName + "|" + paragraphs.join("\n")).digest("hex").slice(0, 16);
+  const file = path.join(PODCAST_DIR, id + ".wav");
+  if (fs.existsSync(file)) return id;
+  const groups = [];
+  let words = Infinity;
+  for (const p of paragraphs) {
+    const n = p.split(/\s+/).length;
+    if (words + n > PODCAST_WORDS_PER_REQUEST) { groups.push([]); words = 0; }
+    groups[groups.length - 1].push(p);
+    words += n;
+  }
+  const pieces = [];
+  for (const g of groups) pieces.push(await speakPart(g.join("\n\n"), voiceName, key));
+  const rate = pieces[0].rate;
+  if (pieces.some(p => p.rate !== rate)) throw new Error("Audio parts came back at different sample rates");
+  const pause = Buffer.alloc(Math.round(rate * 0.5) * 2);
+  const pcm = Buffer.concat(pieces.flatMap((p, i) => (i ? [pause, p.pcm] : [p.pcm])));
+  fs.mkdirSync(PODCAST_DIR, { recursive: true });
+  fs.writeFileSync(file, wavFile(pcm, rate));
+  const old = fs.readdirSync(PODCAST_DIR).filter(n => n.endsWith(".wav"))
+    .map(n => ({ n, t: fs.statSync(path.join(PODCAST_DIR, n)).mtimeMs }))
+    .sort((a, b) => b.t - a.t).slice(PODCAST_KEEP);
+  for (const o of old) fs.unlinkSync(path.join(PODCAST_DIR, o.n));
+  return id;
+}
+
+// Serves a recorded episode, with Range support so the player can seek.
+function handlePodcastAudio(req, res) {
+  const id = new URL(req.url, "http://localhost").searchParams.get("id") || "";
+  const file = path.join(PODCAST_DIR, id + ".wav");
+  if (!/^[0-9a-f]{16}$/.test(id) || !fs.existsSync(file)) { res.writeHead(404); res.end("Not found"); return; }
+  const size = fs.statSync(file).size;
+  const m = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range || "");
+  if (m) {
+    const start = m[1] ? Number(m[1]) : Math.max(0, size - Number(m[2]));
+    const end = m[1] && m[2] ? Math.min(Number(m[2]), size - 1) : size - 1;
+    if (start > end || start >= size) { res.writeHead(416, { "Content-Range": `bytes */${size}` }); res.end(); return; }
+    res.writeHead(206, { "Content-Type": "audio/wav", "Accept-Ranges": "bytes", "Content-Range": `bytes ${start}-${end}/${size}`, "Content-Length": end - start + 1 });
+    fs.createReadStream(file, { start, end }).pipe(res);
+    return;
+  }
+  res.writeHead(200, { "Content-Type": "audio/wav", "Accept-Ranges": "bytes", "Content-Length": size });
+  fs.createReadStream(file).pipe(res);
+}
+
 async function handleUnseen(req, res) {
   const send = (status, body) => {
     res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
@@ -344,10 +488,15 @@ async function handleUnseen(req, res) {
   const field = clean(choice.field);
   const subject = clean(choice.subject);
   const level = UNSEEN_LEVELS[choice.level] ? choice.level : "medium";
+  const podcast = choice.kind === "podcast";
+  const voice = choice.voice === "male" ? "male" : "female";
   if (!field && !subject) return send(400, { error: "Pick a field or a subject" });
+  const prompt = podcast
+    ? podcastPrompt(field || "General", subject, level, clean(choice.avoid), voice)
+    : unseenPrompt(field || "General", subject, level, clean(choice.avoid));
 
   const body = JSON.stringify({
-    contents: [{ role: "user", parts: [{ text: unseenPrompt(field || "General", subject, level, clean(choice.avoid)) }] }],
+    contents: [{ role: "user", parts: [{ text: prompt }] }],
     generationConfig: {
       responseMimeType: "application/json",
       responseSchema: UNSEEN_SCHEMA,
@@ -376,7 +525,16 @@ async function handleUnseen(req, res) {
   if (!unseen || !Array.isArray(unseen.paragraphs) || !unseen.paragraphs.length || !questions.length) {
     return send(502, { error: "The model returned an incomplete exercise, try again" });
   }
-  send(200, { ...unseen, questions, glossary: unseen.glossary || [] });
+  const paragraphs = unseen.paragraphs.map(p => String(p).trim()).filter(Boolean);
+  let audioId;
+  if (podcast) {
+    try {
+      audioId = await recordPodcast(paragraphs, voice, key);
+    } catch (err) {
+      return send(502, { error: "Recording failed: " + (err.message || err) });
+    }
+  }
+  send(200, { ...unseen, paragraphs, questions, glossary: unseen.glossary || [], audioId, voice: podcast ? voice : undefined });
 }
 
 // The Anthropic key is read on every request, so pasting it into
@@ -435,6 +593,10 @@ http.createServer((req, res) => {
       res.writeHead(502, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: String(err.message || err) }));
     });
+    return;
+  }
+  if (req.url.split("?")[0] === "/api/podcast-audio") {
+    try { handlePodcastAudio(req, res); } catch (err) { res.writeHead(500); res.end(String(err)); }
     return;
   }
   if (req.url.split("?")[0] === "/api/unseen") {

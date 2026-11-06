@@ -758,6 +758,14 @@
   .unseen-done { text-align: center; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
   .unseen-done .score { font-size: 2rem; font-weight: 700; color: var(--accent); margin: .25rem 0 .5rem; }
   .unseen-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
+  .pod-player { margin: 0 0 1rem; }
+  .pod-player audio { width: 100%; }
+  .pod-tools { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; margin-top: .5rem; direction: rtl; }
+  .pod-tools .chips { gap: .35rem; }
+  .pod-tools .chip { padding: .25rem .65rem; font-size: .8rem; }
+  .pod-error { color: var(--wrong); font-size: .85rem; direction: rtl; text-align: right; margin-top: .4rem; }
+  .pod-error[hidden] { display: none; }
+  .transcript-hidden { color: var(--ink-soft); font-size: .85rem; direction: rtl; text-align: right; margin: 0 0 1rem; }
 
   @media (prefers-reduced-motion: reduce) {
     .bar-fill, button.next { transition: none; }
@@ -1167,6 +1175,18 @@ stages.push({
   sub: "קוראים טקסט באנגלית על נושא שאתם בוחרים ועונים על שאלות הבנה",
   legend: "<strong>איך עובדים:</strong> בוחרים רמה, תחום ונושא ספציפי (או כותבים נושא משלכם) — ומקבלים טקסט חדש עם שאלות. &nbsp;·&nbsp; <strong>טיפ:</strong> קראו קודם את השאלות, ואז חפשו בטקסט את המשפט שמוכיח את התשובה.",
   unseen: true,
+  kind: "unseen",
+  questions: [{ type: "unseen" }]
+});
+
+// Podcast: the same idea for listening: a longer AI-written episode, recorded
+// with a female or male voice, with a transcript the learner can hide.
+stages.push({
+  title: "Podcast",
+  sub: "מאזינים לפודקאסט באנגלית על נושא שאתם בוחרים ועונים על שאלות הבנת הנשמע",
+  legend: "<strong>איך עובדים:</strong> בוחרים רמה, קול (נשי או גברי), תחום ונושא — ומקבלים פרק חדש של 3-6 דקות עם שאלות. &nbsp;·&nbsp; <strong>טיפ:</strong> הקשיבו קודם בלי התמליל, ופתחו אותו רק כדי לבדוק את עצמכם. אפשר להאט את הקצב ל-0.75.",
+  unseen: true,
+  kind: "podcast",
   questions: [{ type: "unseen" }]
 });
 
@@ -1252,6 +1272,7 @@ function applySettings() {
   document.getElementById("setMuted").checked = settings.muted;
   document.getElementById("setEffects").checked = settings.effects;
   document.getElementById("setEffects").disabled = settings.muted;
+  document.querySelectorAll("audio").forEach(a => { a.muted = settings.muted; });
 }
 
 function saveSettings() {
@@ -1396,7 +1417,7 @@ function render() {
         <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
         <button class="restart" onclick="restart()">Start Over</button>
-        <button class="restart" onclick="goToStage(stages.length - 1)">Practice Unseen →</button>
+        <button class="restart" onclick="goToStage(stages.findIndex(s => s.unseen))">Practice Unseen →</button>
       </div>`;
     document.getElementById("barFill").style.width = "100%";
     return;
@@ -1518,7 +1539,7 @@ function render() {
 }
 
 function getSections(stage) {
-  if (stage.unseen) return [{ label: "Unseen", start: 0, len: 1 }];
+  if (stage.unseen) return [{ label: stage.title, start: 0, len: 1 }];
   const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
   const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
@@ -2320,13 +2341,21 @@ const UNSEEN_FIELDS = [
   ["טיולים ותרבות", "Travel and culture", [["יפן", "Japan"], ["ניו יורק", "New York City"], ["האוכל באיטליה", "Food in Italy"], ["פסטיבלים בעולם", "Festivals around the world"]]]
 ];
 const UNSEEN_LEVEL_LABELS = [["easy", "קל"], ["medium", "בינוני"], ["hard", "מתקדם"]];
-const UNSEEN_STORAGE_KEY = "unseenPractice";
+const UNSEEN_STORAGE_KEYS = { unseen: "unseenPractice", podcast: "podcastPractice" };
+const PODCAST_VOICE_LABELS = [["female", "נשי"], ["male", "גברי"]];
+const PODCAST_RATES = [0.75, 1, 1.25];
+// One state per stage kind; `unseen` points at the one for the current stage.
 // field: index into UNSEEN_FIELDS or "custom"; subject: index into its list or "custom"
-let unseen = { level: "medium", field: 0, subject: 0, customField: "", customSubject: "", exercise: null, answers: [] };
-try { Object.assign(unseen, JSON.parse(localStorage.getItem(UNSEEN_STORAGE_KEY)) || {}); } catch (e) {}
+const unseenStates = {};
+for (const kind of Object.keys(UNSEEN_STORAGE_KEYS)) {
+  unseenStates[kind] = { kind, level: "medium", field: 0, subject: 0, customField: "", customSubject: "", voice: "female",
+    exercise: null, answers: [], showText: false, position: 0, rate: 1 };
+  try { Object.assign(unseenStates[kind], JSON.parse(localStorage.getItem(UNSEEN_STORAGE_KEYS[kind])) || {}, { kind }); } catch (e) {}
+}
+let unseen = unseenStates.unseen;
 
-function saveUnseen() {
-  try { localStorage.setItem(UNSEEN_STORAGE_KEY, JSON.stringify(unseen)); } catch (e) {}
+function saveUnseen(state = unseen) {
+  try { localStorage.setItem(UNSEEN_STORAGE_KEYS[state.kind], JSON.stringify(state)); } catch (e) {}
 }
 
 function unseenChoice() {
@@ -2344,6 +2373,7 @@ function unseenChoice() {
 }
 
 function renderUnseen(card) {
+  unseen = unseenStates[stages[stageIndex].kind];
   if (unseen.exercise) renderUnseenExercise(card);
   else renderUnseenPicker(card);
 }
@@ -2359,13 +2389,15 @@ function renderUnseenPicker(card, error) {
     <div class="unseen-pick">
       <div class="unseen-label">רמה</div>
       <div class="chips">${UNSEEN_LEVEL_LABELS.map(([id, he]) => chip(he, `data-level="${id}"`, unseen.level === id)).join("")}</div>
+      ${unseen.kind === "podcast" ? `<div class="unseen-label">קול המגיש/ה</div>
+      <div class="chips">${PODCAST_VOICE_LABELS.map(([id, he]) => chip(he, `data-voice="${id}"`, unseen.voice === id)).join("")}</div>` : ""}
       <div class="unseen-label">תחום</div>
       <div class="chips">
         ${UNSEEN_FIELDS.map(([he], i) => chip(he, `data-field="${i}"`, unseen.field === i)).join("")}
         ${chip("✏️ תחום משלי", `data-field="custom"`, isCustomField)}
       </div>
       ${isCustomField ? `
-        <input type="text" class="translate-input" id="unseenCustomField" dir="auto" maxlength="100" autocomplete="off" placeholder="על מה תרצו לקרוא? למשל: בישול, חתולים, מלחמת העולם השנייה..." value="${escapeAttr(unseen.customField)}" />
+        <input type="text" class="translate-input" id="unseenCustomField" dir="auto" maxlength="100" autocomplete="off" placeholder="${unseen.kind === "podcast" ? "על מה תרצו לשמוע?" : "על מה תרצו לקרוא?"} למשל: בישול, חתולים, מלחמת העולם השנייה..." value="${escapeAttr(unseen.customField)}" />
       ` : `
         <div class="unseen-label">נושא ספציפי</div>
         <div class="chips">
@@ -2375,10 +2407,11 @@ function renderUnseenPicker(card, error) {
         ${unseen.subject === "custom" ? `<input type="text" class="translate-input" id="unseenCustomSubject" dir="auto" maxlength="100" autocomplete="off" placeholder="למשל: מארק צוקרברג, אדידס, Startup Nation..." value="${escapeAttr(unseen.customSubject)}" />` : ""}
       `}
       <div class="unseen-status${error ? " error" : ""}" id="unseenStatus">${error ? escapeHtml(error) : ""}</div>
-      <div class="footer-row"><button class="next show" id="unseenGo">צרו לי טקסט →</button></div>
+      <div class="footer-row"><button class="next show" id="unseenGo">${unseen.kind === "podcast" ? "צרו לי פודקאסט →" : "צרו לי טקסט →"}</button></div>
     </div>`;
 
   card.querySelectorAll("[data-level]").forEach(b => b.onclick = () => { unseen.level = b.dataset.level; saveUnseen(); renderUnseenPicker(card); });
+  card.querySelectorAll("[data-voice]").forEach(b => b.onclick = () => { unseen.voice = b.dataset.voice; saveUnseen(); renderUnseenPicker(card); });
   card.querySelectorAll("[data-field]").forEach(b => b.onclick = () => {
     unseen.field = b.dataset.field === "custom" ? "custom" : Number(b.dataset.field);
     unseen.subject = 0;
@@ -2404,12 +2437,14 @@ function renderUnseenPicker(card, error) {
 }
 
 async function generateUnseen(card, avoid) {
+  const state = unseen;
+  const podcast = state.kind === "podcast";
   const choice = unseenChoice();
   const status = document.getElementById("unseenStatus");
   const btn = document.getElementById("unseenGo");
   if (!choice.field || (unseen.subject === "custom" && !choice.subject)) {
     status.className = "unseen-status error";
-    status.textContent = "כתבו קודם על מה תרצו לקרוא.";
+    status.textContent = podcast ? "כתבו קודם על מה תרצו לשמוע." : "כתבו קודם על מה תרצו לקרוא.";
     return;
   }
   if (!DIALOGUE_API_URL) {
@@ -2419,26 +2454,31 @@ async function generateUnseen(card, avoid) {
   }
   btn.disabled = true;
   status.className = "unseen-status";
-  status.textContent = `כותב טקסט על ${choice.label}... זה לוקח כמה שניות.`;
+  status.textContent = podcast
+    ? `כותב ומקליט פודקאסט על ${choice.label}... זה לוקח בערך 30-60 שניות.`
+    : `כותב טקסט על ${choice.label}... זה לוקח כמה שניות.`;
   let data = null, error = "";
   try {
     const resp = await fetch("/api/unseen", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ field: choice.field, subject: choice.subject, level: unseen.level, avoid: avoid || "" })
+      body: JSON.stringify({ kind: state.kind, voice: state.voice, field: choice.field, subject: choice.subject, level: state.level, avoid: avoid || "" })
     });
     data = await resp.json().catch(() => ({}));
     if (!resp.ok) error = data.error || `שגיאה (${resp.status})`;
   } catch (e) {
     error = "אין חיבור לשרת המקומי.";
   }
-  // The learner may have left the stage while waiting.
-  if (!stages[stageIndex].unseen || !document.body.contains(btn)) return;
-  if (error) return renderUnseenPicker(card, `לא הצלחתי ליצור טקסט: ${error}`);
-  unseen.exercise = { ...data, label: choice.label, level: unseen.level };
-  unseen.answers = [];
-  saveUnseen();
-  renderUnseenExercise(card);
+  // The learner may have left the stage while waiting: keep the result for
+  // when they come back, and only draw it if they are still here.
+  const here = stages[stageIndex].kind === state.kind;
+  if (error) {
+    if (here && document.body.contains(btn)) renderUnseenPicker(card, `${podcast ? "לא הצלחתי ליצור פודקאסט" : "לא הצלחתי ליצור טקסט"}: ${error}`);
+    return;
+  }
+  Object.assign(state, { exercise: { ...data, label: choice.label, level: state.level }, answers: [], showText: false, position: 0 });
+  saveUnseen(state);
+  if (here) renderUnseen(document.getElementById("quizCard"));
 }
 
 // Turns the glossary words in the text into buttons that show the Hebrew
@@ -2476,6 +2516,7 @@ function showGloss(btn) {
 // Says a word or a chosen part of the text, slowly; stops the full reading first.
 function sayWords(text) {
   if (unseenReading) stopReadAloud();
+  document.querySelectorAll("audio").forEach(a => a.pause());
   speak(text, 0.8);
 }
 
@@ -2579,11 +2620,77 @@ function markQuote(html, quote) {
 
 function renderUnseenExercise(card) {
   const ex = unseen.exercise;
+  const podcast = unseen.kind === "podcast";
+  const levelHe = (UNSEEN_LEVEL_LABELS.find(([id]) => id === ex.level) || [, ""])[1];
+  const voiceHe = (PODCAST_VOICE_LABELS.find(([id]) => id === ex.voice) || [, ""])[1];
+  const headKey = [unseen.kind, ex.title, ex.audioId || ""].join("|");
+  let head = card.querySelector(".unseen-head");
+
+  if (!head || head.dataset.key !== headKey) {
+    card.innerHTML = `
+      <div class="unseen-head" data-key="${escapeAttr(headKey)}">
+        <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}${podcast && voiceHe ? " · קול " + voiceHe : ""}</div>
+        <div class="unseen-title"><span>${escapeHtml(ex.title)}</span>${podcast ? "" : `<button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button>`}</div>
+        ${podcast ? `<div class="pod-player">
+          <audio id="podAudio" controls preload="metadata" src="/api/podcast-audio?id=${encodeURIComponent(ex.audioId || "")}"></audio>
+          <div class="pod-error" id="podError" hidden>ההקלטה הזו כבר לא שמורה במחשב — בחרו "פודקאסט חדש באותו נושא".</div>
+          <div class="pod-tools">
+            <div class="chips" dir="ltr">${PODCAST_RATES.map(r => `<button class="chip${(unseen.rate || 1) === r ? " active" : ""}" data-rate="${r}">×${r}</button>`).join("")}</div>
+            <button class="chip" id="podText"></button>
+          </div>
+        </div>` : ""}
+      </div>
+      <div class="unseen-body"></div>`;
+    head = card.querySelector(".unseen-head");
+    if (podcast) wirePodcastPlayer(card);
+    else document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
+  }
+  syncListenButton();
+  renderUnseenBody(card);
+}
+
+function wirePodcastPlayer(card) {
+  const state = unseen;
+  const audio = document.getElementById("podAudio");
+  audio.muted = settings.muted;
+  audio.playbackRate = state.rate || 1;
+  audio.addEventListener("loadedmetadata", () => {
+    if (state.position > 0 && state.position < audio.duration - 1) audio.currentTime = state.position;
+    audio.playbackRate = state.rate || 1;
+  });
+  let lastSave = 0;
+  audio.addEventListener("timeupdate", () => {
+    if (Math.abs(audio.currentTime - lastSave) < 2) return;
+    lastSave = audio.currentTime;
+    state.position = audio.currentTime;
+    saveUnseen(state);
+  });
+  audio.addEventListener("play", () => { if (unseenReading) stopReadAloud(); });
+  audio.addEventListener("error", () => { document.getElementById("podError").hidden = false; });
+  card.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => {
+    state.rate = Number(b.dataset.rate);
+    audio.playbackRate = state.rate;
+    card.querySelectorAll("[data-rate]").forEach(x => x.classList.toggle("active", x === b));
+    saveUnseen(state);
+  });
+  document.getElementById("podText").onclick = () => {
+    state.showText = !state.showText;
+    saveUnseen(state);
+    renderUnseenBody(card);
+  };
+}
+
+function renderUnseenBody(card) {
+  const ex = unseen.exercise;
+  const podcast = unseen.kind === "podcast";
+  const showText = !podcast || unseen.showText;
   const answered = unseen.answers.filter(a => a !== undefined && a !== null).length;
   const correct = ex.questions.filter((q, i) => unseen.answers[i] === q.answer).length;
   document.getElementById("qnum").textContent = answered;
   document.getElementById("qtotal").textContent = ex.questions.length;
   document.getElementById("barFill").style.width = `${(answered / ex.questions.length) * 100}%`;
+  const textBtn = document.getElementById("podText");
+  if (textBtn) textBtn.textContent = showText ? "📄 הסתר תמליל" : "📄 הצג תמליל";
 
   // Highlight the proof sentence of every answered question.
   const paragraphs = ex.paragraphs.map(p => {
@@ -2591,13 +2698,16 @@ function renderUnseenExercise(card) {
     ex.questions.forEach((q, i) => { if (unseen.answers[i] != null) html = markQuote(html, q.quote); });
     return glossWords(html, ex.glossary);
   });
-  const levelHe = (UNSEEN_LEVEL_LABELS.find(([id]) => id === ex.level) || [, ""])[1];
+  const doneText = podcast
+    ? (correct === ex.questions.length ? "מושלם! הבנתם את כל הפודקאסט." : correct >= ex.questions.length * 0.7 ? "כל הכבוד — הבנת הנשמע טובה מאוד!" : "לא רע — פתחו את התמליל: המשפטים המסומנים מראים איפה התשובות.")
+    : (correct === ex.questions.length ? "מושלם! הבנתם את כל הטקסט." : correct >= ex.questions.length * 0.7 ? "כל הכבוד — הבנת הנקרא טובה מאוד!" : "לא רע — המשפטים המסומנים בטקסט מראים איפה התשובות.");
 
-  card.innerHTML = `
-    <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}</div>
-    <div class="unseen-title"><span>${escapeHtml(ex.title)}</span><button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button></div>
-    <div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>
-    ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר ללחוץ עליהן בטקסט, או לסמן מילים כדי לשמוע רק אותן</summary>
+  const body = card.querySelector(".unseen-body");
+  body.innerHTML = `
+    ${showText
+      ? `<div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>`
+      : `<div class="transcript-hidden">התמליל מוסתר — הקשיבו וענו על השאלות. אפשר לפתוח אותו בכל רגע.</div>`}
+    ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר ללחוץ עליהן ב${podcast ? "תמליל" : "טקסט"}, או לסמן מילים כדי לשמוע רק אותן</summary>
       ${ex.glossary.map(g => `<span><button class="gloss-say" data-say="${escapeAttr(g.word)}" title="Listen">🔊 <b>${escapeHtml(g.word)}</b></button> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
     ${ex.questions.map((q, i) => {
       const picked = unseen.answers[i];
@@ -2612,19 +2722,17 @@ function renderUnseenExercise(card) {
       </div>`;
     }).join("")}
     ${answered === ex.questions.length ? `<div class="unseen-done">
-      <div>${correct === ex.questions.length ? "מושלם! הבנתם את כל הטקסט." : correct >= ex.questions.length * 0.7 ? "כל הכבוד — הבנת הנקרא טובה מאוד!" : "לא רע — המשפטים המסומנים בטקסט מראים איפה התשובות."}</div>
+      <div>${doneText}</div>
       <div class="score">${correct} / ${ex.questions.length}</div>
       <div class="unseen-actions">
-        <button class="restart" id="unseenAgain">טקסט חדש באותו נושא</button>
+        <button class="restart" id="unseenAgain">${podcast ? "פודקאסט חדש באותו נושא" : "טקסט חדש באותו נושא"}</button>
         <button class="restart" id="unseenPick">בחירת נושא אחר</button>
       </div>
     </div>` : `<div class="footer-row"><button class="restart" id="unseenPick">בחירת נושא אחר</button></div>`}
   `;
 
-  syncListenButton();
-  card.querySelectorAll(".gloss-say").forEach(b => b.onclick = () => sayWords(b.dataset.say));
-  document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
-  card.querySelectorAll(".unseen-q").forEach(qEl => {
+  body.querySelectorAll(".gloss-say").forEach(b => b.onclick = () => sayWords(b.dataset.say));
+  body.querySelectorAll(".unseen-q").forEach(qEl => {
     const i = Number(qEl.dataset.q);
     qEl.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
       if (unseen.answers[i] != null) return;
@@ -2632,28 +2740,21 @@ function renderUnseenExercise(card) {
       if (unseen.answers[i] === ex.questions[i].answer) playCorrectSound(); else playWrongSound();
       saveUnseen();
       const y = qEl.getBoundingClientRect().top;
-      renderUnseenExercise(card);
+      renderUnseenBody(card);
       // Keep the question the learner just answered in place on the screen.
       const same = card.querySelector(`.unseen-q[data-q="${i}"]`);
       if (same) window.scrollBy(0, same.getBoundingClientRect().top - y);
     });
   });
-  document.getElementById("unseenPick").onclick = () => {
+  const reset = () => {
     stopReadAloud();
-    unseen.exercise = null;
-    unseen.answers = [];
+    Object.assign(unseen, { exercise: null, answers: [], showText: false, position: 0 });
     saveUnseen();
     renderUnseenPicker(card);
   };
+  document.getElementById("unseenPick").onclick = reset;
   const again = document.getElementById("unseenAgain");
-  if (again) again.onclick = () => {
-    stopReadAloud();
-    unseen.exercise = null;
-    unseen.answers = [];
-    saveUnseen();
-    renderUnseenPicker(card);
-    generateUnseen(card, ex.title);
-  };
+  if (again) again.onclick = () => { reset(); generateUnseen(card, ex.title); };
 }
 
 function restart() {

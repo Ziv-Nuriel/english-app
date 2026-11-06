@@ -3,3 +3,4 @@ node_modules/
 local/api-key.txt
 .env
 local/accent-samples/
+local/podcast-audio/
