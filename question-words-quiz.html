@@ -610,6 +610,77 @@
     cursor: pointer;
   }
 
+  .unseen-pick { direction: rtl; text-align: right; }
+  .unseen-label {
+    font-size: .8rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin: 1.1rem 0 .5rem;
+  }
+  .unseen-label:first-child { margin-top: 0; }
+  .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
+  .chip {
+    padding: .4rem .85rem;
+    border-radius: 20px;
+    border: 1.5px solid var(--rule);
+    background: transparent;
+    color: var(--ink);
+    font-size: .85rem;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, color .15s;
+  }
+  .chip:hover { border-color: var(--accent); color: var(--accent); }
+  .chip.active { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 700; }
+  .unseen-pick .translate-input { margin-top: .6rem; }
+  .unseen-status { margin-top: 1rem; font-size: .85rem; color: var(--ink-soft); min-height: 1.2em; }
+  .unseen-status.error { color: var(--wrong); }
+  .unseen-topic { font-size: .78rem; color: var(--ink-soft); direction: rtl; text-align: right; margin-bottom: .75rem; }
+  .unseen-title {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.35rem;
+    margin: 0 0 .9rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: .5rem;
+  }
+  .unseen-text p {
+    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-size: 1.05rem;
+    line-height: 1.75;
+    margin: 0 0 .9rem;
+  }
+  .unseen-text p::before {
+    content: attr(data-n);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-size: .7rem;
+    font-weight: 700;
+    color: var(--ink-soft);
+    margin-right: .5rem;
+  }
+  .unseen-text mark { background: var(--accent-soft); color: inherit; border-bottom: 2px solid var(--highlight); }
+  .glossary {
+    border-top: 1px solid var(--rule);
+    border-bottom: 1px solid var(--rule);
+    padding: .75rem 0;
+    margin: .25rem 0 1.5rem;
+    font-size: .85rem;
+    line-height: 1.9;
+  }
+  .glossary summary { cursor: pointer; font-weight: 700; color: var(--accent); }
+  .glossary span { display: inline-block; margin-right: 1rem; }
+  .glossary span b { color: var(--ink); }
+  .glossary span i { font-style: normal; color: var(--ink-soft); }
+  .unseen-q { padding: 1.1rem 0; border-top: 1px dashed var(--rule); }
+  .unseen-q-text { font-weight: 700; margin-bottom: .7rem; line-height: 1.5; }
+  .unseen-q .options { grid-template-columns: 1fr; gap: .45rem; }
+  .unseen-q .opt { text-align: left; font-size: .95rem; padding: .6rem .85rem; }
+  .unseen-q .hint .why { color: var(--ink); }
+  .unseen-q .hint .why.bad { color: var(--wrong); }
+  .unseen-done { text-align: center; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
+  .unseen-done .score { font-size: 2rem; font-weight: 700; color: var(--accent); margin: .25rem 0 .5rem; }
+  .unseen-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
+
   @media (prefers-reduced-motion: reduce) {
     .bar-fill, button.next { transition: none; }
     .mic-btn.listening { animation: none; }
@@ -1002,6 +1073,16 @@ stages.forEach((s, i) => {
   s.questions.push({ type: "voicechat" });
 });
 
+// Unseen: an AI-written reading text on a subject the learner picks, with
+// comprehension questions. It's open-ended, so it stays one endless "question".
+stages.push({
+  title: "Unseen",
+  sub: "קוראים טקסט באנגלית על נושא שאתם בוחרים ועונים על שאלות הבנה",
+  legend: "<strong>איך עובדים:</strong> בוחרים רמה, תחום ונושא ספציפי (או כותבים נושא משלכם) — ומקבלים טקסט חדש עם שאלות. &nbsp;·&nbsp; <strong>טיפ:</strong> קראו קודם את השאלות, ואז חפשו בטקסט את המשפט שמוכיח את התשובה.",
+  unseen: true,
+  questions: [{ type: "unseen" }]
+});
+
 let stageIndex = 0;
 let freeChatLogs = {};
 let current = 0;
@@ -1157,9 +1238,14 @@ function render() {
   }
   document.getElementById("scorelive").textContent = score;
 
+  if (stage.unseen) {
+    renderUnseen(card);
+    return;
+  }
+
   if (current >= stage.questions.length) {
-    const isLastStage = stageIndex === stages.length - 1;
-    const totalQuestions = stages.reduce((sum, s) => sum + s.questions.length, 0);
+    const isLastStage = stageIndex === stages.length - 1 || stages[stageIndex + 1].unseen;
+    const totalQuestions = stages.filter(s => !s.unseen).reduce((sum, s) => sum + s.questions.length, 0);
 
     if (!isLastStage) {
       document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} COMPLETE`;
@@ -1188,6 +1274,7 @@ function render() {
         <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
         <button class="restart" onclick="restart()">Start Over</button>
+        <button class="restart" onclick="goToStage(stages.length - 1)">Practice Unseen →</button>
       </div>`;
     document.getElementById("barFill").style.width = "100%";
     return;
@@ -1309,6 +1396,7 @@ function render() {
 }
 
 function getSections(stage) {
+  if (stage.unseen) return [{ label: "Unseen", start: 0, len: 1 }];
   const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
   const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
@@ -2094,6 +2182,224 @@ function selectAnswer(btn, q) {
   document.getElementById("nextBtn").onclick = () => {
     current++;
     render();
+  };
+}
+
+// --- Unseen ----------------------------------------------------------------
+// Each field: [Hebrew label, field sent to the model, [Hebrew label, subject]...]
+const UNSEEN_FIELDS = [
+  ["יזמות", "Entrepreneurship", [["אילון מאסק", "Elon Musk"], ["סטיב ג'ובס", "Steve Jobs"], ["ג'ף בזוס", "Jeff Bezos"], ["Waze", "Waze, the Israeli navigation app"], ["מובילאיי", "Mobileye"], ["אופרה ווינפרי", "Oprah Winfrey"]]],
+  ["ספורט", "Sports", [["ליונל מסי", "Lionel Messi"], ["מייקל ג'ורדן", "Michael Jordan"], ["כריסטיאנו רונאלדו", "Cristiano Ronaldo"], ["סרינה ויליאמס", "Serena Williams"], ["המשחקים האולימפיים", "The Olympic Games"], ["המונדיאל", "The FIFA World Cup"]]],
+  ["מדע וטכנולוגיה", "Science and technology", [["בינה מלאכותית", "Artificial intelligence"], ["חקר החלל", "Space exploration"], ["אלברט איינשטיין", "Albert Einstein"], ["מארי קירי", "Marie Curie"], ["האינטרנט", "The history of the internet"]]],
+  ["היסטוריה", "History", [["הפירמידות", "The pyramids of Egypt"], ["האימפריה הרומית", "The Roman Empire"], ["הנחיתה על הירח", "The Moon landing"], ["מרטין לותר קינג", "Martin Luther King Jr."]]],
+  ["מוזיקה ובידור", "Music and entertainment", [["הביטלס", "The Beatles"], ["טיילור סוויפט", "Taylor Swift"], ["וולט דיסני", "Walt Disney"], ["נטפליקס", "Netflix"]]],
+  ["טבע וסביבה", "Nature and environment", [["אוקיינוסים", "The oceans"], ["שינויי אקלים", "Climate change"], ["דולפינים", "Dolphins"], ["יערות הגשם", "Rainforests"]]],
+  ["טיולים ותרבות", "Travel and culture", [["יפן", "Japan"], ["ניו יורק", "New York City"], ["האוכל באיטליה", "Food in Italy"], ["פסטיבלים בעולם", "Festivals around the world"]]]
+];
+const UNSEEN_LEVEL_LABELS = [["easy", "קל"], ["medium", "בינוני"], ["hard", "מתקדם"]];
+const UNSEEN_STORAGE_KEY = "unseenPractice";
+// field: index into UNSEEN_FIELDS or "custom"; subject: index into its list or "custom"
+let unseen = { level: "medium", field: 0, subject: 0, customField: "", customSubject: "", exercise: null, answers: [] };
+try { Object.assign(unseen, JSON.parse(localStorage.getItem(UNSEEN_STORAGE_KEY)) || {}); } catch (e) {}
+
+function saveUnseen() {
+  try { localStorage.setItem(UNSEEN_STORAGE_KEY, JSON.stringify(unseen)); } catch (e) {}
+}
+
+function unseenChoice() {
+  if (unseen.field === "custom") {
+    const field = unseen.customField.trim();
+    return { field, subject: "", label: field };
+  }
+  const [fieldHe, field, subjects] = UNSEEN_FIELDS[unseen.field] || UNSEEN_FIELDS[0];
+  if (unseen.subject === "custom") {
+    const subject = unseen.customSubject.trim();
+    return { field, subject, label: `${fieldHe} · ${subject}` };
+  }
+  const [subjectHe, subject] = subjects[unseen.subject] || subjects[0];
+  return { field, subject, label: `${fieldHe} · ${subjectHe}` };
+}
+
+function renderUnseen(card) {
+  if (unseen.exercise) renderUnseenExercise(card);
+  else renderUnseenPicker(card);
+}
+
+function renderUnseenPicker(card, error) {
+  document.getElementById("qnum").textContent = 0;
+  document.getElementById("qtotal").textContent = 0;
+  document.getElementById("barFill").style.width = "0%";
+  const chip = (label, attrs, active) => `<button class="chip${active ? " active" : ""}" ${attrs}>${escapeHtml(label)}</button>`;
+  const isCustomField = unseen.field === "custom";
+  const subjects = isCustomField ? [] : UNSEEN_FIELDS[unseen.field][2];
+  card.innerHTML = `
+    <div class="unseen-pick">
+      <div class="unseen-label">רמה</div>
+      <div class="chips">${UNSEEN_LEVEL_LABELS.map(([id, he]) => chip(he, `data-level="${id}"`, unseen.level === id)).join("")}</div>
+      <div class="unseen-label">תחום</div>
+      <div class="chips">
+        ${UNSEEN_FIELDS.map(([he], i) => chip(he, `data-field="${i}"`, unseen.field === i)).join("")}
+        ${chip("✏️ תחום משלי", `data-field="custom"`, isCustomField)}
+      </div>
+      ${isCustomField ? `
+        <input type="text" class="translate-input" id="unseenCustomField" dir="auto" maxlength="100" autocomplete="off" placeholder="על מה תרצו לקרוא? למשל: בישול, חתולים, מלחמת העולם השנייה..." value="${escapeAttr(unseen.customField)}" />
+      ` : `
+        <div class="unseen-label">נושא ספציפי</div>
+        <div class="chips">
+          ${subjects.map(([he], i) => chip(he, `data-subject="${i}"`, unseen.subject === i)).join("")}
+          ${chip("✏️ נושא משלי", `data-subject="custom"`, unseen.subject === "custom")}
+        </div>
+        ${unseen.subject === "custom" ? `<input type="text" class="translate-input" id="unseenCustomSubject" dir="auto" maxlength="100" autocomplete="off" placeholder="למשל: מארק צוקרברג, אדידס, Startup Nation..." value="${escapeAttr(unseen.customSubject)}" />` : ""}
+      `}
+      <div class="unseen-status${error ? " error" : ""}" id="unseenStatus">${error ? escapeHtml(error) : ""}</div>
+      <div class="footer-row"><button class="next show" id="unseenGo">צרו לי טקסט →</button></div>
+    </div>`;
+
+  card.querySelectorAll("[data-level]").forEach(b => b.onclick = () => { unseen.level = b.dataset.level; saveUnseen(); renderUnseenPicker(card); });
+  card.querySelectorAll("[data-field]").forEach(b => b.onclick = () => {
+    unseen.field = b.dataset.field === "custom" ? "custom" : Number(b.dataset.field);
+    unseen.subject = 0;
+    saveUnseen();
+    renderUnseenPicker(card);
+    const input = document.getElementById("unseenCustomField");
+    if (input) input.focus();
+  });
+  card.querySelectorAll("[data-subject]").forEach(b => b.onclick = () => {
+    unseen.subject = b.dataset.subject === "custom" ? "custom" : Number(b.dataset.subject);
+    saveUnseen();
+    renderUnseenPicker(card);
+    const input = document.getElementById("unseenCustomSubject");
+    if (input) input.focus();
+  });
+  for (const [id, prop] of [["unseenCustomField", "customField"], ["unseenCustomSubject", "customSubject"]]) {
+    const input = document.getElementById(id);
+    if (!input) continue;
+    input.oninput = () => { unseen[prop] = input.value; saveUnseen(); };
+    input.onkeydown = e => { if (e.key === "Enter") generateUnseen(card); };
+  }
+  document.getElementById("unseenGo").onclick = () => generateUnseen(card);
+}
+
+async function generateUnseen(card, avoid) {
+  const choice = unseenChoice();
+  const status = document.getElementById("unseenStatus");
+  const btn = document.getElementById("unseenGo");
+  if (!choice.field || (unseen.subject === "custom" && !choice.subject)) {
+    status.className = "unseen-status error";
+    status.textContent = "כתבו קודם על מה תרצו לקרוא.";
+    return;
+  }
+  if (!DIALOGUE_API_URL) {
+    status.className = "unseen-status error";
+    status.textContent = "יצירת טקסטים עובדת רק כשהאפליקציה פתוחה מהשרת המקומי (localhost).";
+    return;
+  }
+  btn.disabled = true;
+  status.className = "unseen-status";
+  status.textContent = `כותב טקסט על ${choice.label}... זה לוקח כמה שניות.`;
+  let data = null, error = "";
+  try {
+    const resp = await fetch("/api/unseen", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ field: choice.field, subject: choice.subject, level: unseen.level, avoid: avoid || "" })
+    });
+    data = await resp.json().catch(() => ({}));
+    if (!resp.ok) error = data.error || `שגיאה (${resp.status})`;
+  } catch (e) {
+    error = "אין חיבור לשרת המקומי.";
+  }
+  // The learner may have left the stage while waiting.
+  if (!stages[stageIndex].unseen || !document.body.contains(btn)) return;
+  if (error) return renderUnseenPicker(card, `לא הצלחתי ליצור טקסט: ${error}`);
+  unseen.exercise = { ...data, label: choice.label, level: unseen.level };
+  unseen.answers = [];
+  saveUnseen();
+  renderUnseenExercise(card);
+}
+
+// Wraps the quote that proves an answer in <mark> (escaped text in, HTML out).
+function markQuote(html, quote) {
+  const q = escapeHtml((quote || "").trim());
+  if (q.length < 8) return html;
+  const i = html.indexOf(q);
+  return i < 0 ? html : html.slice(0, i) + "<mark>" + q + "</mark>" + html.slice(i + q.length);
+}
+
+function renderUnseenExercise(card) {
+  const ex = unseen.exercise;
+  const answered = unseen.answers.filter(a => a !== undefined && a !== null).length;
+  const correct = ex.questions.filter((q, i) => unseen.answers[i] === q.answer).length;
+  document.getElementById("qnum").textContent = answered;
+  document.getElementById("qtotal").textContent = ex.questions.length;
+  document.getElementById("barFill").style.width = `${(answered / ex.questions.length) * 100}%`;
+
+  // Highlight the proof sentence of every answered question.
+  const paragraphs = ex.paragraphs.map(p => {
+    let html = escapeHtml(p);
+    ex.questions.forEach((q, i) => { if (unseen.answers[i] != null) html = markQuote(html, q.quote); });
+    return html;
+  });
+  const levelHe = (UNSEEN_LEVEL_LABELS.find(([id]) => id === ex.level) || [, ""])[1];
+
+  card.innerHTML = `
+    <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}</div>
+    <div class="unseen-title"><span>${escapeHtml(ex.title)}</span><button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button></div>
+    <div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>
+    ${ex.glossary.length ? `<details class="glossary"><summary>מילים שכדאי להכיר (${ex.glossary.length})</summary>
+      ${ex.glossary.map(g => `<span><b>${escapeHtml(g.word)}</b> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
+    ${ex.questions.map((q, i) => {
+      const picked = unseen.answers[i];
+      const done = picked != null;
+      return `<div class="unseen-q" data-q="${i}">
+        <div class="unseen-q-text">${i + 1}. ${escapeHtml(q.question)}</div>
+        <div class="options">${q.options.map((o, j) => {
+          const cls = done && j === q.answer ? " correct" : done && j === picked ? " wrong" : "";
+          return `<button class="opt${cls}" data-opt="${j}"${done ? " disabled" : ""}>${escapeHtml(o)}</button>`;
+        }).join("")}</div>
+        <div class="hint">${done ? `<span class="why${picked === q.answer ? "" : " bad"}">${picked === q.answer ? "✓ נכון!" : "✗ לא בדיוק."} ${escapeHtml(q.explanation)}</span>` : ""}</div>
+      </div>`;
+    }).join("")}
+    ${answered === ex.questions.length ? `<div class="unseen-done">
+      <div>${correct === ex.questions.length ? "מושלם! הבנתם את כל הטקסט." : correct >= ex.questions.length * 0.7 ? "כל הכבוד — הבנת הנקרא טובה מאוד!" : "לא רע — המשפטים המסומנים בטקסט מראים איפה התשובות."}</div>
+      <div class="score">${correct} / ${ex.questions.length}</div>
+      <div class="unseen-actions">
+        <button class="restart" id="unseenAgain">טקסט חדש באותו נושא</button>
+        <button class="restart" id="unseenPick">בחירת נושא אחר</button>
+      </div>
+    </div>` : `<div class="footer-row"><button class="restart" id="unseenPick">בחירת נושא אחר</button></div>`}
+  `;
+
+  document.getElementById("unseenListen").onclick = () => speak(ex.title + ". " + ex.paragraphs.join(" "));
+  card.querySelectorAll(".unseen-q").forEach(qEl => {
+    const i = Number(qEl.dataset.q);
+    qEl.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
+      if (unseen.answers[i] != null) return;
+      unseen.answers[i] = Number(b.dataset.opt);
+      if (unseen.answers[i] === ex.questions[i].answer) playCorrectSound(); else playWrongSound();
+      saveUnseen();
+      const y = qEl.getBoundingClientRect().top;
+      renderUnseenExercise(card);
+      // Keep the question the learner just answered in place on the screen.
+      const same = card.querySelector(`.unseen-q[data-q="${i}"]`);
+      if (same) window.scrollBy(0, same.getBoundingClientRect().top - y);
+    });
+  });
+  document.getElementById("unseenPick").onclick = () => {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    unseen.exercise = null;
+    unseen.answers = [];
+    saveUnseen();
+    renderUnseenPicker(card);
+  };
+  const again = document.getElementById("unseenAgain");
+  if (again) again.onclick = () => {
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    unseen.exercise = null;
+    unseen.answers = [];
+    saveUnseen();
+    renderUnseenPicker(card);
+    generateUnseen(card, ex.title);
   };
 }
 

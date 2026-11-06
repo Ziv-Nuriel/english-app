@@ -256,6 +256,126 @@ async function handleAccentSample(req, res) {
   res.end(fs.readFileSync(file));
 }
 
+// --- Unseen: reading text + comprehension questions ----------------------
+// The learner picks a field and a subject (or types their own); Gemini writes
+// a short article about it plus multiple-choice questions, as structured JSON.
+// gemini-3.8-flash (and flash-latest) took 3-5 minutes per request on
+// 2026-11-07; 3.5-flash with low thinking writes an exercise in seconds.
+// When a model is busy ("high demand"), the next one in the list is tried.
+const UNSEEN_MODELS = ["models/gemini-3.5-flash", "models/gemini-3.5-flash-lite"];
+const UNSEEN_LEVELS = {
+  easy: "CEFR A2: short simple sentences, very common everyday words, about 150-180 words",
+  medium: "CEFR B1: clear sentences, common vocabulary with a few new words, about 220-260 words",
+  hard: "CEFR B2: richer vocabulary and some complex sentences, about 300-350 words",
+};
+const UNSEEN_SCHEMA = {
+  type: "OBJECT",
+  properties: {
+    title: { type: "STRING" },
+    paragraphs: { type: "ARRAY", items: { type: "STRING" } },
+    glossary: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: { word: { type: "STRING" }, hebrew: { type: "STRING" } },
+        required: ["word", "hebrew"],
+      },
+    },
+    questions: {
+      type: "ARRAY",
+      items: {
+        type: "OBJECT",
+        properties: {
+          question: { type: "STRING" },
+          options: { type: "ARRAY", items: { type: "STRING" } },
+          answer: { type: "INTEGER" },
+          quote: { type: "STRING" },
+          explanation: { type: "STRING" },
+        },
+        required: ["question", "options", "answer", "quote", "explanation"],
+      },
+    },
+  },
+  required: ["title", "paragraphs", "glossary", "questions"],
+};
+
+function unseenPrompt(field, subject, level, avoid) {
+  return `Write an "Unseen" reading-comprehension exercise in English for a native Hebrew speaker (Israeli high-school / adult learner).
+
+Field: ${field}
+Specific subject: ${subject || "(none given: choose an interesting, specific subject within the field)"}
+Level: ${UNSEEN_LEVELS[level]}
+${avoid ? `The learner already read an article titled "${avoid}" on this subject: write a new one about a different side of it, with a different title.
+` : ""}
+The text:
+- An interesting, informative article about the subject, written for this level, in 3-5 paragraphs, with a short title.
+- If the subject is a real person, company, team or event, use only well-known, widely reported facts. Do not invent quotes, numbers or dates; if you are not sure of an exact detail, leave it out or keep it general.
+- The field and subject may be written in Hebrew (the learner typed them). Understand them and write about exactly that subject (for example a specific team, person or place), not a general article about the field.
+- If the subject is inappropriate or makes no sense, write about the closest sensible, appropriate subject in the field.
+
+The questions (exactly 6, in the order the answers appear in the text):
+- Mix the types: main idea, specific details, vocabulary in context ("The word X in paragraph 2 means..."), reference ("'it' in line ... refers to..."), cause/effect and one inference question.
+- Each question has exactly 4 options in English; only one is correct, and the wrong ones are plausible.
+- "answer" is the 0-based index of the correct option. Spread the correct answers across positions.
+- "quote" is the exact sentence from the text (copied word for word) that proves the answer.
+- "explanation" is 1-2 short sentences IN HEBREW explaining why that answer is correct.
+
+The glossary: 6-8 words or phrases from the text that may be new at this level, each exactly as it appears in the text, with a short Hebrew translation.`;
+}
+
+async function handleUnseen(req, res) {
+  const send = (status, body) => {
+    res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
+    res.end(JSON.stringify(body));
+  };
+  if (req.method !== "POST") return send(405, { error: "Use POST" });
+  if (!ALLOWED_ORIGINS.includes(req.headers.origin)) return send(403, { error: "Forbidden origin" });
+  const key = geminiKey();
+  if (!key) return send(503, { error: "Missing GEMINI_API_KEY: fill it in the .env file" });
+
+  const chunks = [];
+  for await (const chunk of req) chunks.push(chunk);
+  let choice = {};
+  try { choice = JSON.parse(Buffer.concat(chunks).toString() || "{}"); } catch (e) {}
+  const clean = v => (typeof v === "string" ? v.replace(/\s+/g, " ").trim().slice(0, 100) : "");
+  const field = clean(choice.field);
+  const subject = clean(choice.subject);
+  const level = UNSEEN_LEVELS[choice.level] ? choice.level : "medium";
+  if (!field && !subject) return send(400, { error: "Pick a field or a subject" });
+
+  const body = JSON.stringify({
+    contents: [{ role: "user", parts: [{ text: unseenPrompt(field || "General", subject, level, clean(choice.avoid)) }] }],
+    generationConfig: {
+      responseMimeType: "application/json",
+      responseSchema: UNSEEN_SCHEMA,
+      thinkingConfig: { thinkingLevel: "low" },
+    },
+  });
+  let response, data;
+  for (const model of UNSEEN_MODELS) {
+    response = await fetch(`https://generativelanguage.googleapis.com/v1beta/${model}:generateContent`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-goog-api-key": key },
+      body,
+      signal: AbortSignal.timeout(60000),
+    });
+    data = await response.json().catch(() => ({}));
+    if (![429, 500, 503].includes(response.status)) break;
+  }
+  if (!response.ok) {
+    return send(502, { error: (data.error && data.error.message) || `Generation failed (${response.status})` });
+  }
+  const parts = (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts) || [];
+  let unseen;
+  try { unseen = JSON.parse(parts.map(p => p.text || "").join("")); } catch (e) {}
+  const questions = ((unseen && unseen.questions) || []).filter(q =>
+    Array.isArray(q.options) && q.options.length === 4 && Number.isInteger(q.answer) && q.answer >= 0 && q.answer < 4);
+  if (!unseen || !Array.isArray(unseen.paragraphs) || !unseen.paragraphs.length || !questions.length) {
+    return send(502, { error: "The model returned an incomplete exercise, try again" });
+  }
+  send(200, { ...unseen, questions, glossary: unseen.glossary || [] });
+}
+
 // The Anthropic key is read on every request, so pasting it into
 // api-key.txt takes effect without restarting the server.
 function apiKey() {
@@ -311,6 +431,13 @@ http.createServer((req, res) => {
     handleAccentSample(req, res).catch(err => {
       res.writeHead(502, { "Content-Type": "application/json" });
       res.end(JSON.stringify({ error: String(err.message || err) }));
+    });
+    return;
+  }
+  if (req.url.split("?")[0] === "/api/unseen") {
+    handleUnseen(req, res).catch(err => {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: String(err) }));
     });
     return;
   }
