@@ -1190,6 +1190,14 @@ stages.push({
   questions: [{ type: "unseen" }]
 });
 
+// The podcast has its own card on the home page: ?mode=podcast shows only
+// that stage, and the regular drill leaves it out.
+const PAGE_MODE = new URLSearchParams(location.search).get("mode") === "podcast" ? "podcast" : "quiz";
+for (let i = stages.length - 1; i >= 0; i--) {
+  if ((stages[i].kind === "podcast") !== (PAGE_MODE === "podcast")) stages.splice(i, 1);
+}
+if (PAGE_MODE === "podcast") document.title = "Podcast";
+
 let stageIndex = 0;
 let freeChatLogs = {};
 let current = 0;
@@ -1200,7 +1208,7 @@ let stageProgress = {};
 let sectionProgress = {};
 let speakScores = {};
 
-const STORAGE_KEY = "questionWordsQuizProgress";
+const STORAGE_KEY = PAGE_MODE === "podcast" ? "podcastPageProgress" : "questionWordsQuizProgress";
 
 function saveProgress() {
   try {
@@ -1213,6 +1221,11 @@ function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
+    // A stage that moved away (the podcast got its own page) must not wipe the rest.
+    if (typeof data.stageIndex === "number" && data.stageIndex >= stages.length) {
+      data.stageIndex = stages.length - 1;
+      data.current = (data.stageProgress && data.stageProgress[data.stageIndex]) || 0;
+    }
     if (typeof data.stageIndex === "number" && typeof data.current === "number" && typeof data.score === "number" &&
         data.stageIndex >= 0 && data.stageIndex < stages.length &&
         data.current >= 0 && data.current <= stages[data.stageIndex].questions.length) {
@@ -1335,6 +1348,7 @@ function shuffle(arr) {
 
 function renderTabs() {
   const tabs = document.getElementById("stageTabs");
+  if (stages.length < 2) { tabs.innerHTML = ""; return; }
   tabs.innerHTML = stages
     .map((s, i) => `<button class="stage-tab${i === stageIndex ? " active" : ""}" data-stage="${i}">${i + 1}. ${s.title}</button>`)
     .join("");
@@ -1361,7 +1375,7 @@ function render() {
   document.getElementById("stageTitle").textContent = stage.title;
   document.getElementById("stageSub").textContent = stage.sub;
   document.getElementById("legend").innerHTML = stage.legend;
-  document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} / ${stages.length}`;
+  document.getElementById("levelTag").textContent = stages.length < 2 ? "LISTENING" : `STAGE ${stageIndex + 1} / ${stages.length}`;
 
   const sections = getSections(stage);
   if (current < stage.questions.length) {
