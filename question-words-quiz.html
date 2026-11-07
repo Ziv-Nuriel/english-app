@@ -200,6 +200,8 @@
     grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: .65rem;
   }
+  .pick-options { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); margin-top: 1rem; }
+  .pick-question { font-size: .95rem; color: var(--ink-soft); margin-bottom: .35rem; }
   .opt {
     padding: .75rem 1rem;
     border-radius: 3px;
@@ -839,6 +841,7 @@ const stages = [
     legend: "<strong>What</strong> – מה (דבר) &nbsp;·&nbsp; <strong>Who</strong> – מי (אדם) &nbsp;·&nbsp; <strong>Where</strong> – איפה (מקום) &nbsp;·&nbsp; <strong>When</strong> – מתי (זמן) &nbsp;·&nbsp; <strong>Why</strong> – למה (סיבה) &nbsp;·&nbsp; <strong>How</strong> – איך / כמה (אופן, כמות, גיל, משך, תדירות, מחיר) &nbsp;·&nbsp; <strong>Which</strong> – איזה (בחירה מתוך אפשרויות ידועות) &nbsp;·&nbsp; <strong>Whose</strong> – של מי (בעלות)",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "questionWords",
     speakCount: 10,
     storyCount: 4,
@@ -864,6 +867,16 @@ const stages = [
       { type: "order", answer: ["which", "color", "do", "you", "prefer"], punct: "?", why: "בחירה מתוך אפשרויות, לכן Which." },
       { type: "order", answer: ["whose", "phone", "is", "ringing"], punct: "?", why: "שואלים <em>למי שייך</em> הטלפון, לכן Whose." },
       { type: "order", answer: ["who", "is", "knocking", "at", "the", "door"], punct: "?", why: "שואלים על <em>זהות של אדם</em>, לכן Who." },
+      { type: "pick", prompt: "איפה אתה גר?", answer: "Where do you live?", options: ["Where do you live?", "When do you live?", "What do you live?", "Where you live?"], why: "\"איפה\" = Where (מקום). עם פועל פעולה (live) צריך do לפני הנושא." },
+      { type: "pick", prompt: "למה היא עצובה?", answer: "Why is she sad?", options: ["Why is she sad?", "Why she is sad?", "How is she sad?", "What is she sad?"], why: "\"למה\" = Why (סיבה). בשאלה is בא לפני הנושא." },
+      { type: "pick", prompt: "מתי מתחיל השיעור?", answer: "When does the lesson start?", options: ["When does the lesson start?", "Where does the lesson start?", "When the lesson starts?", "When is the lesson start?"], why: "\"מתי\" = When (זמן). עם he/she/it משתמשים ב-does + פועל בסיס." },
+      { type: "pick", prompt: "מי האישה ההיא?", answer: "Who is that woman?", options: ["Who is that woman?", "Whose is that woman?", "What is that woman?", "Which is that woman?"], why: "שואלים על זהות של אדם, לכן Who." },
+      { type: "pick", prompt: "של מי המעיל הזה?", answer: "Whose coat is this?", options: ["Whose coat is this?", "Who coat is this?", "Who's coat is this?", "Which coat is this?"], why: "\"של מי\" = Whose (בעלות). Who's זה קיצור של Who is." },
+      { type: "pick", prompt: "כמה זה עולה?", answer: "How much does it cost?", options: ["How much does it cost?", "How many does it cost?", "What much does it cost?", "How much it costs?"], why: "על מחיר שואלים How much (How many — לדברים שסופרים)." },
+      { type: "pick", prompt: "איזה צבע אתה מעדיף, כחול או אדום?", answer: "Which color do you prefer, blue or red?", options: ["Which color do you prefer, blue or red?", "Whose color do you prefer, blue or red?", "Who color do you prefer, blue or red?", "Which color you prefer, blue or red?"], why: "בחירה מתוך אפשרויות ידועות — Which." },
+      { type: "pick", prompt: "בן כמה אחיך?", answer: "How old is your brother?", options: ["How old is your brother?", "How many is your brother?", "What old is your brother?", "How old your brother is?"], why: "על גיל שואלים How old." },
+      { type: "pick", prompt: "מה אתה אוכל לארוחת בוקר?", answer: "What do you eat for breakfast?", options: ["What do you eat for breakfast?", "Who do you eat for breakfast?", "What are you eat for breakfast?", "What you eat for breakfast?"], why: "\"מה\" על דבר — What. עם פועל פעולה צריך do." },
+      { type: "pick", prompt: "כמה זמן לוקחת הנסיעה?", answer: "How long does the trip take?", options: ["How long does the trip take?", "How much does the trip take?", "When does the trip take?", "How long the trip takes?"], why: "על משך זמן שואלים How long." },
       { type: "translate", direction: "toEnglish", prompt: "מה אתה עושה עכשיו?", answers: ["what are you doing now"], display: "What are you doing now?" },
       { type: "translate", direction: "toEnglish", prompt: "איפה השירותים?", answers: ["where is the bathroom", "where's the bathroom"], display: "Where is the bathroom?" },
       { type: "translate", direction: "toEnglish", prompt: "כמה זה עולה?", answers: ["how much is this"], display: "How much is this?" },
@@ -896,6 +909,7 @@ const stages = [
     legend: "<strong>Are</strong> – משמש עם הפועל to be, כשאחרי המילה מגיע שם עצם, תואר או ביטוי מקום (בלי פועל פעולה נוסף) &nbsp;·&nbsp; <strong>Do</strong> – משמש כפועל עזר כשיש במשפט <em>פועל פעולה</em> נוסף (like, work, study, need, walk, fit...)",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "doAre",
     speakCount: 10,
     storyCount: 4,
@@ -921,6 +935,16 @@ const stages = [
       { type: "order", answer: ["do", "your", "friends", "like", "sports"], punct: "?", why: "\"like\" הוא פועל פעולה, לכן Do." },
       { type: "order", answer: ["are", "you", "and", "your", "sister", "twins"], punct: "?", why: "אחרי Are מגיע שם עצם (twins), אין פועל פעולה נוסף." },
       { type: "order", answer: ["do", "you", "speak", "Spanish"], punct: "?", why: "\"speak\" הוא פועל פעולה, לכן Do." },
+      { type: "pick", prompt: "אתם רעבים?", answer: "Are you hungry?", options: ["Are you hungry?", "Do you hungry?", "Do you are hungry?", "Are you hunger?"], why: "רעב הוא תואר ואין פועל פעולה — Are." },
+      { type: "pick", prompt: "אתם אוהבים פיצה?", answer: "Do you like pizza?", options: ["Do you like pizza?", "Are you like pizza?", "Do you likes pizza?", "Does you like pizza?"], why: "like הוא פועל פעולה — Do + פועל בסיס." },
+      { type: "pick", prompt: "הם בבית?", answer: "Are they at home?", options: ["Are they at home?", "Do they at home?", "Do they are at home?", "Is they at home?"], why: "שאלה על מקום בלי פועל פעולה — Are." },
+      { type: "pick", prompt: "הם משחקים כדורגל כל שבוע?", answer: "Do they play football every week?", options: ["Do they play football every week?", "Are they play football every week?", "Do they playing football every week?", "Does they play football every week?"], why: "play הוא פועל פעולה (הרגל קבוע) — Do." },
+      { type: "pick", prompt: "אתה עייף?", answer: "Are you tired?", options: ["Are you tired?", "Do you tired?", "Do you are tired?", "Are you tire?"], why: "עייף הוא תואר — Are." },
+      { type: "pick", prompt: "אתה מדבר עברית?", answer: "Do you speak Hebrew?", options: ["Do you speak Hebrew?", "Are you speak Hebrew?", "Do you speaks Hebrew?", "Are you Hebrew speak?"], why: "speak הוא פועל פעולה — Do." },
+      { type: "pick", prompt: "אתם חברים?", answer: "Are you friends?", options: ["Are you friends?", "Do you friends?", "Do you are friends?", "Are you friend?"], why: "חברים הוא שם עצם — Are." },
+      { type: "pick", prompt: "אתה עובד בתל אביב?", answer: "Do you work in Tel Aviv?", options: ["Do you work in Tel Aviv?", "Are you work in Tel Aviv?", "Do you works in Tel Aviv?", "Are you in Tel Aviv work?"], why: "work הוא פועל פעולה — Do." },
+      { type: "pick", prompt: "הילדים מוכנים?", answer: "Are the kids ready?", options: ["Are the kids ready?", "Do the kids ready?", "Do the kids are ready?", "Is the kids ready?"], why: "מוכנים הוא תואר, והנושא ברבים — Are." },
+      { type: "pick", prompt: "אתם צריכים עזרה?", answer: "Do you need help?", options: ["Do you need help?", "Are you need help?", "Do you needs help?", "Is you need help?"], why: "need הוא פועל — Do." },
       { type: "translate", direction: "toEnglish", prompt: "אתה צמא?", answers: ["are you thirsty"], display: "Are you thirsty?" },
       { type: "translate", direction: "toEnglish", prompt: "האנשים האלה עובדים כאן?", answers: ["do these people work here"], display: "Do these people work here?" },
       { type: "translate", direction: "toEnglish", prompt: "אתם צריכים טרמפ?", answers: ["do you need a ride"], display: "Do you need a ride?" },
@@ -953,6 +977,7 @@ const stages = [
     legend: "<strong>Am I</strong> – שואלים על עצמכם (הדובר) &nbsp;·&nbsp; <strong>Is she</strong> – שואלים על אישה/בחורה שכבר הוזכרה בהקשר, ולא נמצאת מולכם &nbsp;·&nbsp; <strong>Is this</strong> – מצביעים או מראים על משהו/מישהו שנמצא ממש לפניכם עכשיו",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "isAmThis",
     speakCount: 10,
     storyCount: 4,
@@ -978,6 +1003,16 @@ const stages = [
       { type: "order", answer: ["is", "she", "feeling", "better", "today"], punct: "?", why: "מדובר על אישה שהוזכרה בהקשר, לכן Is she." },
       { type: "order", answer: ["am", "I", "on", "the", "right", "track"], punct: "?", why: "השאלה היא על עצמכם, לכן Am I." },
       { type: "order", answer: ["is", "this", "your", "handwriting"], punct: "?", why: "מצביעים על משהו ספציפי שלפניכם, לכן Is this." },
+      { type: "pick", prompt: "היא המורה שלך?", answer: "Is she your teacher?", options: ["Is she your teacher?", "Am I your teacher?", "She is your teacher?", "Is her your teacher?"], why: "שואלים על \"היא\" — Is she (is לפני הנושא, ו-she ולא her)." },
+      { type: "pick", prompt: "זה הטלפון שלך?", answer: "Is this your phone?", options: ["Is this your phone?", "Is she your phone?", "Am I your phone?", "This is your phone?"], why: "על חפץ קרוב — Is this." },
+      { type: "pick", prompt: "אני מאחר?", answer: "Am I late?", options: ["Am I late?", "Is I late?", "Are I late?", "I am late?"], why: "עם I תמיד am — Am I." },
+      { type: "pick", prompt: "היא בבית?", answer: "Is she at home?", options: ["Is she at home?", "Is this at home?", "Am I at home?", "Is her at home?"], why: "שואלים על \"היא\" — Is she." },
+      { type: "pick", prompt: "זה המקום הנכון?", answer: "Is this the right place?", options: ["Is this the right place?", "Is she the right place?", "Am I the right place?", "This the right place is?"], why: "על דבר שנמצא כאן — Is this." },
+      { type: "pick", prompt: "אני בתור הנכון?", answer: "Am I in the right line?", options: ["Am I in the right line?", "Is I in the right line?", "Are I in the right line?", "Is this I in the right line?"], why: "עם I תמיד am — Am I." },
+      { type: "pick", prompt: "היא עייפה?", answer: "Is she tired?", options: ["Is she tired?", "Am I tired?", "Is this tired?", "Does she tired?"], why: "שואלים על \"היא\" ועל תואר — Is she." },
+      { type: "pick", prompt: "זה בשבילי?", answer: "Is this for me?", options: ["Is this for me?", "Is she for me?", "Am I for me?", "Is this for I?"], why: "על חפץ קרוב — Is this. אחרי for בא me ולא I." },
+      { type: "pick", prompt: "אני מדבר מהר מדי?", answer: "Am I talking too fast?", options: ["Am I talking too fast?", "Is I talking too fast?", "Am I talk too fast?", "Do I talking too fast?"], why: "עם I — Am I, ואחריו פועל עם ing." },
+      { type: "pick", prompt: "היא חברה של דני?", answer: "Is she Danny's friend?", options: ["Is she Danny's friend?", "Am I Danny's friend?", "Is her Danny's friend?", "She is Danny's friend?"], why: "שואלים על \"היא\" — Is she." },
       { type: "translate", direction: "toEnglish", prompt: "זאת המכונית שלך?", answers: ["is this your car"], display: "Is this your car?" },
       { type: "translate", direction: "toEnglish", prompt: "היא כבר הגיעה?", answers: ["is she here already"], display: "Is she here already?" },
       { type: "translate", direction: "toEnglish", prompt: "אני מאחר למסיבה?", answers: ["am i late for the party"], display: "Am I late for the party?" },
@@ -1010,6 +1045,7 @@ const stages = [
     legend: "<strong>Did</strong> – פועל עזר לשאלות בזמן עבר (yesterday, last night, already, this morning...) &nbsp;·&nbsp; <strong>Do</strong> – פועל עזר לשאלות בזמן הווה / הרגלים (usually, every day, always...)",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "didDo",
     speakCount: 10,
     storyCount: 4,
@@ -1035,6 +1071,16 @@ const stages = [
       { type: "order", answer: ["do", "you", "usually", "cook", "dinner"], punct: "?", why: "\"usually\" מציין הרגל בהווה, לכן Do." },
       { type: "order", answer: ["did", "they", "leave", "already"], punct: "?", why: "\"already\" מציין שהפעולה כבר קרתה, לכן Did." },
       { type: "order", answer: ["do", "you", "read", "before", "bed"], punct: "?", why: "שאלה על הרגל בהווה, לכן Do." },
+      { type: "pick", prompt: "ראית את הסרט אתמול?", answer: "Did you see the movie yesterday?", options: ["Did you see the movie yesterday?", "Do you see the movie yesterday?", "Did you saw the movie yesterday?", "Are you see the movie yesterday?"], why: "אתמול = עבר — Did + פועל בסיס (see, לא saw)." },
+      { type: "pick", prompt: "אתה אוהב קפה?", answer: "Do you like coffee?", options: ["Do you like coffee?", "Did you like coffee?", "Do you liked coffee?", "Are you like coffee?"], why: "שאלה בהווה — Do." },
+      { type: "pick", prompt: "איפה הם גרו לפני שנתיים?", answer: "Where did they live two years ago?", options: ["Where did they live two years ago?", "Where do they live two years ago?", "Where did they lived two years ago?", "Where they lived two years ago?"], why: "לפני שנתיים = עבר — did + פועל בסיס." },
+      { type: "pick", prompt: "מה אתה עושה בסופי שבוע?", answer: "What do you do on weekends?", options: ["What do you do on weekends?", "What are you do on weekends?", "What do you did on weekends?", "What you do on weekends?"], why: "הרגל בהווה — do." },
+      { type: "pick", prompt: "אכלת ארוחת בוקר הבוקר?", answer: "Did you eat breakfast this morning?", options: ["Did you eat breakfast this morning?", "Do you eat breakfast this morning?", "Did you ate breakfast this morning?", "Have you eat breakfast this morning?"], why: "משהו שכבר קרה — Did + פועל בסיס (eat)." },
+      { type: "pick", prompt: "מתי הוא הגיע?", answer: "When did he arrive?", options: ["When did he arrive?", "When does he arrive?", "When did he arrived?", "When he arrived?"], why: "הגיע = עבר — did + פועל בסיס." },
+      { type: "pick", prompt: "אתם הולכים לחדר כושר כל יום?", answer: "Do you go to the gym every day?", options: ["Do you go to the gym every day?", "Do you goes to the gym every day?", "Are you go to the gym every day?", "Do you going to the gym every day?"], why: "הרגל בהווה — Do + פועל בסיס." },
+      { type: "pick", prompt: "למה הוא התקשר אליך?", answer: "Why did he call you?", options: ["Why did he call you?", "Why does he call you?", "Why did he called you?", "Why he called you?"], why: "התקשר = עבר — did + פועל בסיס." },
+      { type: "pick", prompt: "היא עובדת כאן?", answer: "Does she work here?", options: ["Does she work here?", "Did she work here?", "Do she work here?", "Does she works here?"], why: "הווה עם she — Does + פועל בסיס." },
+      { type: "pick", prompt: "נהנית במסיבה?", answer: "Did you enjoy the party?", options: ["Did you enjoy the party?", "Do you enjoy the party?", "Did you enjoyed the party?", "Were you enjoy the party?"], why: "המסיבה כבר הייתה — Did + פועל בסיס." },
       { type: "translate", direction: "toEnglish", prompt: "עזבת את המסיבה מוקדם?", answers: ["did you leave the party early"], display: "Did you leave the party early?" },
       { type: "translate", direction: "toEnglish", prompt: "אתה קורא ספרים בדרך כלל?", answers: ["do you usually read books"], display: "Do you usually read books?" },
       { type: "translate", direction: "toEnglish", prompt: "הם קנו מתנה?", answers: ["did they buy a gift"], display: "Did they buy a gift?" },
@@ -1067,6 +1113,7 @@ const stages = [
     legend: "<strong>Didn't</strong> – שלילה בזמן עבר, מתאים לכל הגופים (I, you, he, she, we, they) &nbsp;·&nbsp; <strong>Doesn't</strong> – שלילה בזמן הווה, רק עם גוף שלישי יחיד (he / she / it)",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "negatives",
     speakCount: 10,
     storyCount: 4,
@@ -1092,6 +1139,16 @@ const stages = [
       { type: "order", answer: ["you", "didn't", "lock", "the", "door"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם You." },
       { type: "order", answer: ["this", "restaurant", "doesn't", "serve", "breakfast"], punct: ".", why: "זמן הווה עם גוף שלישי יחיד (This restaurant = it), לכן Doesn't." },
       { type: "order", answer: ["I", "didn't", "recognize", "you", "at", "first"], punct: ".", why: "זמן עבר, לכן Didn't — גם עם I." },
+      { type: "pick", prompt: "הוא לא אוהב חלב.", answer: "He doesn't like milk.", options: ["He doesn't like milk.", "He didn't like milk.", "He don't like milk.", "He doesn't likes milk."], why: "הווה עם he — doesn't + פועל בסיס." },
+      { type: "pick", prompt: "לא ראיתי אותו אתמול.", answer: "I didn't see him yesterday.", options: ["I didn't see him yesterday.", "I doesn't see him yesterday.", "I didn't saw him yesterday.", "I don't see him yesterday."], why: "אתמול = עבר — didn't + פועל בסיס." },
+      { type: "pick", prompt: "היא לא עובדת בימי שישי.", answer: "She doesn't work on Fridays.", options: ["She doesn't work on Fridays.", "She don't work on Fridays.", "She doesn't works on Fridays.", "She not work on Fridays."], why: "הווה עם she — doesn't + פועל בסיס." },
+      { type: "pick", prompt: "הם לא הגיעו למסיבה.", answer: "They didn't come to the party.", options: ["They didn't come to the party.", "They doesn't come to the party.", "They didn't came to the party.", "They don't came to the party."], why: "עבר — didn't (בכל הגופים) + פועל בסיס." },
+      { type: "pick", prompt: "הכלב לא נובח בלילה.", answer: "The dog doesn't bark at night.", options: ["The dog doesn't bark at night.", "The dog didn't barks at night.", "The dog don't bark at night.", "The dog doesn't barks at night."], why: "הכלב = it, בהווה — doesn't + פועל בסיס." },
+      { type: "pick", prompt: "לא סיימנו את העבודה.", answer: "We didn't finish the work.", options: ["We didn't finish the work.", "We doesn't finish the work.", "We didn't finished the work.", "We not finished the work."], why: "עבר — didn't + פועל בסיס." },
+      { type: "pick", prompt: "אבא שלי לא שותה קפה.", answer: "My dad doesn't drink coffee.", options: ["My dad doesn't drink coffee.", "My dad don't drink coffee.", "My dad doesn't drinks coffee.", "My dad didn't drinks coffee."], why: "אבא = he, בהווה — doesn't + פועל בסיס." },
+      { type: "pick", prompt: "היא לא התקשרה אליי.", answer: "She didn't call me.", options: ["She didn't call me.", "She doesn't called me.", "She didn't called me.", "She don't call me."], why: "עבר — didn't + פועל בסיס (call)." },
+      { type: "pick", prompt: "המחשב לא עובד.", answer: "The computer doesn't work.", options: ["The computer doesn't work.", "The computer don't work.", "The computer doesn't works.", "The computer didn't worked."], why: "המחשב = it, בהווה — doesn't." },
+      { type: "pick", prompt: "הוא לא אכל ארוחת ערב.", answer: "He didn't eat dinner.", options: ["He didn't eat dinner.", "He doesn't ate dinner.", "He didn't ate dinner.", "He don't eat dinner."], why: "עבר — didn't + פועל בסיס (eat, לא ate)." },
       { type: "translate", direction: "toEnglish", prompt: "הוא לא זוכר את השם שלי.", answers: ["he doesnt remember my name", "he doesn't remember my name"], display: "He doesn't remember my name." },
       { type: "translate", direction: "toEnglish", prompt: "לא הבנתי את השאלה.", answers: ["i didnt understand the question", "i didn't understand the question"], display: "I didn't understand the question." },
       { type: "translate", direction: "toEnglish", prompt: "החנות הזאת לא מוכרת בגדים.", answers: ["this store doesnt sell clothes", "this store doesn't sell clothes"], display: "This store doesn't sell clothes." },
@@ -1124,6 +1181,7 @@ const stages = [
     legend: "<strong>Yes, ... do/does/did.</strong> – תשובה חיובית, אותו פועל עזר שהופיע בשאלה &nbsp;·&nbsp; <strong>No, ... don't/doesn't/didn't.</strong> – תשובה שלילית, אותו פועל עזר בצורה שלילית &nbsp;·&nbsp; שימו לב: כששואלים עם You, עונים עם I.",
     mcCount: 10,
     orderCount: 10,
+    pickCount: 10,
     dialogueGrammar: "shortAnswers",
     speakCount: 10,
     storyCount: 4,
@@ -1149,6 +1207,16 @@ const stages = [
       { type: "order", answer: ["no,", "I", "didn't"], punct: ".", why: "עבר בשלילה: Didn't — גם עם I." },
       { type: "order", answer: ["no,", "he", "didn't"], punct: ".", why: "עבר בשלילה: Didn't, לא Doesn't, כי מדובר בעבר." },
       { type: "order", answer: ["yes,", "it", "did"], punct: ".", why: "עבר: Did — גם עם It." },
+      { type: "pick", question: "Do you like tea?", prompt: "כן, אני כן.", answer: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, I like.", "Yes, I does."], why: "חוזרים על פועל העזר מהשאלה: Do you…? — Yes, I do." },
+      { type: "pick", question: "Does he speak English?", prompt: "לא, הוא לא.", answer: "No, he doesn't.", options: ["No, he doesn't.", "No, he don't.", "No, he isn't.", "No, he didn't."], why: "Does he…? — No, he doesn't." },
+      { type: "pick", question: "Did you see the game?", prompt: "כן, ראיתי.", answer: "Yes, I did.", options: ["Yes, I did.", "Yes, I do.", "Yes, I saw.", "Yes, I was."], why: "Did you…? — Yes, I did." },
+      { type: "pick", question: "Do they live here?", prompt: "לא, הם לא.", answer: "No, they don't.", options: ["No, they don't.", "No, they doesn't.", "No, they aren't.", "No, they didn't."], why: "Do they…? — No, they don't." },
+      { type: "pick", question: "Does she work on Sundays?", prompt: "כן, היא כן.", answer: "Yes, she does.", options: ["Yes, she does.", "Yes, she do.", "Yes, she is.", "Yes, she works."], why: "Does she…? — Yes, she does." },
+      { type: "pick", question: "Did he call you?", prompt: "לא, הוא לא התקשר.", answer: "No, he didn't.", options: ["No, he didn't.", "No, he doesn't.", "No, he wasn't.", "No, he don't."], why: "Did he…? — No, he didn't." },
+      { type: "pick", question: "Do you have a car?", prompt: "כן, יש לי.", answer: "Yes, I do.", options: ["Yes, I do.", "Yes, I am.", "Yes, I does.", "Yes, I did."], why: "Do you…? — Yes, I do." },
+      { type: "pick", question: "Did they win?", prompt: "לא, הם לא ניצחו.", answer: "No, they didn't.", options: ["No, they didn't.", "No, they don't.", "No, they weren't.", "No, they didn't won."], why: "Did they…? — No, they didn't." },
+      { type: "pick", question: "Does your mom cook?", prompt: "כן, היא כן.", answer: "Yes, she does.", options: ["Yes, she does.", "Yes, she do.", "Yes, she is.", "Yes, she did."], why: "Does your mom…? — אמא = she, לכן Yes, she does." },
+      { type: "pick", question: "Do you and Dana work together?", prompt: "כן, אנחנו כן.", answer: "Yes, we do.", options: ["Yes, we do.", "Yes, we does.", "Yes, we are.", "Yes, I do."], why: "Do you and Dana…? — התשובה על שניכם: Yes, we do." },
       { type: "translate", direction: "toEnglish", prompt: "כן, אתה אוהב את זה.", answers: ["yes you do", "yes, you do"], display: "Yes, you do." },
       { type: "translate", direction: "toEnglish", prompt: "לא, אתה לא אוהב את זה.", answers: ["no you dont", "no, you don't"], display: "No, you don't." },
       { type: "translate", direction: "toEnglish", prompt: "כן, הוא הלך לשם.", answers: ["yes he did", "yes, he did"], display: "Yes, he did." },
@@ -1241,9 +1309,37 @@ const AUTO_NEXT_SECONDS = 5;
 
 const STORAGE_KEY = PAGE_MODE === "podcast" ? "podcastPageProgress" : "questionWordsQuizProgress";
 
+const PROGRESS_VERSION = 2;
+
+// v2 added the "Choose Translation" questions after Word Order: move older saved positions past them.
+function migrateProgress(data) {
+  if (data.v >= PROGRESS_VERSION) return;
+  const shift = (s, i) => {
+    const st = stages[s];
+    if (!st || !st.pickCount || typeof i !== "number") return i;
+    return i >= (st.mcCount || 0) + (st.orderCount || 0) ? i + st.pickCount : i;
+  };
+  const remap = (obj, values) => {
+    if (!obj || typeof obj !== "object") return obj;
+    const out = {};
+    for (const [k, v] of Object.entries(obj)) {
+      const [s, i] = k.split(":").map(Number);
+      out[s + ":" + shift(s, i)] = values ? shift(s, v) : v;
+    }
+    return out;
+  };
+  data.current = shift(data.stageIndex, data.current);
+  if (data.stageProgress && typeof data.stageProgress === "object") {
+    for (const s of Object.keys(data.stageProgress)) data.stageProgress[s] = shift(Number(s), data.stageProgress[s]);
+  }
+  data.sectionProgress = remap(data.sectionProgress, true);
+  data.speakScores = remap(data.speakScores, false);
+  data.results = remap(data.results, false);
+}
+
 function saveProgress() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress, speakScores, results }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ v: PROGRESS_VERSION, stageIndex, current, score, stageProgress, sectionProgress, speakScores, results }));
   } catch (e) {}
 }
 
@@ -1252,6 +1348,7 @@ function loadProgress() {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return;
     const data = JSON.parse(raw);
+    if (PAGE_MODE === "quiz") migrateProgress(data);
     // A stage that moved away (the podcast got its own page) must not wipe the rest.
     if (typeof data.stageIndex === "number" && data.stageIndex >= stages.length) {
       data.stageIndex = stages.length - 1;
@@ -1527,6 +1624,23 @@ function render() {
     return;
   }
 
+  if (q.type === "pick") {
+    card.innerHTML = `
+      <div class="order-label">Choose the correct translation</div>
+      ${q.question ? `<div class="pick-question" dir="ltr">“${escapeHtml(q.question)}”</div>` : ""}
+      <div class="translate-prompt" dir="rtl">${q.prompt}</div>
+      <div class="options pick-options">
+        ${shuffle(q.options).map(o => `<button class="opt" dir="ltr" data-value="${escapeAttr(o)}">${escapeHtml(o)}</button>`).join("")}
+      </div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row">${backBtn()}<button class="next" id="nextBtn">Next →</button></div>
+    `;
+    card.querySelectorAll(".opt").forEach(btn => {
+      btn.addEventListener("click", () => selectAnswer(btn, q));
+    });
+    return;
+  }
+
   if (q.type === "translate") {
     const label = q.direction === "toHebrew" ? "Translate to Hebrew" : "Translate to English";
     const promptDir = q.direction === "toHebrew" ? "ltr" : "rtl";
@@ -1636,16 +1750,18 @@ function getSections(stage) {
   if (stage.unseen) return [{ label: stage.title, start: 0, len: 1 }];
   const mcCount = typeof stage.mcCount === "number" ? stage.mcCount : stage.questions.length;
   const orderCount = typeof stage.orderCount === "number" ? stage.orderCount : 0;
+  const pickCount = typeof stage.pickCount === "number" ? stage.pickCount : 0;
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
   const speakCount = typeof stage.speakCount === "number" ? stage.speakCount : 0;
   const freeCount = stage.questions.filter(q => q.type === "freechat").length;
   const voiceCount = stage.questions.filter(q => q.type === "voicechat").length;
-  const translateCount = stage.questions.length - mcCount - orderCount - speakCount - storyCount - freeCount - voiceCount;
+  const translateCount = stage.questions.length - mcCount - orderCount - pickCount - speakCount - storyCount - freeCount - voiceCount;
 
   const sections = [];
   let pos = 0;
   if (mcCount > 0) { sections.push({ label: "Regular Questions", start: pos, len: mcCount }); pos += mcCount; }
   if (orderCount > 0) { sections.push({ label: "Word Order", start: pos, len: orderCount }); pos += orderCount; }
+  if (pickCount > 0) { sections.push({ label: "Choose Translation", start: pos, len: pickCount }); pos += pickCount; }
   if (translateCount > 0) {
     const translateQs = stage.questions.slice(pos, pos + translateCount);
     const toEnglishLen = translateQs.filter(q => q.direction === "toEnglish").length;
