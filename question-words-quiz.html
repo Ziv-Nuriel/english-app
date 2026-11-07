@@ -122,6 +122,7 @@
     gap: .5rem;
     margin-bottom: 1.5rem;
   }
+  .stage-tabs-break { flex-basis: 100%; height: 0; margin-top: .25rem; }
   .stage-tab {
     padding: .4rem .95rem;
     border-radius: 20px;
@@ -1482,9 +1483,13 @@ function shuffle(arr) {
 function renderTabs() {
   const tabs = document.getElementById("stageTabs");
   if (stages.length < 2) { tabs.innerHTML = ""; return; }
-  tabs.innerHTML = stages
-    .map((s, i) => `<button class="stage-tab${i === stageIndex ? " active" : ""}" data-stage="${i}">${i + 1}. ${s.title}</button>`)
-    .join("");
+  // Numbered drills first; Unseen and Podcast go on their own row below, without numbers.
+  const tab = (s, i, label) => `<button class="stage-tab${i === stageIndex ? " active" : ""}" data-stage="${i}">${label}</button>`;
+  const drills = stages.map((s, i) => [s, i]).filter(([s]) => !s.unseen);
+  const extras = stages.map((s, i) => [s, i]).filter(([s]) => s.unseen);
+  tabs.innerHTML = drills.map(([s, i], n) => tab(s, i, `${n + 1}. ${s.title}`)).join("") +
+    (drills.length && extras.length ? `<div class="stage-tabs-break"></div>` : "") +
+    extras.map(([s, i]) => tab(s, i, s.title)).join("");
   tabs.querySelectorAll(".stage-tab").forEach(btn => {
     btn.addEventListener("click", () => goToStage(Number(btn.dataset.stage)));
   });
@@ -1546,7 +1551,9 @@ function render() {
   document.getElementById("stageTitle").textContent = stage.title;
   document.getElementById("stageSub").textContent = stage.sub;
   document.getElementById("legend").innerHTML = stage.legend;
-  document.getElementById("levelTag").textContent = stages.length < 2 ? "LISTENING" : `STAGE ${stageIndex + 1} / ${stages.length}`;
+  const drillCount = stages.filter(s => !s.unseen).length;
+  document.getElementById("levelTag").textContent = stages.length < 2 ? "LISTENING"
+    : stage.unseen ? stage.title.toUpperCase() : `STAGE ${stageIndex + 1} / ${drillCount}`;
 
   const sections = getSections(stage);
   if (current < stage.questions.length) {
