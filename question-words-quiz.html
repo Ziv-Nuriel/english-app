@@ -758,13 +758,24 @@
   .unseen-done { text-align: center; padding-top: 1.25rem; border-top: 1px solid var(--rule); }
   .unseen-done .score { font-size: 2rem; font-weight: 700; color: var(--accent); margin: .25rem 0 .5rem; }
   .unseen-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: .6rem; }
-  .pod-player { margin: 0 0 1rem; }
-  .pod-player audio { width: 100%; }
+  .pod-player { margin: 0 0 1rem; padding: .75rem; border: 1px solid var(--rule); border-radius: 6px; }
+  .pod-controls { display: flex; align-items: center; gap: .45rem; }
+  .pod-controls .icon-btn { flex: none; }
+  .pod-play { width: 2.6rem; height: 2.6rem; font-size: 1.1rem; border-color: var(--accent); color: var(--accent); }
+  #podSeek { flex: 1; min-width: 0; accent-color: var(--accent); }
+  .pod-time { font-size: .78rem; color: var(--ink-soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .pod-status { font-size: .8rem; color: var(--ink-soft); direction: rtl; text-align: right; margin-top: .5rem; line-height: 1.5; }
+  .pod-status:empty { display: none; }
+  .pod-nav { display: flex; flex-wrap: wrap; gap: .4rem; direction: rtl; margin-bottom: .7rem; }
+  .pod-nav .chip { font-size: .8rem; padding: .3rem .7rem; }
+  .pod-text .w { cursor: pointer; border-radius: 3px; transition: background .15s; }
+  .pod-text .w.now { background: var(--highlight); color: #1c1b18; box-shadow: 0 0 0 2px var(--highlight); }
+  .pod-text.live .w.future { display: none; }
+  .pod-text.live .gloss:not(:has(.w:not(.future))) { display: none; }
+  .pod-text.live p.future-p { display: none; }
   .pod-tools { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: .5rem; margin-top: .5rem; direction: rtl; }
   .pod-tools .chips { gap: .35rem; }
   .pod-tools .chip { padding: .25rem .65rem; font-size: .8rem; }
-  .pod-error { color: var(--wrong); font-size: .85rem; direction: rtl; text-align: right; margin-top: .4rem; }
-  .pod-error[hidden] { display: none; }
   .transcript-hidden { color: var(--ink-soft); font-size: .85rem; direction: rtl; text-align: right; margin: 0 0 1rem; }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1184,7 +1195,7 @@ stages.push({
 stages.push({
   title: "Podcast",
   sub: "מאזינים לפודקאסט באנגלית על נושא שאתם בוחרים ועונים על שאלות הבנת הנשמע",
-  legend: "<strong>איך עובדים:</strong> בוחרים רמה, קול (נשי או גברי), תחום ונושא — ומקבלים פרק חדש של 3-6 דקות עם שאלות. &nbsp;·&nbsp; <strong>טיפ:</strong> הקשיבו קודם בלי התמליל, ופתחו אותו רק כדי לבדוק את עצמכם. אפשר להאט את הקצב ל-0.75.",
+  legend: "<strong>איך עובדים:</strong> בוחרים רמה, קול (נשי או גברי), תחום ונושא — ומקבלים פרק חדש של 5-30 דקות עם שאלות. אפשר להתחיל להאזין אחרי כחצי דקה, והשאר מוקלט ברקע. &nbsp;·&nbsp; <strong>תמליל חי:</strong> המילים מופיעות כשהן נאמרות, והמילה הנוכחית מסומנת; לחיצה על מילה קופצת אליה. &nbsp;·&nbsp; <strong>טיפ:</strong> אפשר להאט את הקצב ל-0.75.",
   unseen: true,
   kind: "podcast",
   questions: [{ type: "unseen" }]
@@ -1273,6 +1284,8 @@ async function getDialogueResponse(stage, log, message, opts = {}) {
   }
 }
 
+let podcastPlayer = null; // the Podcast stage's player, while it is on screen
+
 // Sound settings: "muted" silences every sound the site makes by itself
 // (feedback tones and text-to-speech); "effects" toggles only the tones.
 const SETTINGS_KEY = "appSettings";
@@ -1285,7 +1298,7 @@ function applySettings() {
   document.getElementById("setMuted").checked = settings.muted;
   document.getElementById("setEffects").checked = settings.effects;
   document.getElementById("setEffects").disabled = settings.muted;
-  document.querySelectorAll("audio").forEach(a => { a.muted = settings.muted; });
+  if (podcastPlayer) podcastPlayer.applyMute();
 }
 
 function saveSettings() {
@@ -1367,6 +1380,7 @@ function goToStage(i) {
 function render() {
   VoiceChat.stop(); // leaving the card ends any live conversation
   if (unseenReading && !stages[stageIndex].unseen) stopReadAloud();
+  if (podcastPlayer && stages[stageIndex].kind !== "podcast") podcastPlayer.destroy();
   stageProgress[stageIndex] = current;
   saveProgress();
   const card = document.getElementById("quizCard");
@@ -2358,13 +2372,18 @@ const UNSEEN_LEVEL_LABELS = [["easy", "קל"], ["medium", "בינוני"], ["har
 const UNSEEN_STORAGE_KEYS = { unseen: "unseenPractice", podcast: "podcastPractice" };
 const PODCAST_VOICE_LABELS = [["female", "נשי"], ["male", "גברי"]];
 const PODCAST_RATES = [0.75, 1, 1.25];
+const PODCAST_LENGTH_LABELS = [["short", "קצר · 5-10 דק׳"], ["medium", "בינוני · 10-20 דק׳"], ["long", "ארוך · 20-30 דק׳"]];
+const PODCAST_TEXT_MODES = [["hidden", "בלי תמליל"], ["live", "תמליל חי"], ["full", "תמליל מלא"]];
 // One state per stage kind; `unseen` points at the one for the current stage.
 // field: index into UNSEEN_FIELDS or "custom"; subject: index into its list or "custom"
 const unseenStates = {};
 for (const kind of Object.keys(UNSEEN_STORAGE_KEYS)) {
-  unseenStates[kind] = { kind, level: "medium", field: 0, subject: 0, customField: "", customSubject: "", voice: "female",
-    exercise: null, answers: [], showText: false, position: 0, rate: 1 };
+  unseenStates[kind] = { kind, level: "medium", length: "short", field: 0, subject: 0, customField: "", customSubject: "", voice: "female",
+    exercise: null, answers: [], transcript: "live", wordPos: 0, rate: 1 };
   try { Object.assign(unseenStates[kind], JSON.parse(localStorage.getItem(UNSEEN_STORAGE_KEYS[kind])) || {}, { kind }); } catch (e) {}
+  // Podcasts from before the part-by-part recording can't be played any more.
+  const st = unseenStates[kind];
+  if (kind === "podcast" && st.exercise && !st.exercise.episode) Object.assign(st, { exercise: null, answers: [] });
 }
 let unseen = unseenStates.unseen;
 
@@ -2393,6 +2412,7 @@ function renderUnseen(card) {
 }
 
 function renderUnseenPicker(card, error) {
+  if (podcastPlayer) podcastPlayer.destroy();
   document.getElementById("qnum").textContent = 0;
   document.getElementById("qtotal").textContent = 0;
   document.getElementById("barFill").style.width = "0%";
@@ -2404,7 +2424,9 @@ function renderUnseenPicker(card, error) {
       <div class="unseen-label">רמה</div>
       <div class="chips">${UNSEEN_LEVEL_LABELS.map(([id, he]) => chip(he, `data-level="${id}"`, unseen.level === id)).join("")}</div>
       ${unseen.kind === "podcast" ? `<div class="unseen-label">קול המגיש/ה</div>
-      <div class="chips">${PODCAST_VOICE_LABELS.map(([id, he]) => chip(he, `data-voice="${id}"`, unseen.voice === id)).join("")}</div>` : ""}
+      <div class="chips">${PODCAST_VOICE_LABELS.map(([id, he]) => chip(he, `data-voice="${id}"`, unseen.voice === id)).join("")}</div>
+      <div class="unseen-label">אורך</div>
+      <div class="chips">${PODCAST_LENGTH_LABELS.map(([id, he]) => chip(he, `data-length="${id}"`, unseen.length === id)).join("")}</div>` : ""}
       <div class="unseen-label">תחום</div>
       <div class="chips">
         ${UNSEEN_FIELDS.map(([he], i) => chip(he, `data-field="${i}"`, unseen.field === i)).join("")}
@@ -2426,6 +2448,7 @@ function renderUnseenPicker(card, error) {
 
   card.querySelectorAll("[data-level]").forEach(b => b.onclick = () => { unseen.level = b.dataset.level; saveUnseen(); renderUnseenPicker(card); });
   card.querySelectorAll("[data-voice]").forEach(b => b.onclick = () => { unseen.voice = b.dataset.voice; saveUnseen(); renderUnseenPicker(card); });
+  card.querySelectorAll("[data-length]").forEach(b => b.onclick = () => { unseen.length = b.dataset.length; saveUnseen(); renderUnseenPicker(card); });
   card.querySelectorAll("[data-field]").forEach(b => b.onclick = () => {
     unseen.field = b.dataset.field === "custom" ? "custom" : Number(b.dataset.field);
     unseen.subject = 0;
@@ -2469,14 +2492,14 @@ async function generateUnseen(card, avoid) {
   btn.disabled = true;
   status.className = "unseen-status";
   status.textContent = podcast
-    ? `כותב ומקליט פודקאסט על ${choice.label}... זה לוקח בערך 30-60 שניות.`
+    ? `כותב פודקאסט על ${choice.label}... זה לוקח כחצי דקה עד דקה. אחר כך אפשר להתחיל להאזין, והשאר מוקלט ברקע.`
     : `כותב טקסט על ${choice.label}... זה לוקח כמה שניות.`;
   let data = null, error = "";
   try {
     const resp = await fetch("/api/unseen", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ kind: state.kind, voice: state.voice, field: choice.field, subject: choice.subject, level: state.level, avoid: avoid || "" })
+      body: JSON.stringify({ kind: state.kind, voice: state.voice, length: state.length, field: choice.field, subject: choice.subject, level: state.level, avoid: avoid || "" })
     });
     data = await resp.json().catch(() => ({}));
     if (!resp.ok) error = data.error || `שגיאה (${resp.status})`;
@@ -2490,7 +2513,7 @@ async function generateUnseen(card, avoid) {
     if (here && document.body.contains(btn)) renderUnseenPicker(card, `${podcast ? "לא הצלחתי ליצור פודקאסט" : "לא הצלחתי ליצור טקסט"}: ${error}`);
     return;
   }
-  Object.assign(state, { exercise: { ...data, label: choice.label, level: state.level }, answers: [], showText: false, position: 0 });
+  Object.assign(state, { exercise: { ...data, label: choice.label, level: state.level }, answers: [], wordPos: 0 });
   saveUnseen(state);
   if (here) renderUnseen(document.getElementById("quizCard"));
 }
@@ -2530,7 +2553,7 @@ function showGloss(btn) {
 // Says a word or a chosen part of the text, slowly; stops the full reading first.
 function sayWords(text) {
   if (unseenReading) stopReadAloud();
-  document.querySelectorAll("audio").forEach(a => a.pause());
+  if (podcastPlayer && podcastPlayer.playing) podcastPlayer.pause();
   speak(text, 0.8);
 }
 
@@ -2637,80 +2660,428 @@ function renderUnseenExercise(card) {
   const podcast = unseen.kind === "podcast";
   const levelHe = (UNSEEN_LEVEL_LABELS.find(([id]) => id === ex.level) || [, ""])[1];
   const voiceHe = (PODCAST_VOICE_LABELS.find(([id]) => id === ex.voice) || [, ""])[1];
-  const headKey = [unseen.kind, ex.title, ex.audioId || ""].join("|");
-  let head = card.querySelector(".unseen-head");
+  const lengthHe = (PODCAST_LENGTH_LABELS.find(([id]) => id === ex.length) || [, ""])[1];
+  const headKey = [unseen.kind, ex.title, (ex.episode && ex.episode.id) || ""].join("|");
+  const head = card.querySelector(".unseen-head");
 
   if (!head || head.dataset.key !== headKey) {
+    if (podcastPlayer) podcastPlayer.destroy();
     card.innerHTML = `
       <div class="unseen-head" data-key="${escapeAttr(headKey)}">
-        <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}${podcast && voiceHe ? " · קול " + voiceHe : ""}</div>
+        <div class="unseen-topic">${escapeHtml(ex.label)}${levelHe ? " · רמה: " + levelHe : ""}${podcast && lengthHe ? " · " + lengthHe.split(" · ")[0] : ""}${podcast && voiceHe ? " · קול " + voiceHe : ""}</div>
+        ${podcast ? `<div class="pod-nav">
+          <button class="chip" id="podBack">↩ חזרה לבחירת נושא</button>
+          <button class="chip" id="podNew">🔄 פודקאסט חדש באותו נושא</button>
+        </div>` : ""}
         <div class="unseen-title"><span>${escapeHtml(ex.title)}</span>${podcast ? "" : `<button class="speak-btn" id="unseenListen" title="Listen" aria-label="Listen">🔊</button>`}</div>
         ${podcast ? `<div class="pod-player">
-          <audio id="podAudio" controls preload="metadata" src="/api/podcast-audio?id=${encodeURIComponent(ex.audioId || "")}"></audio>
-          <div class="pod-error" id="podError" hidden>ההקלטה הזו כבר לא שמורה במחשב — בחרו "פודקאסט חדש באותו נושא".</div>
+          <div class="pod-controls" dir="ltr">
+            <button class="icon-btn" id="podBackSkip" title="10 שניות אחורה" aria-label="Back 10 seconds">⏪</button>
+            <button class="icon-btn pod-play" id="podPlay" title="נגן" aria-label="Play">▶</button>
+            <button class="icon-btn" id="podFwdSkip" title="10 שניות קדימה" aria-label="Forward 10 seconds">⏩</button>
+            <input type="range" id="podSeek" min="0" value="0" aria-label="Position">
+            <span class="pod-time" id="podTime"></span>
+          </div>
           <div class="pod-tools">
             <div class="chips" dir="ltr">${PODCAST_RATES.map(r => `<button class="chip${(unseen.rate || 1) === r ? " active" : ""}" data-rate="${r}">×${r}</button>`).join("")}</div>
-            <button class="chip" id="podText"></button>
+            <div class="chips">${PODCAST_TEXT_MODES.map(([id, he]) => `<button class="chip${unseen.transcript === id ? " active" : ""}" data-tmode="${id}">${he}</button>`).join("")}</div>
           </div>
+          <div class="pod-status" id="podStatus"></div>
         </div>` : ""}
       </div>
       <div class="unseen-body"></div>`;
-    head = card.querySelector(".unseen-head");
-    if (podcast) wirePodcastPlayer(card);
-    else document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
+    if (podcast) {
+      document.getElementById("podBack").onclick = () => resetUnseen(card);
+      document.getElementById("podNew").onclick = () => { const title = ex.title; resetUnseen(card); generateUnseen(card, title); };
+      podcastPlayer = createPodcastPlayer(card, unseen);
+    } else {
+      document.getElementById("unseenListen").onclick = () => toggleReadAloud([ex.title, ...ex.paragraphs]);
+    }
   }
   syncListenButton();
   renderUnseenBody(card);
 }
 
-function wirePodcastPlayer(card) {
-  const state = unseen;
-  const audio = document.getElementById("podAudio");
+function resetUnseen(card) {
+  stopReadAloud();
+  if (podcastPlayer) podcastPlayer.destroy();
+  Object.assign(unseen, { exercise: null, answers: [], wordPos: 0 });
+  saveUnseen();
+  renderUnseenPicker(card);
+}
+
+// Wraps every word of a paragraph's HTML in <span class="w" data-i>, numbering
+// words the way the server does (split on whitespace), so a word split by a
+// tag (a glossary button followed by its comma) keeps one number.
+function wrapWords(html, start) {
+  let i = start - 1, prevEndsWord = false;
+  const out = html.split(/(<[^>]+>)/).map(part => {
+    if (part.startsWith("<")) return part;
+    let first = true;
+    const wrapped = part.replace(/(\s+)|(\S+)/g, (m, space) => {
+      if (space) { first = false; prevEndsWord = false; return m; }
+      if (!(first && prevEndsWord)) i++;
+      first = false;
+      prevEndsWord = true;
+      return `<span class="w" data-i="${i}">${m}</span>`;
+    });
+    if (part === "") return part;
+    if (/\s$/.test(part)) prevEndsWord = false;
+    return wrapped;
+  }).join("");
+  return { html: out, next: i + 1 };
+}
+
+const fmtTime = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+// Picks a browser voice of the chosen gender; local voices first, since only
+// they report word boundaries reliably (and don't stop after ~15 s in Chrome).
+function browserVoice(gender) {
+  const voices = (window.speechSynthesis && speechSynthesis.getVoices() || []).filter(v => /^en(-|_|$)/i.test(v.lang));
+  const female = /zira|aria|jenny|hazel|susan|libby|sonia|samantha|female|woman|eva|catherine|linda|heera|karen|moira|tessa|fiona/i;
+  const male = /david|mark|guy|ryan|george|james|daniel|alex|\bmale|\bman\b|richard|sean|fred|rishi|oliver/i;
+  const fits = v => gender === "male" ? male.test(v.name) && !female.test(v.name) : female.test(v.name);
+  return voices.find(v => v.localService && fits(v)) || voices.find(fits) ||
+    voices.find(v => v.localService && /en-US/i.test(v.lang)) || voices[0] || null;
+}
+
+// Plays an episode recorded in parts: Gemini audio where a part is recorded,
+// the browser's voice where the quota ran out, and waits for parts that are
+// still being recorded. Position is a word index, so both engines share it.
+function createPodcastPlayer(card, state) {
+  const ex = state.exercise;
+  const words = [], paraOf = [];
+  ex.paragraphs.forEach((p, pi) => p.split(/\s+/).filter(Boolean).forEach(w => { words.push(w); paraOf.push(pi); }));
+  const N = words.length;
+  const audio = new Audio();
+  audio.preload = "auto";
   audio.muted = settings.muted;
-  audio.playbackRate = state.rate || 1;
-  audio.addEventListener("loadedmetadata", () => {
-    if (state.position > 0 && state.position < audio.duration - 1) audio.currentTime = state.position;
-    audio.playbackRate = state.rate || 1;
-  });
-  let lastSave = 0;
-  audio.addEventListener("timeupdate", () => {
-    if (Math.abs(audio.currentTime - lastSave) < 2) return;
-    lastSave = audio.currentTime;
-    state.position = audio.currentTime;
+  const P = {
+    audio, playing: false, mode: "", word: Math.min(state.wordPos || 0, N - 1), dead: false,
+    speechRun: 0, raf: 0, poll: 0, partIndex: -1, spans: [], paras: [], following: true,
+  };
+  const el = id => document.getElementById(id);
+  const episode = () => ex.episode;
+  const partOf = i => episode().parts.findIndex(p => i >= p.first && i < p.first + p.count);
+  const estPart = p => p.duration || p.count / 2.4;
+  const timeOfWord = i => {
+    let t = 0;
+    for (const p of episode().parts) {
+      if (i >= p.first + p.count) { t += estPart(p); continue; }
+      const k = i - p.first;
+      return t + (p.status === "ready" && p.times ? p.times[k] : k / 2.4);
+    }
+    return t;
+  };
+  const total = () => episode().parts.reduce((s, p) => s + estPart(p), 0);
+  const isSentenceEnd = i => /[.!?]["')]?$/.test(words[i]) || paraOf[i + 1] !== paraOf[i];
+
+  function save() {
+    state.wordPos = P.word;
     saveUnseen(state);
+  }
+
+  function status() {
+    const s = el("podStatus");
+    if (!s) return;
+    const parts = episode().parts;
+    const pending = parts.filter(p => p.status === "pending").length;
+    const browser = parts.filter(p => p.status === "browser").length;
+    const msgs = [];
+    if (P.mode === "wait") msgs.push("⏳ החלק הזה עוד מוקלט — ההאזנה תמשיך לבד בעוד רגע.");
+    if (pending) msgs.push(`🎙️ מקליט ברקע: ${parts.length - pending} מתוך ${parts.length} חלקים מוכנים. אפשר כבר להאזין.`);
+    if (browser === parts.length) msgs.push("🔈 הפודקאסט מוקרא בקול של הדפדפן — המכסה היומית החינמית של Gemini להקלטות נגמרה.");
+    else if (browser) msgs.push("🔈 מהמשך הפודקאסט מוקרא בקול של הדפדפן — המכסה היומית החינמית של Gemini להקלטות נגמרה.");
+    if (settings.muted) msgs.push("🔇 האתר מושתק — בטלו את ההשתקה כדי לשמוע.");
+    s.textContent = msgs.join(" ");
+  }
+
+  function ui() {
+    if (P.dead) return;
+    const seek = el("podSeek");
+    if (!seek) return;
+    seek.max = N - 1;
+    if (document.activeElement !== seek) seek.value = P.word;
+    el("podTime").textContent = `${fmtTime(timeOfWord(P.word))} / ${fmtTime(total())}`;
+    el("podPlay").textContent = P.playing ? "⏸" : "▶";
+    el("podPlay").title = P.playing ? "השהה" : "נגן";
+    status();
+  }
+
+  // --- Transcript ---------------------------------------------------------
+  function bind(container) {
+    P.spans = [];
+    P.paras = container ? [...container.querySelectorAll("p[data-first]")] : [];
+    if (container) container.querySelectorAll(".w").forEach(s => (P.spans[+s.dataset.i] = P.spans[+s.dataset.i] || []).push(s));
+    P.shown = -1;
+    P.now = -1;
+    paint(true);
+  }
+
+  function paint(full) {
+    const live = state.transcript === "live";
+    if (full || live && P.word < P.shown) {
+      // Redraw everything (start, mode change, or a jump backwards).
+      P.spans.forEach((list, i) => list && list.forEach(s => s.classList.toggle("future", live && i > P.word)));
+      P.paras.forEach(p => p.classList.toggle("future-p", live && +p.dataset.first > P.word));
+    } else if (live) {
+      for (let i = P.shown + 1; i <= P.word; i++) (P.spans[i] || []).forEach(s => s.classList.remove("future"));
+      P.paras.forEach(p => { if (+p.dataset.first <= P.word) p.classList.remove("future-p"); });
+    }
+    P.shown = P.word;
+    if (P.now !== P.word) {
+      (P.spans[P.now] || []).forEach(s => s.classList.remove("now"));
+      const cur = P.spans[P.word] || [];
+      cur.forEach(s => s.classList.add("now"));
+      // Follow the voice, unless the learner scrolled away to read something else.
+      if (cur[0] && P.playing) {
+        const r = cur[0].getBoundingClientRect();
+        const inView = r.top >= 0 && r.bottom <= innerHeight;
+        if (!inView && P.following) cur[0].scrollIntoView({ block: "center", behavior: "smooth" });
+        else P.following = inView || r.top > innerHeight;
+      }
+      P.now = P.word;
+    }
+  }
+
+  function setWord(i, persist) {
+    if (i === P.word && !persist) return;
+    const jumped = Math.abs(i - P.word) > 3;
+    P.word = Math.max(0, Math.min(N - 1, i));
+    paint(false);
+    ui();
+    if (persist || jumped || P.word % 10 === 0) save();
+  }
+
+  // --- Engines --------------------------------------------------------------
+  function stopEngines() {
+    P.speechRun++;
+    if (window.speechSynthesis) speechSynthesis.cancel();
+    audio.pause();
+    cancelAnimationFrame(P.raf);
+    clearInterval(P.estTimer);
+  }
+
+  function go() {
+    if (P.dead || !P.playing) return;
+    const pi = partOf(P.word);
+    const part = episode().parts[pi];
+    if (!part) return finish();
+    if (part.status === "ready") playAudio(pi, part);
+    else if (part.status === "browser") speakFrom(P.word);
+    else { P.mode = "wait"; ui(); }
+  }
+
+  function playAudio(pi, part) {
+    P.mode = "audio";
+    const t = part.times[P.word - part.first] || 0;
+    const start = () => {
+      audio.currentTime = t;
+      audio.playbackRate = state.rate || 1;
+      audio.play().catch(() => { P.playing = false; ui(); });
+      tick();
+    };
+    if (P.partIndex !== pi) {
+      P.partIndex = pi;
+      audio.src = `/api/podcast-audio?id=${encodeURIComponent(episode().id)}&part=${pi}`;
+      audio.addEventListener("loadedmetadata", start, { once: true });
+    } else start();
+    ui();
+  }
+
+  function tick() {
+    cancelAnimationFrame(P.raf);
+    if (P.mode !== "audio" || !P.playing) return;
+    const part = episode().parts[P.partIndex];
+    if (part && part.times && !audio.paused) {
+      const t = audio.currentTime;
+      let lo = 0, hi = part.times.length - 1;
+      while (lo < hi) { const mid = (lo + hi + 1) >> 1; if (part.times[mid] <= t) lo = mid; else hi = mid - 1; }
+      setWord(part.first + lo);
+    }
+    P.raf = requestAnimationFrame(tick);
+  }
+
+  audio.addEventListener("ended", () => {
+    if (P.mode !== "audio") return;
+    const part = episode().parts[P.partIndex];
+    const next = part.first + part.count;
+    if (next >= N) return finish();
+    setWord(next, true);
+    go();
   });
-  audio.addEventListener("play", () => { if (unseenReading) stopReadAloud(); });
-  audio.addEventListener("error", () => { document.getElementById("podError").hidden = false; });
-  card.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => {
-    state.rate = Number(b.dataset.rate);
-    audio.playbackRate = state.rate;
-    card.querySelectorAll("[data-rate]").forEach(x => x.classList.toggle("active", x === b));
+
+  function speakFrom(i) {
+    P.mode = "speech";
+    if (!window.speechSynthesis || settings.muted) { P.playing = false; ui(); return; }
+    // One sentence at a time (Chrome cuts long utterances), never across parts.
+    const pi = partOf(i), part = episode().parts[pi];
+    let j = i;
+    while (j < part.first + part.count - 1 && !isSentenceEnd(j)) j++;
+    const chunk = words.slice(i, j + 1);
+    const offsets = [];
+    chunk.reduce((pos, w) => { offsets.push(pos); return pos + w.length + 1; }, 0);
+    const run = ++P.speechRun;
+    const utter = new SpeechSynthesisUtterance(chunk.join(" "));
+    utter.lang = "en-US";
+    const voice = browserVoice(ex.voice);
+    try { if (voice) utter.voice = voice; } catch (e) {}
+    utter.rate = (state.rate || 1) * 0.95;
+    let boundaries = false;
+    utter.onboundary = e => {
+      if (run !== P.speechRun || e.name !== "word") return;
+      boundaries = true;
+      let k = 0;
+      while (k + 1 < offsets.length && offsets[k + 1] <= e.charIndex) k++;
+      setWord(i + k);
+    };
+    // Voices without boundary events: estimate from the time spoken.
+    const started = Date.now();
+    clearInterval(P.estTimer);
+    P.estTimer = setInterval(() => {
+      if (run !== P.speechRun || boundaries) return clearInterval(P.estTimer);
+      const chars = (Date.now() - started) / 1000 * 14 * utter.rate;
+      let k = 0;
+      while (k + 1 < offsets.length && offsets[k + 1] <= chars) k++;
+      setWord(i + k);
+    }, 200);
+    utter.onend = () => {
+      if (run !== P.speechRun) return;
+      clearInterval(P.estTimer);
+      if (j + 1 >= N) return finish();
+      setWord(j + 1, true);
+      go();
+    };
+    utter.onerror = utter.onend;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utter);
+    ui();
+  }
+
+  function finish() {
+    stopEngines();
+    P.playing = false;
+    P.mode = "";
+    setWord(N - 1, true);
+    ui();
+  }
+
+  // --- Controls -------------------------------------------------------------
+  P.play = () => {
+    if (settings.muted) { status(); return; }
+    if (unseenReading) stopReadAloud();
+    if (P.word >= N - 1) setWord(0, true);
+    P.playing = true;
+    P.following = true;
+    go();
+    ui();
+  };
+  P.pause = () => {
+    P.playing = false;
+    stopEngines();
+    P.mode = "";
+    save();
+    ui();
+  };
+  P.seek = i => {
+    const was = P.playing;
+    stopEngines();
+    setWord(i, true);
+    paint(true);
+    if (was) { P.playing = true; go(); }
+  };
+  P.skip = sec => {
+    const target = Math.max(0, timeOfWord(P.word) + sec);
+    let i = 0;
+    while (i < N - 1 && timeOfWord(i + 1) <= target) i++;
+    P.seek(i);
+  };
+  P.setRate = r => {
+    state.rate = r;
     saveUnseen(state);
-  });
-  document.getElementById("podText").onclick = () => {
-    state.showText = !state.showText;
+    audio.playbackRate = r;
+    if (P.playing && P.mode === "speech") P.seek(P.word);
+  };
+  P.setTranscript = mode => {
+    state.transcript = mode;
     saveUnseen(state);
     renderUnseenBody(card);
   };
+  P.bind = bind;
+  P.destroy = () => {
+    P.dead = true;
+    stopEngines();
+    clearInterval(P.poll);
+    audio.removeAttribute("src");
+    if (podcastPlayer === P) podcastPlayer = null;
+  };
+  P.applyMute = () => {
+    audio.muted = settings.muted;
+    if (settings.muted && P.mode === "speech" && P.playing) P.pause();
+    status();
+  };
+
+  el("podPlay").onclick = () => (P.playing ? P.pause() : P.play());
+  el("podBackSkip").onclick = () => P.skip(-10);
+  el("podFwdSkip").onclick = () => P.skip(10);
+  el("podSeek").oninput = e => { setWord(+e.target.value); };
+  el("podSeek").onchange = e => P.seek(+e.target.value);
+  card.querySelectorAll("[data-rate]").forEach(b => b.onclick = () => {
+    card.querySelectorAll("[data-rate]").forEach(x => x.classList.toggle("active", x === b));
+    P.setRate(Number(b.dataset.rate));
+  });
+  card.querySelectorAll("[data-tmode]").forEach(b => b.onclick = () => {
+    card.querySelectorAll("[data-tmode]").forEach(x => x.classList.toggle("active", x === b));
+    P.setTranscript(b.dataset.tmode);
+  });
+
+  // Ask the server how the recording is going until every part is done.
+  async function poll() {
+    try {
+      const resp = await fetch(`/api/podcast-status?id=${encodeURIComponent(episode().id)}`);
+      if (resp.status === 404) {
+        clearInterval(P.poll);
+        el("podStatus").textContent = "ההקלטה הזו כבר לא שמורה במחשב — צרו פודקאסט חדש.";
+        return;
+      }
+      const st = await resp.json();
+      if (P.dead || !st.parts) return;
+      ex.episode = { ...ex.episode, ...st };
+      saveUnseen(state);
+      if (!st.parts.some(p => p.status === "pending")) clearInterval(P.poll);
+      if (P.mode === "wait") go();
+      ui();
+    } catch (e) {}
+  }
+  if (episode().parts.some(p => p.status === "pending")) {
+    P.poll = setInterval(poll, 4000);
+    poll();
+  }
+  ui();
+  return P;
 }
 
 function renderUnseenBody(card) {
   const ex = unseen.exercise;
   const podcast = unseen.kind === "podcast";
-  const showText = !podcast || unseen.showText;
+  const showText = !podcast || unseen.transcript !== "hidden";
   const answered = unseen.answers.filter(a => a !== undefined && a !== null).length;
   const correct = ex.questions.filter((q, i) => unseen.answers[i] === q.answer).length;
   document.getElementById("qnum").textContent = answered;
   document.getElementById("qtotal").textContent = ex.questions.length;
   document.getElementById("barFill").style.width = `${(answered / ex.questions.length) * 100}%`;
-  const textBtn = document.getElementById("podText");
-  if (textBtn) textBtn.textContent = showText ? "📄 הסתר תמליל" : "📄 הצג תמליל";
 
   // Highlight the proof sentence of every answered question.
+  let nextWord = 0;
   const paragraphs = ex.paragraphs.map(p => {
     let html = escapeHtml(p);
     ex.questions.forEach((q, i) => { if (unseen.answers[i] != null) html = markQuote(html, q.quote); });
-    return glossWords(html, ex.glossary);
+    html = glossWords(html, ex.glossary);
+    if (!podcast) return { html };
+    const first = nextWord;
+    const w = wrapWords(html, first);
+    nextWord = w.next;
+    return { html: w.html, first };
   });
   const doneText = podcast
     ? (correct === ex.questions.length ? "מושלם! הבנתם את כל הפודקאסט." : correct >= ex.questions.length * 0.7 ? "כל הכבוד — הבנת הנשמע טובה מאוד!" : "לא רע — פתחו את התמליל: המשפטים המסומנים מראים איפה התשובות.")
@@ -2719,8 +3090,8 @@ function renderUnseenBody(card) {
   const body = card.querySelector(".unseen-body");
   body.innerHTML = `
     ${showText
-      ? `<div class="unseen-text">${paragraphs.map((p, i) => `<p data-n="${i + 1}">${p}</p>`).join("")}</div>`
-      : `<div class="transcript-hidden">התמליל מוסתר — הקשיבו וענו על השאלות. אפשר לפתוח אותו בכל רגע.</div>`}
+      ? `<div class="unseen-text${podcast ? " pod-text " + unseen.transcript : ""}">${paragraphs.map((p, i) => `<p data-n="${i + 1}"${podcast ? ` data-first="${p.first}"` : ""}>${p.html}</p>`).join("")}</div>`
+      : `<div class="transcript-hidden">התמליל מוסתר — הקשיבו וענו על השאלות. אפשר להציג אותו בכל רגע.</div>`}
     ${ex.glossary.length ? `<details class="glossary"><summary>כל המילים הקשות (${ex.glossary.length}) — אפשר ללחוץ עליהן ב${podcast ? "תמליל" : "טקסט"}, או לסמן מילים כדי לשמוע רק אותן</summary>
       ${ex.glossary.map(g => `<span><button class="gloss-say" data-say="${escapeAttr(g.word)}" title="Listen">🔊 <b>${escapeHtml(g.word)}</b></button> – <i dir="rtl">${escapeHtml(g.hebrew)}</i></span>`).join("")}</details>` : ""}
     ${ex.questions.map((q, i) => {
@@ -2746,6 +3117,14 @@ function renderUnseenBody(card) {
   `;
 
   body.querySelectorAll(".gloss-say").forEach(b => b.onclick = () => sayWords(b.dataset.say));
+  if (podcast && podcastPlayer) {
+    podcastPlayer.bind(body.querySelector(".pod-text"));
+    // Tapping a word in the transcript jumps there (a hard word shows its translation instead).
+    body.querySelectorAll(".pod-text .w").forEach(w => w.onclick = e => {
+      if (e.target.closest(".gloss") || !getSelection().isCollapsed) return;
+      podcastPlayer.seek(Number(w.dataset.i));
+    });
+  }
   body.querySelectorAll(".unseen-q").forEach(qEl => {
     const i = Number(qEl.dataset.q);
     qEl.querySelectorAll("[data-opt]").forEach(b => b.onclick = () => {
@@ -2760,12 +3139,7 @@ function renderUnseenBody(card) {
       if (same) window.scrollBy(0, same.getBoundingClientRect().top - y);
     });
   });
-  const reset = () => {
-    stopReadAloud();
-    Object.assign(unseen, { exercise: null, answers: [], showText: false, position: 0 });
-    saveUnseen();
-    renderUnseenPicker(card);
-  };
+  const reset = () => resetUnseen(card);
   document.getElementById("unseenPick").onclick = reset;
   const again = document.getElementById("unseenAgain");
   if (again) again.onclick = () => { reset(); generateUnseen(card, ex.title); };
