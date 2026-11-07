@@ -1405,7 +1405,7 @@ function clearAutoNext() {
   if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null; }
 }
 
-// After an answer, count down on the Next button and move on by itself.
+// After a correct answer, count down on the Next button and move on by itself.
 function startAutoNext(btn, go) {
   clearAutoNext();
   const label = btn.textContent;
@@ -1867,7 +1867,7 @@ function renderTranslateQuestion(q) {
     btn.textContent = "Next →";
     const go = () => { current++; render(); };
     btn.onclick = go;
-    startAutoNext(btn, go);
+    if (isCorrect) startAutoNext(btn, go);
   }
 
   btn.onclick = check;
@@ -2064,7 +2064,7 @@ function renderDialogueQuestion(q, stage, logKey) {
       render();
     };
     btn.onclick = go;
-    startAutoNext(btn, go);
+    if (result.ok) startAutoNext(btn, go);
   }
 
   btn.onclick = check;
@@ -2241,7 +2241,7 @@ function renderSpeakQuestion(q) {
     nextBtn.classList.add("show");
     const go = () => { current++; render(); };
     nextBtn.onclick = go;
-    startAutoNext(nextBtn, go);
+    if (bestPercent >= SPEAK_PASS) startAutoNext(nextBtn, go);
   }
 
   nextBtn.onclick = () => { finish(); current++; render(); };
@@ -2389,7 +2389,7 @@ function renderOrderQuestion(q) {
     const go = () => { current++; render(); };
     nextBtn.classList.add("show");
     nextBtn.onclick = go;
-    startAutoNext(nextBtn, go);
+    if (isCorrect) startAutoNext(nextBtn, go);
   }
 
   draw();
@@ -2417,7 +2417,7 @@ function selectAnswer(btn, q) {
   const go = () => { current++; render(); };
   nextBtn.classList.add("show");
   nextBtn.onclick = go;
-  startAutoNext(nextBtn, go);
+  if (isCorrect) startAutoNext(nextBtn, go);
 }
 
 // --- Unseen ----------------------------------------------------------------
