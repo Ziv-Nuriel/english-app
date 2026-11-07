@@ -561,7 +561,22 @@
     margin-top: 1.5rem;
     display: flex;
     justify-content: flex-end;
+    align-items: center;
+    gap: .75rem;
   }
+  button.back {
+    margin-right: auto;
+    background: transparent;
+    border: 1.5px solid var(--rule);
+    color: var(--ink-soft);
+    padding: .6rem 1.1rem;
+    border-radius: 3px;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  button.back:hover { border-color: var(--accent); color: var(--accent); }
+  button.back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
   button.next {
     background: var(--accent);
     color: var(--paper);
@@ -1218,12 +1233,17 @@ let dialogueLastReply = {};
 let stageProgress = {};
 let sectionProgress = {};
 let speakScores = {};
+// Points already given per question ("stage:question"), so answering again after Back replaces them.
+let results = {};
+let dialogueLogStart = {};
+let autoNextTimer = null;
+const AUTO_NEXT_SECONDS = 10;
 
 const STORAGE_KEY = PAGE_MODE === "podcast" ? "podcastPageProgress" : "questionWordsQuizProgress";
 
 function saveProgress() {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress, speakScores }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ stageIndex, current, score, stageProgress, sectionProgress, speakScores, results }));
   } catch (e) {}
 }
 
@@ -1251,6 +1271,9 @@ function loadProgress() {
       }
       if (data.speakScores && typeof data.speakScores === "object") {
         speakScores = data.speakScores;
+      }
+      if (data.results && typeof data.results === "object") {
+        results = data.results;
       }
     }
   } catch (e) {}
@@ -1370,6 +1393,42 @@ function renderTabs() {
   });
 }
 
+function award(points) {
+  const key = stageIndex + ":" + current;
+  score += points - (results[key] || 0);
+  results[key] = points;
+  document.getElementById("scorelive").textContent = score;
+  saveProgress();
+}
+
+function clearAutoNext() {
+  if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null; }
+}
+
+// After an answer, count down on the Next button and move on by itself.
+function startAutoNext(btn, go) {
+  clearAutoNext();
+  const label = btn.textContent;
+  let left = AUTO_NEXT_SECONDS;
+  const paint = () => { btn.textContent = `${label} (${left})`; };
+  paint();
+  autoNextTimer = setInterval(() => {
+    if (!btn.isConnected) return clearAutoNext();
+    if (--left <= 0) { clearAutoNext(); go(); }
+    else paint();
+  }, 1000);
+}
+
+function goBack() {
+  if (current <= 0) return;
+  current--;
+  render();
+}
+
+function backBtn() {
+  return current > 0 ? `<button class="back" onclick="goBack()">← Back</button>` : "";
+}
+
 function goToStage(i) {
   stageProgress[stageIndex] = current;
   stageIndex = i;
@@ -1378,6 +1437,7 @@ function goToStage(i) {
 }
 
 function render() {
+  clearAutoNext();
   VoiceChat.stop(); // leaving the card ends any live conversation
   if (unseenReading && !stages[stageIndex].unseen) stopReadAloud();
   if (podcastPlayer && stages[stageIndex].kind !== "podcast") podcastPlayer.destroy();
@@ -1426,6 +1486,7 @@ function render() {
           <div>Score so far</div>
           <div class="score">${score} / ${stage.questions.length}</div>
           <p>Ready for the next stage: ${stages[stageIndex + 1].title}</p>
+          <button class="restart" onclick="goBack()">← Back</button>
           <button class="restart" onclick="goToStage(${stageIndex + 1})">Next Stage →</button>
         </div>`;
       document.getElementById("barFill").style.width = "100%";
@@ -1444,6 +1505,7 @@ function render() {
         <div>You finished all the stages</div>
         <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
+        <button class="restart" onclick="goBack()">← Back</button>
         <button class="restart" onclick="restart()">Start Over</button>
         <button class="restart" onclick="goToStage(stages.findIndex(s => s.unseen))">Practice Unseen →</button>
       </div>`;
@@ -1459,7 +1521,7 @@ function render() {
       <div class="order-build empty" id="orderBuild"></div>
       <div class="order-bank" id="orderBank"></div>
       <div class="hint" id="hint"></div>
-      <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+      <div class="footer-row">${backBtn()}<button class="next" id="nextBtn">Next →</button></div>
     `;
     renderOrderQuestion(q);
     return;
@@ -1474,7 +1536,7 @@ function render() {
       <div class="translate-prompt" dir="${promptDir}">${q.prompt}</div>
       <input type="text" class="translate-input" id="translateInput" dir="${inputDir}" autocomplete="off" spellcheck="false" />
       <div class="hint" id="hint"></div>
-      <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
+      <div class="footer-row">${backBtn()}<button class="next show" id="checkBtn">Check</button></div>
     `;
     renderTranslateQuestion(q);
     return;
@@ -1491,7 +1553,7 @@ function render() {
         <button class="chat-send" id="chatSend">Send</button>
       </div>
       <div class="hint" id="hint"></div>
-      <div class="footer-row chat-footer"><span id="chatStats"></span><button class="next show" id="nextBtn">Finish chat →</button></div>
+      <div class="footer-row chat-footer">${backBtn()}<span id="chatStats"></span><button class="next show" id="nextBtn">Finish chat →</button></div>
     `;
     renderFreeChat(stage);
     return;
@@ -1506,7 +1568,7 @@ function render() {
     VoiceChat.mount(document.getElementById("voiceChat"), {
       stage: stageIndex,
       onFinish(talkedSeconds) {
-        if (talkedSeconds >= 60) { score++; saveProgress(); }
+        award(talkedSeconds >= 60 ? 1 : 0);
         current++;
         render();
       },
@@ -1525,7 +1587,7 @@ function render() {
       </div>
       <div class="speak-result" id="speakResult"></div>
       <div class="hint" id="hint"></div>
-      <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+      <div class="footer-row">${backBtn()}<button class="next" id="nextBtn">Next →</button></div>
     `;
     renderSpeakQuestion(q);
     return;
@@ -1535,7 +1597,11 @@ function render() {
     const logKey = stageIndex + ":" + (q.thread || "story");
     const sec = sections.find(s => current >= s.start && current < s.start + s.len) || sections[sections.length - 1];
     if (current === sec.start) dialogueLog[logKey] = [];
-    const log = dialogueLog[logKey] || [];
+    const log = dialogueLog[logKey] || (dialogueLog[logKey] = []);
+    // Coming back here with Back drops the lines of the answers after it.
+    const posKey = stageIndex + ":" + current;
+    if (posKey in dialogueLogStart) log.length = Math.min(log.length, dialogueLogStart[posKey]);
+    else dialogueLogStart[posKey] = log.length;
     const scenarioText = q.scenario || stage.storyScenario;
     const liveTurn = q.theyAsk ? [{ who: "them", text: q.theyAsk }] : [];
     card.innerHTML = `
@@ -1544,7 +1610,7 @@ function render() {
       <div class="dialogue-cue"><strong>${q.theyAsk ? "מה לענות:" : "מה להגיד:"}</strong> ${q.instruction}</div>
       <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
       <div class="hint" id="hint"></div>
-      <div class="footer-row"><button class="next show" id="checkBtn">Check</button></div>
+      <div class="footer-row">${backBtn()}<button class="next show" id="checkBtn">Check</button></div>
     `;
     renderDialogueQuestion(q, stage, logKey);
     return;
@@ -1558,7 +1624,7 @@ function render() {
       ${opts.map(o => `<button class="opt" data-value="${o}">${o}</button>`).join("")}
     </div>
     <div class="hint" id="hint"></div>
-    <div class="footer-row"><button class="next" id="nextBtn">Next →</button></div>
+    <div class="footer-row">${backBtn()}<button class="next" id="nextBtn">Next →</button></div>
   `;
 
   card.querySelectorAll(".opt").forEach(btn => {
@@ -1794,13 +1860,14 @@ function renderTranslateQuestion(q) {
       ? `Correct! <strong>${q.display}</strong>`
       : `Not quite — a correct answer is: <strong>${q.display}</strong>`;
 
-    if (isCorrect) { score++; playCorrectSound(); }
-    else { playWrongSound(); }
-    document.getElementById("scorelive").textContent = score;
-    saveProgress();
+    if (isCorrect) playCorrectSound();
+    else playWrongSound();
+    award(isCorrect ? 1 : 0);
 
     btn.textContent = "Next →";
-    btn.onclick = () => { current++; render(); };
+    const go = () => { current++; render(); };
+    btn.onclick = go;
+    startAutoNext(btn, go);
   }
 
   btn.onclick = check;
@@ -1944,7 +2011,7 @@ function renderFreeChat(stage) {
   nextBtn.onclick = () => {
     const sent = log.filter(m => m.who === "you" && m.ok !== undefined).length;
     const g = grammarPercent();
-    if (sent >= FREE_CHAT_PASS_MESSAGES && g >= FREE_CHAT_PASS_GRAMMAR) { score++; saveProgress(); }
+    award(sent >= FREE_CHAT_PASS_MESSAGES && g >= FREE_CHAT_PASS_GRAMMAR ? 1 : 0);
     current++;
     render();
   };
@@ -1966,6 +2033,7 @@ function renderDialogueQuestion(q, stage, logKey) {
 
     const log = dialogueLog[logKey] || (dialogueLog[logKey] = []);
     const aiResult = await getDialogueResponse(stage, log, raw);
+    if (!btn.isConnected) return; // left the question while waiting
 
     let result, reply;
     if (aiResult) {
@@ -1984,18 +2052,19 @@ function renderDialogueQuestion(q, stage, logKey) {
       ? "Looks good!"
       : `Grammar note: ${result.note}`;
 
-    if (result.ok) { score++; playCorrectSound(); }
-    else { playWrongSound(); }
-    document.getElementById("scorelive").textContent = score;
-    saveProgress();
+    if (result.ok) playCorrectSound();
+    else playWrongSound();
+    award(result.ok ? 1 : 0);
 
     btn.textContent = "Next →";
-    btn.onclick = () => {
+    const go = () => {
       log.push({ who: "you", text: formatUserLine(raw, !!q.theyAsk) });
       if (reply) log.push({ who: "them", text: reply });
       current++;
       render();
     };
+    btn.onclick = go;
+    startAutoNext(btn, go);
   }
 
   btn.onclick = check;
@@ -2167,12 +2236,12 @@ function renderSpeakQuestion(q) {
     micBtn.classList.remove("listening");
     if (recognition) recognition.abort();
     speakScores[key] = bestPercent;
-    if (bestPercent >= SPEAK_PASS) score++;
-    document.getElementById("scorelive").textContent = score;
-    saveProgress();
+    award(bestPercent >= SPEAK_PASS ? 1 : 0);
     hint.innerHTML = `Final score: <strong>${bestPercent}%</strong> · The answer: <strong>${q.display}</strong> <button class="speak-btn" onclick="speak(this.dataset.text)" data-text="${escapeAttr(q.display)}" title="Listen" aria-label="Listen">🔊</button>`;
     nextBtn.classList.add("show");
-    nextBtn.onclick = () => { current++; render(); };
+    const go = () => { current++; render(); };
+    nextBtn.onclick = go;
+    startAutoNext(nextBtn, go);
   }
 
   nextBtn.onclick = () => { finish(); current++; render(); };
@@ -2313,15 +2382,14 @@ function renderOrderQuestion(q) {
       ? `Correct! <strong>${proper}</strong>`
       : `Almost — the correct order is: <strong>${proper}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`;
 
-    if (isCorrect) { score++; playCorrectSound(); }
-    else { playWrongSound(); }
-    document.getElementById("scorelive").textContent = score;
-    saveProgress();
-    document.getElementById("nextBtn").classList.add("show");
-    document.getElementById("nextBtn").onclick = () => {
-      current++;
-      render();
-    };
+    if (isCorrect) playCorrectSound();
+    else playWrongSound();
+    award(isCorrect ? 1 : 0);
+    const nextBtn = document.getElementById("nextBtn");
+    const go = () => { current++; render(); };
+    nextBtn.classList.add("show");
+    nextBtn.onclick = go;
+    startAutoNext(nextBtn, go);
   }
 
   draw();
@@ -2342,19 +2410,14 @@ function selectAnswer(btn, q) {
     ? "Correct!"
     : `Not quite — the correct answer is "${correctAnswer}".<span class="why">${q.why}</span>`;
 
-  if (isCorrect) {
-    score++;
-    playCorrectSound();
-  } else {
-    playWrongSound();
-  }
-  document.getElementById("scorelive").textContent = score;
-  saveProgress();
-  document.getElementById("nextBtn").classList.add("show");
-  document.getElementById("nextBtn").onclick = () => {
-    current++;
-    render();
-  };
+  if (isCorrect) playCorrectSound();
+  else playWrongSound();
+  award(isCorrect ? 1 : 0);
+  const nextBtn = document.getElementById("nextBtn");
+  const go = () => { current++; render(); };
+  nextBtn.classList.add("show");
+  nextBtn.onclick = go;
+  startAutoNext(nextBtn, go);
 }
 
 // --- Unseen ----------------------------------------------------------------
@@ -3152,6 +3215,7 @@ function restart() {
   stageProgress = {};
   sectionProgress = {};
   speakScores = {};
+  results = {};
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
   render();
 }
