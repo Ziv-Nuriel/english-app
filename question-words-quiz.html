@@ -116,30 +116,128 @@
   }
   .legend strong { color: var(--accent); }
 
-  .stage-tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
-    margin-bottom: 1.5rem;
-  }
-  .stage-tabs-break { flex-basis: 100%; height: 0; margin-top: .25rem; }
-  .stage-tab {
-    padding: .4rem .95rem;
+  /* Home screen: the stages as one winding path of connected circles. */
+  [hidden] { display: none !important; }
+  .home-btn {
+    font: inherit;
+    font-size: .78rem;
+    font-weight: 600;
+    padding: .3rem .75rem;
     border-radius: 20px;
     border: 1.5px solid var(--rule);
     background: transparent;
     color: var(--ink-soft);
-    font-size: .78rem;
-    font-weight: 600;
-    letter-spacing: .01em;
     cursor: pointer;
-    transition: border-color .15s, background .15s, color .15s;
   }
-  .stage-tab:hover { border-color: var(--accent); color: var(--accent); }
-  .stage-tab.active {
-    border-color: var(--accent);
-    background: var(--accent-soft);
+  .home-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .path-summary {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    direction: rtl;
+    font-size: .85rem;
+    color: var(--ink-soft);
+    margin: .6rem 0 .4rem;
+  }
+  .path-summary strong { color: var(--ink); font-variant-numeric: tabular-nums; }
+  .path { position: relative; margin: 1.5rem auto 1rem; }
+  .path svg { position: absolute; left: 50%; top: 0; overflow: visible; pointer-events: none; }
+  .path-line { fill: none; stroke: var(--rule); stroke-width: 10; stroke-linecap: round; }
+  .path-line.done { stroke: var(--correct); }
+  .path-node {
+    position: absolute;
+    width: 190px;
+    margin-left: -95px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .path-circle {
+    position: relative;
+    width: 112px;
+    height: 112px;
+    border-radius: 50%;
+    border: none;
+    background: var(--card);
+    box-shadow: 0 0 0 5px var(--rule), 0 6px 0 5px var(--rule);
+    color: var(--ink-soft);
+    font: 700 .95rem/1.15 Georgia, "Times New Roman", serif;
+    padding: .5rem;
+    cursor: pointer;
+    display: grid;
+    place-items: center;
+    transition: transform .12s;
+  }
+  .path-circle:hover { transform: translateY(-2px); }
+  .path-circle:active { transform: translateY(3px); }
+  .path-circle:focus-visible { outline: 3px solid var(--highlight); outline-offset: 8px; }
+  .path-circle .ring { position: absolute; inset: -9px; width: calc(100% + 18px); height: calc(100% + 18px); transform: rotate(-90deg); }
+  .path-circle .ring circle { fill: none; stroke: var(--accent); stroke-width: 5; stroke-linecap: round; }
+  .path-node.started .path-circle { color: var(--accent); }
+  .path-node.current .path-circle {
+    background: var(--accent);
+    color: var(--card);
+    box-shadow: 0 0 0 5px var(--accent-soft), 0 6px 0 5px var(--accent-soft);
+    animation: pathPulse 1.8s ease-in-out infinite;
+  }
+  .path-node.current .path-circle .ring circle { stroke: var(--highlight); }
+  .path-node.done .path-circle {
+    background: var(--correct);
+    color: var(--card);
+    box-shadow: 0 0 0 5px var(--correct-bg), 0 6px 0 5px var(--correct-bg);
+  }
+  .path-face { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
+  .path-icon { font-size: 1.15rem; line-height: 1; font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
+  .path-num { font-size: .68rem; font-weight: 700; letter-spacing: .06em; opacity: .7; font-family: -apple-system, "Segoe UI", Arial, sans-serif; }
+  @keyframes pathPulse { 50% { transform: scale(1.06); } }
+  .path-label {
+    white-space: nowrap;
+    margin-top: .95rem;
+    font-size: .82rem;
+    font-weight: 700;
+    line-height: 1.25;
+    background: var(--paper);
+    padding: 0 .3rem;
+    border-radius: 4px;
+  }
+  .path-meta { font-size: .72rem; color: var(--ink-soft); background: var(--paper); padding: 0 .3rem; font-variant-numeric: tabular-nums; }
+  .path-node.done .path-meta { color: var(--correct); }
+  .path-start {
+    position: absolute;
+    bottom: calc(100% - 4px);
+    white-space: nowrap;
+    background: var(--card);
     color: var(--accent);
+    border: 2px solid var(--accent);
+    border-radius: 10px;
+    padding: .2rem .6rem;
+    font-size: .75rem;
+    font-weight: 700;
+    direction: rtl;
+  }
+  .path-start::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    margin-left: -6px;
+    border: 6px solid transparent;
+    border-top-color: var(--accent);
+  }
+  .path-divider {
+    position: absolute;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: .72rem;
+    letter-spacing: .08em;
+    color: var(--ink-soft);
+    direction: rtl;
+  }
+  .path-divider span { background: var(--paper); padding: 0 .6rem; }
+  @media (prefers-reduced-motion: reduce) {
+    .path-node.current .path-circle { animation: none; }
   }
 
   .progress-row {
@@ -806,6 +904,7 @@
   <div class="masthead">
     <h1 id="stageTitle">Question Words Drill</h1>
     <div class="head-tools">
+      <button class="home-btn" id="homeBtn" title="חזרה למסלול" hidden>🗺 המסלול</button>
       <span class="level" id="levelTag">STAGE 1 / 2</span>
       <button class="icon-btn" id="muteQuick" title="האתר מושתק — לחצו לביטול ההשתקה" aria-label="Unmute" hidden>🔇</button>
       <button class="icon-btn" id="settingsBtn" title="הגדרות" aria-label="Settings" aria-expanded="false">⚙️</button>
@@ -816,9 +915,10 @@
     <label><input type="checkbox" id="setEffects"> צלילי נכון / לא נכון</label>
     <small>השיחה הקולית בזמן אמת לא מושפעת מההשתקה.</small>
   </div>
-  <div class="sub" id="stageSub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
+  <div id="homeView" hidden></div>
 
-  <div class="stage-tabs" id="stageTabs"></div>
+  <div id="stageView">
+  <div class="sub" id="stageSub">השלימו את מילת השאלה הנכונה — What / When / Where / Why / How / Who / Which / Whose</div>
 
   <div class="legend" id="legend"></div>
 
@@ -831,6 +931,7 @@
   <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
 
   <div class="card" id="quizCard"></div>
+  </div>
 </div>
 
 <script src="voice-chat.js"></script>
@@ -1480,20 +1581,132 @@ function shuffle(arr) {
   return a;
 }
 
-function renderTabs() {
-  const tabs = document.getElementById("stageTabs");
-  if (stages.length < 2) { tabs.innerHTML = ""; return; }
-  // Numbered drills first; Unseen and Podcast go on their own row below, without numbers.
-  const tab = (s, i, label) => `<button class="stage-tab${i === stageIndex ? " active" : ""}" data-stage="${i}">${label}</button>`;
-  const drills = stages.map((s, i) => [s, i]).filter(([s]) => !s.unseen);
-  const extras = stages.map((s, i) => [s, i]).filter(([s]) => s.unseen);
-  tabs.innerHTML = drills.map(([s, i], n) => tab(s, i, `${n + 1}. ${s.title}`)).join("") +
-    (drills.length && extras.length ? `<div class="stage-tabs-break"></div>` : "") +
-    extras.map(([s, i]) => tab(s, i, s.title)).join("");
-  tabs.querySelectorAll(".stage-tab").forEach(btn => {
-    btn.addEventListener("click", () => goToStage(Number(btn.dataset.stage)));
-  });
+// --- Home: the learning path ---------------------------------------------
+// The page opens on a path of connected stage circles; tapping one opens that
+// stage's practice. The open stage lives in the URL (#stage-N), so reload and
+// the browser's Back button work.
+let view = "home";
+const PATH_OFFSETS = [0, -55, -80, -55, 0, 55, 80, 55];
+const PATH_ROW = 185;
+const PATH_R = 56;
+const EXTRA_ICONS = { unseen: "📖", podcast: "🎧" };
+// Each stage on the path: English examples inside the circle, the general Hebrew name under it.
+const PATH_NAMES = {
+  "Question Words Drill": ["What / Where / Why", "מילות שאלה"],
+  "Do or Are Drill": ["Do / Are", "שאלות בהווה"],
+  "Is she / Is this / Am I": ["Is she / Is this / Am I", "שאלות עם הפועל to be"],
+  "Did or Do Drill": ["Did / Do", "עבר או הווה"],
+  "Didn't or Doesn't Drill": ["Didn't / Doesn't", "שלילה"],
+  "Short Answers (Yes/No)": ["Yes, I do / No, he didn't", "תשובות קצרות"],
+  "Unseen": ["Unseen", "הבנת הנקרא"],
+  "Podcast": ["Podcast", "הבנת הנשמע"]
+};
+
+function stageStats(i) {
+  const s = stages[i];
+  if (s.unseen) {
+    const st = unseenStates[s.kind];
+    const ex = st && st.exercise;
+    const total = ex ? ex.questions.length : 0;
+    const answered = ex ? (st.answers || []).filter(a => a !== undefined && a !== null).length : 0;
+    return { total, answered, done: total > 0 && answered >= total };
+  }
+  const total = s.questions.length;
+  const answered = Object.keys(results).filter(k => k.split(":")[0] === String(i)).length;
+  const pos = i === stageIndex ? current : (stageProgress[i] || 0);
+  const done = pos >= total || answered >= total;
+  return { total, answered: done ? total : answered, done };
 }
+
+function renderHome() {
+  const home = document.getElementById("homeView");
+  document.getElementById("stageTitle").textContent = "Learning Path";
+  const order = stages.map((s, i) => [s, i]);
+  const drills = order.filter(([s]) => !s.unseen);
+  const extras = order.filter(([s]) => s.unseen);
+  const nodes = [...drills, ...extras].map(([s, i]) => ({ s, i, ...stageStats(i) }));
+  const drillsDone = nodes.filter(n => !n.s.unseen && n.done).length;
+  document.getElementById("levelTag").textContent = `${drillsDone} / ${drills.length} DONE`;
+  const next = nodes.find(n => !n.s.unseen && !n.done);
+
+  let y = 40;
+  let divider = "";
+  nodes.forEach((n, k) => {
+    if (k > 0) y += PATH_ROW;
+    if (k === drills.length && k > 0) {
+      y += 40;
+      divider = `<div class="path-divider" style="top:${y - 8}px"><span>תרגול נוסף — טקסטים ופודקאסטים</span></div>`;
+      y += 50;
+    }
+    n.x = PATH_OFFSETS[k % PATH_OFFSETS.length];
+    n.y = y + PATH_R;
+  });
+  const height = y + PATH_ROW;
+
+  const lines = nodes.slice(1).map((n, k) => {
+    const p = nodes[k];
+    const midY = (p.y + n.y) / 2;
+    return `<path class="path-line${p.done ? " done" : ""}" d="M${p.x} ${p.y} C${p.x} ${midY} ${n.x} ${midY} ${n.x} ${n.y}"/>`;
+  }).join("");
+
+  const circ = 2 * Math.PI * 45;
+  const nodeHtml = nodes.map((n, k) => {
+    const extra = n.s.unseen;
+    const pct = n.total ? n.answered / n.total : 0;
+    const state = n.done ? "done" : n === next ? "current" : n.answered > 0 ? "started" : "";
+    const [en, he] = PATH_NAMES[n.s.title] || [n.s.title, ""];
+    const top = extra ? EXTRA_ICONS[n.s.kind] || "★" : n.done ? "✓" : String(k + 1);
+    const face = `<span class="path-face"><span class="${extra || n.done ? "path-icon" : "path-num"}">${top}</span><span>${escapeHtml(en)}</span></span>`;
+    const ring = !n.done && pct > 0
+      ? `<svg class="ring" viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="45" stroke-dasharray="${(circ * pct).toFixed(1)} ${circ.toFixed(1)}"/></svg>` : "";
+    const meta = extra
+      ? (n.total ? `${n.answered} / ${n.total} שאלות` : "נושא לבחירתכם")
+      : n.done ? "✓ הושלם" : `${n.answered} / ${n.total}`;
+    const bubble = n === next ? `<span class="path-start">${n.answered ? "המשיכו מכאן" : "התחילו כאן"}</span>` : "";
+    return `<div class="path-node ${state}${extra ? " extra" : ""}" style="left:calc(50% + ${n.x}px);top:${n.y - PATH_R}px">
+      ${bubble}
+      <button class="path-circle" data-stage="${n.i}" aria-label="${escapeAttr(n.s.title)}">${ring}${face}</button>
+      <div class="path-label" dir="rtl">${escapeHtml(he || n.s.title)}</div>
+      <div class="path-meta">${meta}</div>
+    </div>`;
+  }).join("");
+
+  home.innerHTML = `
+    <div class="path-summary"><span>בחרו שלב במסלול כדי לתרגל אותו</span><span>Score: <strong>${score}</strong></span></div>
+    <div class="path" style="height:${height}px">
+      <svg width="1" height="${height}" aria-hidden="true">${lines}</svg>
+      ${divider}
+      ${nodeHtml}
+    </div>`;
+  home.querySelectorAll(".path-circle").forEach(b => b.onclick = () => goToStage(Number(b.dataset.stage)));
+}
+
+function goHome() {
+  if (history.state && history.state.fromHome) return history.back();
+  history.replaceState(null, "", location.pathname + location.search);
+  view = "home";
+  render();
+  window.scrollTo(0, 0);
+}
+
+// Opens the stage named in the URL hash, or the path when there is none.
+function applyHash() {
+  const m = /^#stage-(\d+)$/.exec(location.hash);
+  const i = m ? Number(m[1]) - 1 : -1;
+  if (i >= 0 && i < stages.length) {
+    if (view !== "stage" || i !== stageIndex) {
+      stageProgress[stageIndex] = current;
+      stageIndex = i;
+      current = stageProgress[i] || 0;
+    }
+    view = "stage";
+  } else {
+    view = "home";
+  }
+  render();
+}
+window.addEventListener("popstate", applyHash);
+document.getElementById("homeBtn").onclick = goHome;
 
 function award(points) {
   const key = stageIndex + ":" + current;
@@ -1535,19 +1748,29 @@ function goToStage(i) {
   stageProgress[stageIndex] = current;
   stageIndex = i;
   current = stageProgress[i] || 0;
+  const hash = "#stage-" + (i + 1);
+  if (view === "stage") { if (location.hash !== hash) history.replaceState(history.state, "", hash); }
+  else if (stages.length > 1) history.pushState({ fromHome: true }, "", hash);
+  view = "stage";
   render();
+  window.scrollTo(0, 0);
 }
 
 function render() {
   clearAutoNext();
   VoiceChat.stop(); // leaving the card ends any live conversation
-  if (unseenReading && !stages[stageIndex].unseen) stopReadAloud();
-  if (podcastPlayer && stages[stageIndex].kind !== "podcast") podcastPlayer.destroy();
+  const atHome = view === "home" && stages.length > 1;
+  if (unseenReading && (atHome || !stages[stageIndex].unseen)) stopReadAloud();
+  if (podcastPlayer && (atHome || stages[stageIndex].kind !== "podcast")) podcastPlayer.destroy();
+  if (atHome && window.speechSynthesis) speechSynthesis.cancel();
   stageProgress[stageIndex] = current;
   saveProgress();
+  document.getElementById("homeView").hidden = !atHome;
+  document.getElementById("stageView").hidden = atHome;
+  document.getElementById("homeBtn").hidden = atHome || stages.length < 2;
+  if (atHome) { renderHome(); return; }
   const card = document.getElementById("quizCard");
   const stage = stages[stageIndex];
-  renderTabs();
   document.getElementById("stageTitle").textContent = stage.title;
   document.getElementById("stageSub").textContent = stage.sub;
   document.getElementById("legend").innerHTML = stage.legend;
@@ -1591,6 +1814,7 @@ function render() {
           <div class="score">${score} / ${stage.questions.length}</div>
           <p>Ready for the next stage: ${stages[stageIndex + 1].title}</p>
           <button class="restart" onclick="goBack()">← Back</button>
+          <button class="restart" onclick="goHome()">🗺 למסלול</button>
           <button class="restart" onclick="goToStage(${stageIndex + 1})">Next Stage →</button>
         </div>`;
       document.getElementById("barFill").style.width = "100%";
@@ -1610,6 +1834,7 @@ function render() {
         <div class="score">${score} / ${totalQuestions}</div>
         <p>${verdict}</p>
         <button class="restart" onclick="goBack()">← Back</button>
+        <button class="restart" onclick="goHome()">🗺 למסלול</button>
         <button class="restart" onclick="restart()">Start Over</button>
         <button class="restart" onclick="goToStage(stages.findIndex(s => s.unseen))">Practice Unseen →</button>
       </div>`;
@@ -2004,14 +2229,25 @@ function escapeAttr(s) {
   return s.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
 }
 
+// Chrome quirks: speak() right after cancel() is sometimes dropped, the engine
+// can be left paused, and an utterance that gets garbage-collected stops early.
+let speakUtter = null;
+let speakTimer = 0;
 function speak(text, rate) {
   try {
-    if (!window.speechSynthesis || settings.muted) return;
-    window.speechSynthesis.cancel();
+    const synth = window.speechSynthesis;
+    if (!synth || settings.muted) return;
+    clearTimeout(speakTimer);
+    const busy = synth.speaking || synth.pending;
+    synth.cancel();
     const utter = new SpeechSynthesisUtterance(text);
     utter.lang = "en-US";
+    const voice = synth.getVoices().find(v => v.lang === "en-US") || synth.getVoices().find(v => /^en/i.test(v.lang));
+    if (voice) utter.voice = voice;
     if (rate) utter.rate = rate;
-    window.speechSynthesis.speak(utter);
+    speakUtter = utter;
+    const go = () => { synth.resume(); synth.speak(utter); };
+    if (busy) speakTimer = setTimeout(go, 80); else go();
   } catch (e) {}
 }
 
@@ -2694,7 +2930,7 @@ async function generateUnseen(card, avoid) {
   }
   // The learner may have left the stage while waiting: keep the result for
   // when they come back, and only draw it if they are still here.
-  const here = stages[stageIndex].kind === state.kind;
+  const here = view === "stage" && stages[stageIndex].kind === state.kind;
   if (error) {
     if (here && document.body.contains(btn)) renderUnseenPicker(card, `${podcast ? "לא הצלחתי ליצור פודקאסט" : "לא הצלחתי ליצור טקסט"}: ${error}`);
     return;
@@ -2725,6 +2961,8 @@ function showGloss(btn) {
   document.querySelectorAll(".gloss.open").forEach(b => b.classList.remove("open"));
   if (wasOpen) return;
   btn.classList.add("open");
+  // Say the word too, unless a podcast is playing (the 🔊 in the popup still can).
+  if (!(podcastPlayer && podcastPlayer.playing)) sayWords(btn.dataset.word);
   const pop = document.createElement("div");
   pop.className = "gloss-pop";
   pop.innerHTML = `<b>${escapeHtml(btn.dataset.word)}</b> – ${escapeHtml(btn.dataset.he)} <button class="speak-btn" title="Listen" aria-label="Listen">🔊</button>`;
@@ -3344,5 +3582,5 @@ function restart() {
 }
 
 loadProgress();
-render();
+applyHash();
 </script>
