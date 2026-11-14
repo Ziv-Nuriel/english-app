@@ -365,6 +365,43 @@
     transition: border-color .15s, background .15s, color .15s;
   }
   .sub-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .sec-nav { display: flex; align-items: center; gap: .75rem; flex: 1; }
+  .sec-track { flex: 1; min-width: 0; }
+  .sec-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: .5rem;
+    margin-bottom: .45rem;
+    font-size: .85rem;
+    color: var(--ink-soft);
+  }
+  .sec-head strong { color: var(--accent); font-size: .95rem; }
+  .sec-segs { display: flex; gap: 4px; }
+  .sec-seg {
+    flex: 1;
+    height: 8px;
+    border-radius: 4px;
+    background: var(--rule);
+    overflow: hidden;
+  }
+  .sec-seg > div { height: 100%; background: var(--accent); transition: width .35s ease; }
+  .sec-seg.current { box-shadow: 0 0 0 2px var(--highlight); }
+  .sec-seg.current > div { background: var(--highlight); }
+  .sec-arrow {
+    flex: none;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--rule);
+    background: var(--card);
+    color: var(--ink);
+    font-size: 1.15rem;
+    cursor: pointer;
+    transition: border-color .15s, color .15s, background .15s;
+  }
+  .sec-arrow:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+  .sec-arrow:disabled { opacity: .35; cursor: default; }
   .sub-tab.active {
     border-color: var(--highlight);
     background: var(--accent-soft);
@@ -603,60 +640,76 @@
   .order-build {
     display: flex;
     flex-wrap: wrap;
-    gap: .5rem;
-    min-height: 3.2rem;
-    padding: .75rem;
+    gap: .6rem;
+    min-height: 4.6rem;
+    padding: 1rem 1.25rem;
     border: 1.5px dashed var(--rule);
     border-radius: 4px;
-    margin-bottom: 1.1rem;
+    background: var(--accent-soft);
+    margin: .5rem 0 1.5rem;
     align-items: center;
   }
   .order-build.empty::before {
     content: "Tap the words below to build the sentence";
     color: var(--ink-soft);
-    font-size: .82rem;
+    font-size: 1rem;
   }
-  .order-build.correct { border-style: solid; border-color: var(--correct); }
-  .order-build.wrong { border-style: solid; border-color: var(--wrong); }
+  .order-build.correct { border-style: solid; border-color: var(--correct); background: var(--correct-bg); }
+  .order-build.wrong { border-style: solid; border-color: var(--wrong); background: var(--wrong-bg); }
   .order-bank {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: .65rem;
   }
-  .chip {
-    padding: .55rem .9rem;
-    border-radius: 20px;
+  .word-tile {
+    padding: .75rem 1rem;
+    border-radius: 3px;
     border: 1.5px solid var(--rule);
     background: var(--card);
     color: var(--ink);
     font-family: Georgia, "Iowan Old Style", serif;
-    font-size: 1rem;
+    font-size: 1.2rem;
     cursor: pointer;
+    text-align: center;
     transition: transform .12s ease, border-color .15s, background .15s, opacity .15s;
   }
-  .chip:hover:not(:disabled) {
+  .word-tile:hover:not(:disabled) {
     border-color: var(--accent);
     background: var(--accent-soft);
     transform: translateY(-2px);
   }
-  .chip:active:not(:disabled) { transform: scale(.94); }
-  .chip:disabled { opacity: .3; cursor: default; }
-  .chip.placed {
+  .word-tile:active:not(:disabled) { transform: scale(.95); }
+  .word-tile:disabled { opacity: .3; cursor: default; }
+  .word-tile.placed {
     border-color: var(--accent);
-    background: var(--accent-soft);
+    background: var(--card);
     color: var(--accent);
+    font-size: 1.3rem;
     font-weight: 600;
   }
-  .order-build.correct .chip.placed {
+  .order-build.correct .word-tile.placed {
     border-color: var(--correct);
+    color: var(--correct);
+    opacity: 1;
+  }
+  .order-build.wrong .word-tile.placed {
+    border-color: var(--wrong);
+    color: var(--wrong);
+    opacity: 1;
+  }
+
+  .adapt-note {
+    margin-top: 1rem;
+    padding: .75rem 1rem;
+    border-radius: 4px;
+    border: 1.5px solid var(--correct);
     background: var(--correct-bg);
     color: var(--correct);
+    font-size: .95rem;
+    text-align: right;
+    animation: adapt-in .35s ease;
   }
-  .order-build.wrong .chip.placed {
-    border-color: var(--wrong);
-    background: var(--wrong-bg);
-    color: var(--wrong);
-  }
+  @keyframes adapt-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
   .footer-row {
     margin-top: 1.5rem;
@@ -894,7 +947,91 @@
   .pod-tools .chip { padding: .25rem .65rem; font-size: .8rem; }
   .transcript-hidden { color: var(--ink-soft); font-size: .85rem; direction: rtl; text-align: right; margin: 0 0 1rem; }
 
+  .celebrate {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    background: color-mix(in srgb, var(--paper) 60%, transparent);
+    backdrop-filter: blur(3px);
+    animation: cel-fade .3s ease both;
+    cursor: pointer;
+    overflow: hidden;
+  }
+  .celebrate.out { animation: cel-fade-out .4s ease forwards; }
+  .celebrate-confetti { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+  .celebrate-confetti i {
+    position: absolute;
+    width: var(--w);
+    height: calc(var(--w) * 1.6);
+    border-radius: 2px;
+    opacity: 0;
+    animation: cel-burst 1.6s cubic-bezier(.15, .7, .3, 1) var(--d) forwards;
+  }
+  .celebrate-card {
+    position: relative;
+    min-width: min(320px, calc(100vw - 32px));
+    padding: 1.75rem 2rem 1.5rem;
+    border-radius: 18px;
+    background: var(--card);
+    border: 2px solid var(--highlight);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, .35);
+    text-align: center;
+    animation: cel-pop .6s cubic-bezier(.2, 1.6, .4, 1) both;
+  }
+  .celebrate-check { width: 84px; height: 84px; margin: -3.4rem auto .4rem; display: block; }
+  .celebrate-check circle {
+    fill: var(--correct);
+    stroke: var(--card);
+    stroke-width: 5;
+    transform-origin: center;
+    animation: cel-pop .5s cubic-bezier(.2, 1.6, .4, 1) .1s both;
+  }
+  .celebrate-check path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 70;
+    stroke-dashoffset: 70;
+    animation: cel-draw .4s ease .45s forwards;
+  }
+  .celebrate-stars { font-size: 2rem; letter-spacing: .3rem; line-height: 1; margin-bottom: .5rem; }
+  .celebrate-stars span { color: var(--rule); display: inline-block; }
+  .celebrate-stars span.on {
+    color: var(--highlight);
+    animation: cel-star .5s cubic-bezier(.2, 1.8, .4, 1) calc(.55s + var(--i) * .15s) both;
+  }
+  .celebrate-cheer { font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-bottom: .25rem; }
+  .celebrate-title { font-size: 1rem; color: var(--ink-soft); }
+  .celebrate-title strong { color: var(--ink); }
+  .celebrate-score {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--ink);
+    margin: .35rem 0 .15rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .celebrate-next { font-size: .9rem; color: var(--ink-soft); }
+  .celebrate-next strong { color: var(--accent); }
+  @keyframes cel-fade { from { opacity: 0; } }
+  @keyframes cel-fade-out { to { opacity: 0; } }
+  @keyframes cel-pop { from { transform: scale(.3); opacity: 0; } }
+  @keyframes cel-draw { to { stroke-dashoffset: 0; } }
+  @keyframes cel-star { from { transform: scale(0) rotate(-120deg); } }
+  @keyframes cel-burst {
+    0% { opacity: 1; transform: translate(0, 0) rotate(0); }
+    70% { opacity: 1; }
+    100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 260px)) rotate(var(--r)); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    .celebrate-confetti { display: none; }
+    .celebrate-card, .celebrate-check circle, .celebrate-stars span.on { animation: none; }
+    .celebrate-check path { animation: none; stroke-dashoffset: 0; }
     .bar-fill, button.next { transition: none; }
     .mic-btn.listening { animation: none; }
   }
@@ -1394,6 +1531,11 @@ if (PAGE_MODE === "podcast") {
   document.title = "Podcast";
 }
 
+// Developer mode (?dev=1 in the address) shows every section tab so any part can be opened directly.
+// It lives only in the address, so the learner shortcut always opens the learner view.
+const DEV_MODE = new URLSearchParams(location.search).get("dev") === "1";
+try { localStorage.removeItem("devMode"); } catch (e) {}
+
 let stageIndex = 0;
 let freeChatLogs = {};
 let current = 0;
@@ -1708,8 +1850,140 @@ function applyHash() {
 window.addEventListener("popstate", applyHash);
 document.getElementById("homeBtn").onclick = goHome;
 
+// --- Adaptive pace -----------------------------------------------------------
+// A run of correct, quick answers in a section means it is already known:
+// the rest of that section is skipped (and credited) and practice moves on.
+const ADAPT_STREAK = 4;
+const ADAPT_TYPES = ["mc", "order", "pick", "translate", "speak"];
+let questionShownAt = Date.now();
+let adaptStreak = {};   // "stage:sectionStart" -> correct quick answers in a row
+let adaptJump = null;   // { to, label } once a section is mastered
+
+function adaptTimeLimit(q) {
+  switch (q.type || "mc") {
+    case "mc": return 10;
+    case "pick": return 15;
+    case "order": return 5 + 2 * q.answer.length;
+    case "translate": return 25;
+    case "speak": return 30;
+  }
+  return 0;
+}
+
+function currentSection() {
+  const sections = getSections(stages[stageIndex]);
+  const idx = sections.findIndex(s => current >= s.start && current < s.start + s.len);
+  return { sections, idx, sec: sections[idx] };
+}
+
+function trackAdaptive(points, answeredBefore) {
+  adaptJump = null;
+  const stage = stages[stageIndex];
+  const q = stage.questions[current];
+  if (!q || !ADAPT_TYPES.includes(q.type || "mc") || answeredBefore) return;
+  const { sections, idx, sec } = currentSection();
+  if (!sec) return;
+  const key = stageIndex + ":" + sec.start;
+  const seconds = (Date.now() - questionShownAt) / 1000;
+  adaptStreak[key] = points > 0 && seconds <= adaptTimeLimit(q) ? (adaptStreak[key] || 0) + 1 : 0;
+
+  const end = sec.start + sec.len;
+  if (adaptStreak[key] < ADAPT_STREAK || current + 1 >= end) return;
+  const next = sections[idx + 1];
+  adaptJump = { to: end, label: next ? next.label : null };
+  const note = document.createElement("div");
+  note.className = "adapt-note";
+  note.dir = "rtl";
+  note.innerHTML = `🚀 <strong>${adaptStreak[key]} תשובות נכונות ומהירות ברצף!</strong> נראה שאת/ה שולט/ת בזה — ` +
+    (next ? `עוברים לחלק הבא: <strong dir="ltr">${escapeHtml(next.label)}</strong>` : "השלב הושלם");
+  const footer = document.querySelector("#quizCard .footer-row");
+  if (footer) footer.before(note);
+}
+
+// Moves to the next question, or past the rest of a mastered section.
+function advance() {
+  const { sections, sec: from } = currentSection();
+  if (adaptJump) {
+    const { to } = adaptJump;
+    adaptJump = null;
+    for (let i = current + 1; i < to; i++) {
+      const k = stageIndex + ":" + i;
+      if (!(k in results)) { results[k] = 1; score += 1; }
+    }
+    current = to;
+  } else {
+    current++;
+  }
+  render();
+  if (from && current >= from.start + from.len) {
+    const next = sections.find(s => s.start === current);
+    celebrateSection(from, next);
+  }
+}
+
+// --- Part-complete celebration ---------------------------------------------------
+const CONFETTI_COLORS = ["#d99a2b", "#e8b23d", "#1f6f78", "#6bc2cb", "#3f9d5a", "#e0607e", "#8b6fd6"];
+
+function playFanfare() {
+  [[523.25, 0], [659.25, 110], [783.99, 220], [1046.5, 340], [1318.5, 470]].forEach(([f, t]) =>
+    setTimeout(() => playTone(f, f * 1.005, t > 400 ? 0.5 : 0.2, "triangle", 0.22), t));
+}
+
+function celebrateSection(sec, next) {
+  document.querySelector(".celebrate")?.remove();
+  let correct = 0;
+  for (let i = sec.start; i < sec.start + sec.len; i++) correct += results[stageIndex + ":" + i] ? 1 : 0;
+  const stageDone = current >= stages[stageIndex].questions.length;
+  const ratio = correct / sec.len;
+  const stars = ratio >= 0.9 ? 3 : ratio >= 0.6 ? 2 : 1;
+  const cheer = ratio === 1 ? "מושלם!" : ratio >= 0.8 ? "כל הכבוד!" : ratio >= 0.6 ? "יפה מאוד!" : "סיימת!";
+
+  const el = document.createElement("div");
+  el.className = "celebrate";
+  el.setAttribute("role", "status");
+  const confetti = Array.from({ length: 90 }, () => {
+    const angle = Math.random() * Math.PI * 2;
+    const dist = 180 + Math.random() * 320;
+    const style = [
+      `--x:${(Math.cos(angle) * dist).toFixed(0)}px`,
+      `--y:${(Math.sin(angle) * dist - 120).toFixed(0)}px`,
+      `--r:${(Math.random() * 1080 - 540).toFixed(0)}deg`,
+      `--d:${(Math.random() * 0.25).toFixed(2)}s`,
+      `--w:${(6 + Math.random() * 8).toFixed(0)}px`,
+      `background:${CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)]}`,
+      Math.random() < 0.35 ? "border-radius:50%" : ""
+    ].join(";");
+    return `<i style="${style}"></i>`;
+  }).join("");
+  el.innerHTML = `
+    <div class="celebrate-confetti" aria-hidden="true">${confetti}</div>
+    <div class="celebrate-card">
+      <svg class="celebrate-check" viewBox="0 0 100 100" aria-hidden="true">
+        <circle cx="50" cy="50" r="44"/><path d="M30 52 L45 66 L71 37"/>
+      </svg>
+      <div class="celebrate-stars" aria-label="${stars} stars">${[1, 2, 3].map(n => `<span class="${n <= stars ? "on" : ""}" style="--i:${n}">★</span>`).join("")}</div>
+      <div class="celebrate-cheer" dir="rtl">${cheer}</div>
+      <div class="celebrate-title"><strong>${escapeHtml(sec.label)}</strong> ${stageDone ? "· Stage complete" : "complete"}</div>
+      <div class="celebrate-score">${correct} / ${sec.len}</div>
+      ${next && !stageDone ? `<div class="celebrate-next">Next up: <strong>${escapeHtml(next.label)}</strong></div>` : ""}
+    </div>`;
+  document.body.appendChild(el);
+  playFanfare();
+
+  let gone = false;
+  const close = () => {
+    if (gone) return;
+    gone = true;
+    el.classList.add("out");
+    setTimeout(() => el.remove(), 400);
+  };
+  el.onclick = close;
+  setTimeout(close, 2800);
+}
+
 function award(points) {
   const key = stageIndex + ":" + current;
+  trackAdaptive(points, key in results);
   score += points - (results[key] || 0);
   results[key] = points;
   document.getElementById("scorelive").textContent = score;
@@ -1843,6 +2117,8 @@ function render() {
   }
 
   const q = stage.questions[current];
+  questionShownAt = Date.now();
+  adaptJump = null;
 
   if (q.type === "order") {
     card.innerHTML = `
@@ -1915,8 +2191,7 @@ function render() {
       stage: stageIndex,
       onFinish(talkedSeconds) {
         award(talkedSeconds >= 60 ? 1 : 0);
-        current++;
-        render();
+        advance();
       },
     });
     return;
@@ -2013,16 +2288,51 @@ function renderSubTabs(sections) {
 
   if (sections.length < 2) { el.innerHTML = ""; return; }
 
+  // Learners get a progress line through the parts and arrows to step between them.
+  if (!DEV_MODE) { renderSectionNav(el, sections); return; }
+
   el.innerHTML = sections.map(s => {
     const active = current >= s.start && current < s.start + s.len;
     return `<button class="sub-tab${active ? " active" : ""}" data-start="${s.start}">${s.label}</button>`;
   }).join("");
   el.querySelectorAll(".sub-tab").forEach(btn => {
     btn.onclick = () => {
-      const start = Number(btn.dataset.start);
-      const key = stageIndex + ":" + start;
-      current = sectionProgress[key] !== undefined ? sectionProgress[key] : start;
-      render();
+      openSection(Number(btn.dataset.start));
+    };
+  });
+}
+
+function openSection(start) {
+  const key = stageIndex + ":" + start;
+  current = sectionProgress[key] !== undefined ? sectionProgress[key] : start;
+  render();
+}
+
+function renderSectionNav(el, sections) {
+  let idx = sections.findIndex(s => current >= s.start && current < s.start + s.len);
+  if (idx < 0) idx = sections.length; // stage finished
+  const segs = sections.map((s, k) => {
+    let answered = 0;
+    for (let i = s.start; i < s.start + s.len; i++) if ((stageIndex + ":" + i) in results) answered++;
+    if (k === idx) answered = Math.max(answered, current - s.start);
+    const pct = k < idx ? 100 : Math.round((answered / s.len) * 100);
+    return `<div class="sec-seg${k === idx ? " current" : ""}" title="${escapeAttr(s.label)}"><div style="width:${pct}%"></div></div>`;
+  }).join("");
+  const label = idx < sections.length ? sections[idx].label : "Stage complete";
+  const count = idx < sections.length ? `חלק ${idx + 1} מתוך ${sections.length}` : "";
+  el.innerHTML = `
+    <div class="sec-nav">
+      <button class="sec-arrow" data-go="-1" aria-label="Previous part" title="Previous part" ${idx === 0 ? "disabled" : ""}>←</button>
+      <div class="sec-track">
+        <div class="sec-head"><strong>${escapeHtml(label)}</strong><span dir="rtl">${count}</span></div>
+        <div class="sec-segs">${segs}</div>
+      </div>
+      <button class="sec-arrow" data-go="1" aria-label="Next part" title="Next part" ${idx >= sections.length - 1 ? "disabled" : ""}>→</button>
+    </div>`;
+  el.querySelectorAll(".sec-arrow").forEach(btn => {
+    btn.onclick = () => {
+      const target = sections[Math.min(idx, sections.length) + Number(btn.dataset.go)];
+      if (target) openSection(target.start);
     };
   });
 }
@@ -2213,7 +2523,7 @@ function renderTranslateQuestion(q) {
     award(isCorrect ? 1 : 0);
 
     btn.textContent = "Next →";
-    const go = () => { current++; render(); };
+    const go = advance;
     btn.onclick = go;
     if (isCorrect) startAutoNext(btn, go);
   }
@@ -2371,8 +2681,7 @@ function renderFreeChat(stage) {
     const sent = log.filter(m => m.who === "you" && m.ok !== undefined).length;
     const g = grammarPercent();
     award(sent >= FREE_CHAT_PASS_MESSAGES && g >= FREE_CHAT_PASS_GRAMMAR ? 1 : 0);
-    current++;
-    render();
+    advance();
   };
 
   draw();
@@ -2419,8 +2728,7 @@ function renderDialogueQuestion(q, stage, logKey) {
     const go = () => {
       log.push({ who: "you", text: formatUserLine(raw, !!q.theyAsk) });
       if (reply) log.push({ who: "them", text: reply });
-      current++;
-      render();
+      advance();
     };
     btn.onclick = go;
     if (result.ok) startAutoNext(btn, go);
@@ -2598,12 +2906,12 @@ function renderSpeakQuestion(q) {
     award(bestPercent >= SPEAK_PASS ? 1 : 0);
     hint.innerHTML = `Final score: <strong>${bestPercent}%</strong> · The answer: <strong>${q.display}</strong> <button class="speak-btn" onclick="speak(this.dataset.text)" data-text="${escapeAttr(q.display)}" title="Listen" aria-label="Listen">🔊</button>`;
     nextBtn.classList.add("show");
-    const go = () => { current++; render(); };
+    const go = advance;
     nextBtn.onclick = go;
     if (bestPercent >= SPEAK_PASS) startAutoNext(nextBtn, go);
   }
 
-  nextBtn.onclick = () => { finish(); current++; render(); };
+  nextBtn.onclick = () => { finish(); advance(); };
 
   skip.onclick = () => {
     if (!tries) playWrongSound();
@@ -2706,19 +3014,19 @@ function renderOrderQuestion(q) {
     const buildEl = document.getElementById("orderBuild");
     const bankEl = document.getElementById("orderBank");
     buildEl.classList.toggle("empty", placed.length === 0);
-    buildEl.innerHTML = placed.map(p => `<button class="chip placed" data-i="${p.i}">${p.w}</button>`).join("");
+    buildEl.innerHTML = placed.map(p => `<button class="word-tile placed" data-i="${p.i}">${p.w}</button>`).join("");
     bankEl.innerHTML = shuffled.map(item => {
       const used = placed.some(p => p.i === item.i);
-      return `<button class="chip" data-i="${item.i}" ${used ? "disabled" : ""}>${item.w}</button>`;
+      return `<button class="word-tile" data-i="${item.i}" ${used ? "disabled" : ""}>${item.w}</button>`;
     }).join("");
 
-    buildEl.querySelectorAll(".chip").forEach(btn => {
+    buildEl.querySelectorAll(".word-tile").forEach(btn => {
       btn.addEventListener("click", () => {
         placed = placed.filter(p => p.i !== Number(btn.dataset.i));
         draw();
       });
     });
-    bankEl.querySelectorAll(".chip:not(:disabled)").forEach(btn => {
+    bankEl.querySelectorAll(".word-tile:not(:disabled)").forEach(btn => {
       btn.addEventListener("click", () => {
         placed.push(shuffled.find(s => s.i === Number(btn.dataset.i)));
         draw();
@@ -2732,8 +3040,8 @@ function renderOrderQuestion(q) {
     const userOrder = placed.map(p => p.w);
     const isCorrect = JSON.stringify(userOrder) === JSON.stringify(q.answer);
     buildEl.classList.add(isCorrect ? "correct" : "wrong");
-    buildEl.querySelectorAll(".chip").forEach(b => b.disabled = true);
-    document.getElementById("orderBank").querySelectorAll(".chip").forEach(b => b.disabled = true);
+    buildEl.querySelectorAll(".word-tile").forEach(b => b.disabled = true);
+    document.getElementById("orderBank").querySelectorAll(".word-tile").forEach(b => b.disabled = true);
 
     const sentence = q.answer.join(" ");
     const proper = sentence.charAt(0).toUpperCase() + sentence.slice(1) + q.punct;
@@ -2745,7 +3053,7 @@ function renderOrderQuestion(q) {
     else playWrongSound();
     award(isCorrect ? 1 : 0);
     const nextBtn = document.getElementById("nextBtn");
-    const go = () => { current++; render(); };
+    const go = advance;
     nextBtn.classList.add("show");
     nextBtn.onclick = go;
     if (isCorrect) startAutoNext(nextBtn, go);
@@ -2773,7 +3081,7 @@ function selectAnswer(btn, q) {
   else playWrongSound();
   award(isCorrect ? 1 : 0);
   const nextBtn = document.getElementById("nextBtn");
-  const go = () => { current++; render(); };
+  const go = advance;
   nextBtn.classList.add("show");
   nextBtn.onclick = go;
   if (isCorrect) startAutoNext(nextBtn, go);

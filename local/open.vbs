@@ -1,4 +1,5 @@
 ' Starts the local server (hidden) if it isn't running, then opens the app in Chrome.
+' Pass "dev" as the first argument to open the developer view (?dev=1).
 Set sh = CreateObject("WScript.Shell")
 Set fso = CreateObject("Scripting.FileSystemObject")
 dir = fso.GetParentFolderName(WScript.ScriptFullName)
@@ -16,4 +17,9 @@ If Not running Then
   WScript.Sleep 800
 End If
 
-sh.Run """C:\Program Files\Google\Chrome\Application\chrome.exe"" ""http://localhost:8137/question-words-quiz.html""", 1, False
+url = "http://localhost:8137/question-words-quiz.html"
+If WScript.Arguments.Count > 0 Then
+  If LCase(WScript.Arguments(0)) = "dev" Then url = url & "?dev=1"
+End If
+
+sh.Run """C:\Program Files\Google\Chrome\Application\chrome.exe"" """ & url & """", 1, False
