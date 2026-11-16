@@ -1,71 +1,100 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Question Words Drill</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
     color-scheme: light dark;
-    --paper: #f6f3ec;
-    --ink: #2b2a28;
-    --ink-soft: #6b6558;
-    --rule: #d8d2c4;
-    --card: #fffefb;
-    --accent: #1f6f78;
-    --accent-soft: #e3eeee;
-    --highlight: #d99a2b;
-    --correct: #2f7d4f;
-    --correct-bg: #e3f2e6;
-    --wrong: #b3432b;
-    --wrong-bg: #fbe8e3;
+    --font-body: "Rubik", "Segoe UI", Arial, sans-serif;
+    --font-display: "Rubik", "Segoe UI", Arial, sans-serif;
+    --paper: #fff7ec;
+    --ink: #2a2540;
+    --ink-soft: #6d6787;
+    --rule: #e6dfd2;
+    --card: #ffffff;
+    --accent: #5b4fe0;
+    --accent-dark: #4035b8;
+    --accent-soft: #ecebff;
+    --highlight: #ffad1f;
+    --hl-soft: #fff1d3;
+    --correct: #1fa463;
+    --correct-dark: #15824c;
+    --correct-bg: #dcf7e8;
+    --wrong: #e5484d;
+    --wrong-dark: #b8343a;
+    --wrong-bg: #ffe5e3;
+    --blob1: #ffe1f0;
+    --blob2: #dff3ff;
   }
   @media (prefers-color-scheme: dark) {
     :root {
-      --paper: #1c1b18;
-      --ink: #ece7dc;
-      --ink-soft: #a49c8a;
-      --rule: #3a382f;
-      --card: #23221e;
-      --accent: #6bc2cb;
-      --accent-soft: #1e3336;
-      --highlight: #e8b23d;
-      --correct: #7bc99a;
-      --correct-bg: #1c3324;
-      --wrong: #e08a6c;
-      --wrong-bg: #3a2019;
+      --paper: #17152a;
+      --ink: #f1eefc;
+      --ink-soft: #a7a1c4;
+      --rule: #34304f;
+      --card: #221f3a;
+      --accent: #8f86ff;
+      --accent-dark: #5d53d6;
+      --accent-soft: #2d2858;
+      --highlight: #ffbe3d;
+      --hl-soft: #3d3220;
+      --correct: #4cd38c;
+      --correct-dark: #2a9a5e;
+      --correct-bg: #183a2a;
+      --wrong: #ff7a7f;
+      --wrong-dark: #c4464c;
+      --wrong-bg: #45222a;
+      --blob1: #2e1f45;
+      --blob2: #1b2d48;
     }
   }
   :root[data-theme="dark"] {
-    --paper: #1c1b18;
-    --ink: #ece7dc;
-    --ink-soft: #a49c8a;
-    --rule: #3a382f;
-    --card: #23221e;
-    --accent: #6bc2cb;
-    --accent-soft: #1e3336;
-    --highlight: #e8b23d;
-    --correct: #7bc99a;
-    --correct-bg: #1c3324;
-    --wrong: #e08a6c;
-    --wrong-bg: #3a2019;
+    --paper: #17152a;
+    --ink: #f1eefc;
+    --ink-soft: #a7a1c4;
+    --rule: #34304f;
+    --card: #221f3a;
+    --accent: #8f86ff;
+    --accent-dark: #5d53d6;
+    --accent-soft: #2d2858;
+    --highlight: #ffbe3d;
+    --hl-soft: #3d3220;
+    --correct: #4cd38c;
+    --correct-dark: #2a9a5e;
+    --correct-bg: #183a2a;
+    --wrong: #ff7a7f;
+    --wrong-dark: #c4464c;
+    --wrong-bg: #45222a;
+    --blob1: #2e1f45;
+    --blob2: #1b2d48;
   }
   :root[data-theme="light"] {
-    --paper: #f6f3ec;
-    --ink: #2b2a28;
-    --ink-soft: #6b6558;
-    --rule: #d8d2c4;
-    --card: #fffefb;
-    --accent: #1f6f78;
-    --accent-soft: #e3eeee;
-    --highlight: #d99a2b;
-    --correct: #2f7d4f;
-    --correct-bg: #e3f2e6;
-    --wrong: #b3432b;
-    --wrong-bg: #fbe8e3;
+    --paper: #fff7ec;
+    --ink: #2a2540;
+    --ink-soft: #6d6787;
+    --rule: #e6dfd2;
+    --card: #ffffff;
+    --accent: #5b4fe0;
+    --accent-dark: #4035b8;
+    --accent-soft: #ecebff;
+    --highlight: #ffad1f;
+    --hl-soft: #fff1d3;
+    --correct: #1fa463;
+    --correct-dark: #15824c;
+    --correct-bg: #dcf7e8;
+    --wrong: #e5484d;
+    --wrong-dark: #b8343a;
+    --wrong-bg: #ffe5e3;
+    --blob1: #ffe1f0;
+    --blob2: #dff3ff;
   }
   * { box-sizing: border-box; }
   body {
     background: var(--paper);
     color: var(--ink);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    font-family: var(--font-body);
     margin: 0;
     padding: 3rem 1rem;
     min-height: 100vh;
@@ -83,7 +112,7 @@
     margin-bottom: .35rem;
   }
   .masthead h1 {
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-family: var(--font-display);
     font-size: 1.5rem;
     font-weight: 700;
     margin: 0;
@@ -162,7 +191,7 @@
     background: var(--card);
     box-shadow: 0 0 0 5px var(--rule), 0 6px 0 5px var(--rule);
     color: var(--ink-soft);
-    font: 700 .95rem/1.15 Georgia, "Times New Roman", serif;
+    font: 700 .95rem/1.15 var(--font-display);
     padding: .5rem;
     cursor: pointer;
     display: grid;
@@ -280,7 +309,7 @@
   }
 
   .sentence {
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-family: var(--font-display);
     font-size: 1.4rem;
     line-height: 1.65;
     margin: .5rem 0 1.75rem;
@@ -307,7 +336,7 @@
     border: 1.5px solid var(--rule);
     background: transparent;
     color: var(--ink);
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 1.05rem;
     cursor: pointer;
     transition: border-color .15s, background .15s;
@@ -409,7 +438,7 @@
   }
 
   .translate-prompt {
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-family: var(--font-display);
     font-size: 1.3rem;
     line-height: 1.6;
     margin: .5rem 0 1.5rem;
@@ -440,7 +469,7 @@
     max-width: 80%;
     padding: .6rem .9rem;
     border-radius: 14px;
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: .95rem;
     line-height: 1.4;
     direction: ltr;
@@ -485,7 +514,7 @@
     border: 1.5px solid var(--rule);
     background: var(--card);
     color: var(--ink);
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 1.05rem;
     margin-bottom: 1rem;
   }
@@ -536,7 +565,7 @@
     text-align: center;
   }
   .heard {
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 1rem;
     direction: ltr;
     text-align: center;
@@ -584,7 +613,7 @@
     text-align: center;
   }
   .speak-score {
-    font-family: Georgia, serif;
+    font-family: var(--font-display);
     font-size: 2.4rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -598,7 +627,7 @@
     margin-bottom: .75rem;
   }
   .speak-target {
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 1.15rem;
     direction: ltr;
     margin-bottom: .75rem;
@@ -667,7 +696,7 @@
     border: 1.5px solid var(--rule);
     background: var(--card);
     color: var(--ink);
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 1.2rem;
     cursor: pointer;
     text-align: center;
@@ -756,7 +785,7 @@
   .result { text-align: center; }
   .result .level { display: block; margin-bottom: .5rem; }
   .score {
-    font-family: Georgia, serif;
+    font-family: var(--font-display);
     font-size: 3.2rem;
     font-weight: 700;
     color: var(--accent);
@@ -805,7 +834,7 @@
   .unseen-status.error { color: var(--wrong); }
   .unseen-topic { font-size: .78rem; color: var(--ink-soft); direction: rtl; text-align: right; margin-bottom: .75rem; }
   .unseen-title {
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-family: var(--font-display);
     font-size: 1.35rem;
     margin: 0 0 .9rem;
     display: flex;
@@ -814,7 +843,7 @@
     gap: .5rem;
   }
   .unseen-text p {
-    font-family: Georgia, "Iowan Old Style", "Times New Roman", serif;
+    font-family: var(--font-display);
     font-size: 1.05rem;
     line-height: 1.75;
     margin: 0 0 .9rem;
@@ -1008,7 +1037,7 @@
   .celebrate-title { font-size: 1rem; color: var(--ink-soft); }
   .celebrate-title strong { color: var(--ink); }
   .celebrate-score {
-    font-family: Georgia, "Iowan Old Style", serif;
+    font-family: var(--font-display);
     font-size: 2.2rem;
     font-weight: 700;
     color: var(--ink);
@@ -1026,6 +1055,378 @@
     0% { opacity: 1; transform: translate(0, 0) rotate(0); }
     70% { opacity: 1; }
     100% { opacity: 0; transform: translate(var(--x), calc(var(--y) + 260px)) rotate(var(--r)); }
+  }
+
+  /* ---- Playful skin: chunky rounded controls, bright feedback, small animations ---- */
+  body {
+    background:
+      radial-gradient(circle at 8% 0%, var(--blob1), transparent 42%),
+      radial-gradient(circle at 100% 35%, var(--blob2), transparent 38%),
+      var(--paper);
+    background-attachment: fixed;
+    padding: 1.5rem 1rem 3rem;
+  }
+  .masthead {
+    border-bottom: none;
+    background: var(--card);
+    border-radius: 20px;
+    padding: .7rem 1rem;
+    box-shadow: 0 4px 0 var(--rule);
+    margin-bottom: 1rem;
+    align-items: center;
+    gap: .5rem;
+  }
+  .masthead h1 { font-weight: 800; font-size: 1.3rem; color: var(--accent); letter-spacing: 0; }
+  .masthead .level {
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: .3rem .7rem;
+    border-radius: 999px;
+    font-weight: 700;
+    letter-spacing: .04em;
+    white-space: nowrap;
+  }
+  .home-btn { border-radius: 999px; border-width: 2px; font-weight: 700; }
+  .icon-btn { border-width: 2px; background: var(--card); }
+  .sub { font-size: .98rem; color: var(--ink); font-weight: 500; }
+  .legend {
+    border: none;
+    border-radius: 18px;
+    background: var(--card);
+    box-shadow: 0 4px 0 var(--rule);
+    border-inline-start: 6px solid var(--accent);
+    font-size: .88rem;
+  }
+  .settings-panel { border-radius: 16px; border-width: 2px; }
+
+  /* Progress: pills + a fat rounded bar */
+  .progress-row { align-items: center; margin-bottom: .55rem; gap: .5rem; }
+  .pills { display: flex; gap: .45rem; }
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .75rem;
+    border-radius: 999px;
+    background: var(--card);
+    box-shadow: 0 3px 0 var(--rule);
+    font-size: .85rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .pill strong { font-weight: 800; }
+  .pill.streak { color: var(--highlight); }
+  .pill.streak.cold { color: var(--ink-soft); }
+  .pill.streak.cold .flame { filter: grayscale(1); opacity: .5; }
+  .pill.bump { animation: pill-bump .45s cubic-bezier(.2, 1.8, .4, 1); }
+  .bar {
+    height: 14px;
+    border-radius: 999px;
+    background: var(--rule);
+    margin-bottom: 1.4rem;
+  }
+  .bar-fill {
+    position: relative;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--highlight), var(--correct));
+    transition: width .5s cubic-bezier(.3, 1.4, .5, 1);
+  }
+  .bar-fill::after {
+    content: "";
+    position: absolute;
+    left: 8px; right: 8px; top: 3px;
+    height: 3px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, .45);
+  }
+  .sec-seg { height: 10px; border-radius: 999px; }
+  .sec-seg > div { border-radius: 999px; }
+  .sec-arrow { border-width: 2px; box-shadow: 0 3px 0 var(--rule); }
+  .sec-arrow:active:not(:disabled) { transform: translateY(2px); box-shadow: 0 1px 0 var(--rule); }
+  .sub-tab { border-radius: 14px; border-width: 2px; box-shadow: 0 3px 0 var(--rule); background: var(--card); }
+
+  /* The question card */
+  .card {
+    border: none;
+    border-radius: 26px;
+    padding: 2rem 1.6rem 1.6rem;
+    box-shadow: 0 8px 0 var(--rule), 0 18px 40px rgba(40, 30, 90, .08);
+    animation: card-in .35s cubic-bezier(.2, 1.2, .4, 1);
+  }
+  .card::before { display: none; }
+  .order-label {
+    direction: ltr;
+    text-align: left;
+    text-transform: none;
+    letter-spacing: 0;
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--accent);
+    margin-bottom: .9rem;
+  }
+  .sentence { font-size: 1.55rem; font-weight: 600; text-align: center; margin: .25rem 0 1.6rem; }
+  .blank {
+    min-width: 100px;
+    border-bottom: none;
+    border-radius: 10px;
+    background: var(--hl-soft);
+    box-shadow: inset 0 -4px 0 var(--highlight);
+    padding: 0 .4rem;
+    animation: blank-glow 1.6s ease-in-out infinite;
+  }
+  .translate-prompt { border-radius: 18px; font-weight: 600; font-size: 1.3rem; }
+  .pick-question { font-weight: 600; }
+
+  /* Chunky answer buttons */
+  .opt, .word-tile {
+    border-radius: 16px;
+    border: 2px solid var(--rule);
+    background: var(--card);
+    box-shadow: 0 4px 0 var(--rule);
+    font-weight: 600;
+    color: var(--ink);
+    transition: transform .1s, box-shadow .1s, border-color .15s, background .15s, opacity .2s;
+  }
+  .opt { padding: .9rem 1rem; font-size: 1.1rem; }
+  .opt:hover:not(:disabled), .word-tile:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: 0 4px 0 var(--accent);
+    transform: translateY(-2px);
+  }
+  .opt:active:not(:disabled), .word-tile:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent); }
+  .opt:disabled:not(.correct):not(.wrong) { opacity: .45; }
+  .opt.correct { box-shadow: 0 4px 0 var(--correct-dark); animation: pop .45s cubic-bezier(.2, 1.8, .4, 1); }
+  .opt.wrong { box-shadow: 0 4px 0 var(--wrong-dark); animation: shake .4s ease; }
+  .unseen-q .opt { border-radius: 14px; }
+  .word-tile.placed { box-shadow: 0 4px 0 var(--accent); animation: pop .3s cubic-bezier(.2, 1.8, .4, 1); }
+  .order-build { border-radius: 20px; border-width: 2px; }
+  .order-build.correct { animation: pop .45s cubic-bezier(.2, 1.8, .4, 1); }
+  .order-build.wrong { animation: shake .4s ease; }
+  .order-build.empty::before { content: "👇 Tap the words below to build the sentence"; }
+  .translate-input { border-radius: 14px; border-width: 2px; padding: .85rem 1rem; }
+  .translate-input:focus { box-shadow: 0 0 0 4px var(--accent-soft); }
+  .translate-input.correct { animation: pop .45s cubic-bezier(.2, 1.8, .4, 1); }
+  .translate-input.wrong { animation: shake .4s ease; }
+  .mic-btn { width: 84px; height: 84px; border-width: 3px; box-shadow: 0 5px 0 var(--accent); }
+  .mic-btn:active:not(:disabled) { transform: translateY(3px); box-shadow: 0 2px 0 var(--accent); }
+  .dialogue-msg { border-radius: 18px; }
+  .chat-send, .chat-mic { border-radius: 14px; }
+
+  /* Primary / secondary buttons */
+  button.next {
+    border-radius: 16px;
+    padding: .85rem 1.7rem;
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: .01em;
+    color: #fff;
+    box-shadow: 0 4px 0 var(--accent-dark);
+    transition: opacity .2s, transform .1s, box-shadow .1s;
+  }
+  button.next:hover { filter: brightness(1.08); }
+  button.next:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--accent-dark); }
+  button.back, button.restart {
+    border-radius: 16px;
+    border-width: 2px;
+    background: var(--card);
+    box-shadow: 0 4px 0 var(--rule);
+    font-weight: 700;
+  }
+  button.restart { margin: 1rem .2rem 0; padding: .75rem 1.3rem; }
+  button.back:active, button.restart:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--rule); }
+  .score { font-weight: 800; }
+  .adapt-note { border-radius: 16px; border-width: 2px; }
+  .chip { border-width: 2px; background: var(--card); }
+
+  /* Colorful action buttons: Next = purple→pink, Check = green→teal, Back = sunny orange */
+  button.next {
+    background: linear-gradient(135deg, #6c5ce7, #c44fd8);
+    box-shadow: 0 4px 0 #4a3bb8;
+  }
+  button.next:active { box-shadow: 0 1px 0 #4a3bb8; }
+  #checkBtn.check {
+    background: linear-gradient(135deg, #1fb26b, #11a7b0);
+    box-shadow: 0 4px 0 #128052;
+  }
+  #checkBtn.check:active { box-shadow: 0 1px 0 #128052; }
+  button.back {
+    background: linear-gradient(135deg, #ffd166, #ff9f43);
+    border: none;
+    color: #5a3200;
+    box-shadow: 0 4px 0 #d9771f;
+    padding: .7rem 1.2rem;
+  }
+  button.back:hover { color: #5a3200; filter: brightness(1.05); }
+  button.back:active { box-shadow: 0 1px 0 #d9771f; }
+  button.restart:nth-of-type(3n+1) { border-color: #ff9f43; color: #d9771f; box-shadow: 0 4px 0 #ffd2a6; }
+  button.restart:nth-of-type(3n+2) { border-color: #0e9fc0; color: #0e8aa6; box-shadow: 0 4px 0 #b3e6f2; }
+  button.restart:nth-of-type(3n) { background: linear-gradient(135deg, #6c5ce7, #c44fd8); border-color: transparent; color: #fff; box-shadow: 0 4px 0 #4a3bb8; }
+
+  /* Parts navigation at the top: every part has its own color */
+  .sub-tab {
+    color: color-mix(in srgb, var(--c) 82%, var(--ink));
+    border-color: color-mix(in srgb, var(--c) 40%, var(--rule));
+    background: color-mix(in srgb, var(--c) 9%, var(--card));
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 45%, var(--rule));
+    font-weight: 700;
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  .sub-tab:hover { color: color-mix(in srgb, var(--c) 82%, var(--ink)); border-color: var(--c); transform: translateY(-2px); }
+  .sub-tab.active {
+    background: var(--c);
+    border-color: var(--c);
+    color: #fff;
+    box-shadow: 0 3px 0 color-mix(in srgb, var(--c) 65%, #000);
+  }
+  .sec-head strong { color: color-mix(in srgb, var(--c) 82%, var(--ink)); font-size: 1rem; font-weight: 800; }
+  .sec-seg { background: color-mix(in srgb, var(--c) 18%, var(--rule)); }
+  .sec-seg > div { background: var(--c); }
+  .sec-seg.current { box-shadow: 0 0 0 2px var(--c); }
+  .sec-seg.current > div { background: var(--c); }
+  .sec-arrow { color: #fff; border: none; font-weight: 800; }
+  .sec-arrow[data-go="-1"] { background: linear-gradient(135deg, #ffd166, #ff9f43); color: #5a3200; box-shadow: 0 3px 0 #d9771f; }
+  .sec-arrow[data-go="1"] { background: linear-gradient(135deg, #6c5ce7, #c44fd8); box-shadow: 0 3px 0 #4a3bb8; }
+  .sec-arrow:hover:not(:disabled) { color: inherit; background-color: transparent; filter: brightness(1.08); }
+  .sec-arrow[data-go="1"]:hover:not(:disabled) { color: #fff; background: linear-gradient(135deg, #6c5ce7, #c44fd8); }
+  .sec-arrow[data-go="-1"]:hover:not(:disabled) { color: #5a3200; background: linear-gradient(135deg, #ffd166, #ff9f43); }
+  .sec-arrow:disabled { filter: grayscale(1); opacity: .3; }
+
+  /* The stage key: colorful word cards */
+  .legend {
+    border-inline-start: none;
+    padding: .55rem .8rem .65rem;
+    margin-bottom: 1rem;
+  }
+  .legend-title {
+    display: flex;
+    align-items: center;
+    font-weight: 800;
+    font-size: .95rem;
+    color: var(--accent);
+    cursor: pointer;
+    list-style: none;
+    user-select: none;
+  }
+  .legend-title::-webkit-details-marker { display: none; }
+  .legend-box[open] .legend-title { margin-bottom: .45rem; }
+  .legend-toggle {
+    order: 2;
+    margin-inline-start: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .2rem .7rem;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 700;
+    box-shadow: 0 3px 0 var(--accent-dark);
+    transition: transform .1s, box-shadow .1s;
+  }
+  .legend-title:hover .legend-toggle { filter: brightness(1.1); }
+  .legend-title:active .legend-toggle { transform: translateY(2px); box-shadow: 0 1px 0 var(--accent-dark); }
+  .legend-toggle::before { content: "▲ הסתרה"; }
+  .legend-box:not([open]) .legend-toggle::before { content: "▼ הצגת המילון"; }
+  .legend-title:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 6px; }
+  .legend-box[open] .legend-grid { animation: fb-in .25s ease; }
+  /* Compact: one short row per word, so the key and the question fit on screen together */
+  .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: .3rem; }
+  .legend-item {
+    display: flex;
+    align-items: baseline;
+    gap: .4rem;
+    padding: .25rem .45rem;
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--c) 10%, var(--card));
+    line-height: 1.3;
+  }
+  .legend-word {
+    flex: none;
+    padding: .05rem .5rem;
+    border-radius: 999px;
+    background: var(--c);
+    color: #fff;
+    font-weight: 800;
+    font-size: .8rem;
+  }
+  .legend-word em { font-style: normal; }
+  .legend-text { min-width: 0; }
+  .legend-text b { font-size: .85rem; color: var(--ink); }
+  .legend-text small { font-size: .7rem; color: var(--ink-soft); margin-inline-start: .3rem; }
+  .legend-text > span { font-size: .78rem; }
+  .legend-tip {
+    grid-column: 1 / -1;
+    padding: .35rem .6rem;
+    border-radius: 14px;
+    background: var(--hl-soft);
+    font-size: .85rem;
+    line-height: 1.6;
+  }
+  .legend-tip strong { color: var(--ink); }
+
+  /* Feedback strip after an answer */
+  .fb {
+    display: flex;
+    align-items: flex-start;
+    gap: .75rem;
+    padding: .85rem 1rem;
+    border-radius: 18px;
+    direction: rtl;
+    text-align: right;
+    color: var(--ink);
+    font-size: .95rem;
+    line-height: 1.5;
+    animation: fb-in .35s cubic-bezier(.2, 1.4, .4, 1);
+  }
+  .fb.good { background: var(--correct-bg); }
+  .fb.bad { background: var(--wrong-bg); }
+  .fb-emoji { font-size: 2rem; line-height: 1; flex: none; animation: pop .5s cubic-bezier(.2, 1.8, .4, 1) .05s both; }
+  .fb-title { font-weight: 800; font-size: 1.15rem; }
+  .fb.good .fb-title { color: var(--correct); }
+  .fb.bad .fb-title { color: var(--wrong); }
+  .fb-body strong { unicode-bidi: isolate; }
+  .fb .why { color: var(--ink); margin-top: .3rem; }
+
+  /* Compact question area: with the key open, Back/Next still fit on one screen */
+  body { padding-top: 1rem; }
+  .masthead { margin-bottom: .7rem; padding: .55rem .9rem; }
+  .sub { margin: .3rem 0 .7rem; font-size: .9rem; }
+  .sub-tabs { margin-bottom: .7rem; }
+  .progress-row { margin-bottom: .4rem; }
+  .pill { padding: .2rem .65rem; font-size: .8rem; }
+  .bar { height: 10px; margin-bottom: .9rem; }
+  .bar-fill::after { top: 2px; height: 2px; }
+  .card { padding: 1.1rem 1.3rem 1rem; border-radius: 22px; }
+  .order-label { font-size: .95rem; margin-bottom: .55rem; }
+  .sentence { font-size: 1.35rem; margin: 0 0 1rem; line-height: 1.5; }
+  .translate-prompt { font-size: 1.15rem; padding: .7rem 1rem; margin: .25rem 0 .9rem; }
+  .opt { padding: .6rem .8rem; font-size: 1rem; border-radius: 14px; }
+  .options { gap: .5rem; }
+  .pick-options { margin-top: .5rem; }
+  .translate-input { padding: .65rem .9rem; margin-bottom: .6rem; }
+  .order-build { min-height: 3.6rem; padding: .6rem .9rem; margin: .25rem 0 .9rem; }
+  .word-tile { padding: .55rem .8rem; font-size: 1.05rem; }
+  .word-tile.placed { font-size: 1.1rem; }
+  .hint { margin-top: .7rem; }
+  .fb { padding: .5rem .8rem; gap: .6rem; font-size: .9rem; border-radius: 14px; }
+  .fb-emoji { font-size: 1.5rem; }
+  .fb-title { font-size: 1rem; }
+  .footer-row { margin-top: .8rem; }
+  button.next { padding: .6rem 1.4rem; font-size: .95rem; border-radius: 14px; }
+  button.back { padding: .55rem 1rem; font-size: .85rem; border-radius: 14px; }
+  .mic-btn { width: 68px; height: 68px; font-size: 1.6rem; }
+
+  @keyframes card-in { from { opacity: 0; transform: translateY(14px) scale(.98); } }
+  @keyframes pop { 0% { transform: scale(.85); } 60% { transform: scale(1.06); } 100% { transform: scale(1); } }
+  @keyframes shake { 20%, 60% { transform: translateX(-7px); } 40%, 80% { transform: translateX(7px); } }
+  @keyframes fb-in { from { opacity: 0; transform: translateY(10px); } }
+  @keyframes pill-bump { 50% { transform: scale(1.3) rotate(-6deg); } }
+  @keyframes blank-glow { 50% { background: color-mix(in srgb, var(--highlight) 30%, var(--hl-soft)); } }
+  @media (prefers-reduced-motion: reduce) {
+    .card, .opt.correct, .opt.wrong, .word-tile.placed, .order-build.correct, .order-build.wrong,
+    .translate-input.correct, .translate-input.wrong, .fb, .fb-emoji, .pill.bump, .blank { animation: none; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1062,8 +1463,11 @@
   <div class="sub-tabs" id="subTabs"></div>
 
   <div class="progress-row">
-    <span>Question <strong id="qnum">1</strong> of <strong id="qtotal">15</strong></span>
-    <span>Score: <strong id="scorelive">0</strong></span>
+    <span class="pill" title="Question">📝 <strong id="qnum">1</strong>/<strong id="qtotal">15</strong></span>
+    <span class="pills">
+      <span class="pill streak cold" id="streakPill" title="תשובות נכונות ברצף"><span class="flame">🔥</span><strong id="streakLive">0</strong></span>
+      <span class="pill" title="Score">⭐ <strong id="scorelive">0</strong></span>
+    </span>
   </div>
   <div class="bar"><div class="bar-fill" id="barFill" style="width:0%"></div></div>
 
@@ -1981,9 +2385,41 @@ function celebrateSection(sec, next) {
   setTimeout(close, 2800);
 }
 
+// --- Answer feedback: streak counter and a cheerful strip under the question ---
+let streak = 0;
+const CHEERS = [["🎉", "מעולה!"], ["⭐", "בול!"], ["🙌", "יש!"], ["💪", "חזק!"], ["🎯", "פגיעה בול!"], ["✨", "יפה מאוד!"], ["😎", "בדיוק ככה!"]];
+const NUDGES = [["🤏", "כמעט!"], ["💡", "לא נורא, לומדים!"], ["🙂", "קרוב!"], ["🌱", "עוד רגע זה שלך"]];
+
+function updateStreak(points, answeredBefore) {
+  if (answeredBefore) return;
+  streak = points > 0 ? streak + 1 : 0;
+  paintStreak(true);
+}
+
+function paintStreak(bump) {
+  const pill = document.getElementById("streakPill");
+  document.getElementById("streakLive").textContent = streak;
+  pill.classList.toggle("cold", streak === 0);
+  if (bump && streak > 0) {
+    pill.classList.remove("bump");
+    void pill.offsetWidth;
+    pill.classList.add("bump");
+  }
+}
+
+// body: HTML shown under the title (the right answer, a grammar note...).
+function showFeedback(ok, body) {
+  const [emoji, title] = ok && streak >= 3 ? ["🔥", `${streak} ברצף!`]
+    : (ok ? CHEERS : NUDGES)[Math.floor(Math.random() * (ok ? CHEERS : NUDGES).length)];
+  document.getElementById("hint").innerHTML =
+    `<div class="fb ${ok ? "good" : "bad"}"><span class="fb-emoji" aria-hidden="true">${emoji}</span>` +
+    `<div><div class="fb-title">${title}</div>${body ? `<div class="fb-body">${body}</div>` : ""}</div></div>`;
+}
+
 function award(points) {
   const key = stageIndex + ":" + current;
   trackAdaptive(points, key in results);
+  updateStreak(points, key in results);
   score += points - (results[key] || 0);
   results[key] = points;
   document.getElementById("scorelive").textContent = score;
@@ -2047,7 +2483,7 @@ function render() {
   const stage = stages[stageIndex];
   document.getElementById("stageTitle").textContent = stage.title;
   document.getElementById("stageSub").textContent = stage.sub;
-  document.getElementById("legend").innerHTML = stage.legend;
+  document.getElementById("legend").innerHTML = renderLegend(stage.legend);
   const drillCount = stages.filter(s => !s.unseen).length;
   document.getElementById("levelTag").textContent = stages.length < 2 ? "LISTENING"
     : stage.unseen ? stage.title.toUpperCase() : `STAGE ${stageIndex + 1} / ${drillCount}`;
@@ -2069,6 +2505,7 @@ function render() {
     document.getElementById("qtotal").textContent = stage.questions.length;
   }
   document.getElementById("scorelive").textContent = score;
+  paintStreak(false);
 
   if (stage.unseen) {
     renderUnseen(card);
@@ -2083,6 +2520,7 @@ function render() {
       document.getElementById("levelTag").textContent = `STAGE ${stageIndex + 1} COMPLETE`;
       card.innerHTML = `
         <div class="result">
+          <div style="font-size:3rem">🏆</div>
           <span class="level">Stage ${stageIndex + 1} Complete</span>
           <div>Score so far</div>
           <div class="score">${score} / ${stage.questions.length}</div>
@@ -2103,6 +2541,7 @@ function render() {
       : "Not bad — practice again to reinforce it.";
     card.innerHTML = `
       <div class="result">
+        <div style="font-size:3rem">🥇</div>
         <span class="level">INTERMEDIATE</span>
         <div>You finished all the stages</div>
         <div class="score">${score} / ${totalQuestions}</div>
@@ -2122,7 +2561,7 @@ function render() {
 
   if (q.type === "order") {
     card.innerHTML = `
-      <div class="order-label">Arrange the words into the correct sentence</div>
+      <div class="order-label">🧩 Put the words in the right order</div>
       <div class="order-build empty" id="orderBuild"></div>
       <div class="order-bank" id="orderBank"></div>
       <div class="hint" id="hint"></div>
@@ -2134,7 +2573,7 @@ function render() {
 
   if (q.type === "pick") {
     card.innerHTML = `
-      <div class="order-label">Choose the correct translation</div>
+      <div class="order-label">🎯 Which one says it right?</div>
       ${q.question ? `<div class="pick-question" dir="ltr">“${escapeHtml(q.question)}”</div>` : ""}
       <div class="translate-prompt" dir="rtl">${q.prompt}</div>
       <div class="options pick-options">
@@ -2150,7 +2589,7 @@ function render() {
   }
 
   if (q.type === "translate") {
-    const label = q.direction === "toHebrew" ? "Translate to Hebrew" : "Translate to English";
+    const label = q.direction === "toHebrew" ? "✍️ How do you say it in Hebrew?" : "✍️ How do you say it in English?";
     const promptDir = q.direction === "toHebrew" ? "ltr" : "rtl";
     const inputDir = q.direction === "toHebrew" ? "rtl" : "ltr";
     card.innerHTML = `
@@ -2158,7 +2597,7 @@ function render() {
       <div class="translate-prompt" dir="${promptDir}">${q.prompt}</div>
       <input type="text" class="translate-input" id="translateInput" dir="${inputDir}" autocomplete="off" spellcheck="false" />
       <div class="hint" id="hint"></div>
-      <div class="footer-row">${backBtn()}<button class="next show" id="checkBtn">Check</button></div>
+      <div class="footer-row">${backBtn()}<button class="next show check" id="checkBtn">✔ Check</button></div>
     `;
     renderTranslateQuestion(q);
     return;
@@ -2199,7 +2638,7 @@ function render() {
 
   if (q.type === "speak") {
     card.innerHTML = `
-      <div class="order-label speak-head"><span>Say it in English</span><span id="speakAvg"></span></div>
+      <div class="order-label speak-head"><span>🎤 Say it out loud in English</span><span id="speakAvg"></span></div>
       <div class="translate-prompt" dir="rtl">${q.prompt}</div>
       <div class="speak-area">
         <button class="mic-btn" id="micBtn" aria-label="Start speaking">🎤</button>
@@ -2231,7 +2670,7 @@ function render() {
       <div class="dialogue-cue"><strong>${q.theyAsk ? "מה לענות:" : "מה להגיד:"}</strong> ${q.instruction}</div>
       <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
       <div class="hint" id="hint"></div>
-      <div class="footer-row">${backBtn()}<button class="next show" id="checkBtn">Check</button></div>
+      <div class="footer-row">${backBtn()}<button class="next show check" id="checkBtn">✔ Check</button></div>
     `;
     renderDialogueQuestion(q, stage, logKey);
     return;
@@ -2240,6 +2679,7 @@ function render() {
   const opts = shuffle(q.options);
 
   card.innerHTML = `
+    <div class="order-label">🤔 Which word completes the sentence?</div>
     <div class="sentence">${q.sentence.replace("___", '<span class="blank">____</span>')}</div>
     <div class="options">
       ${opts.map(o => `<button class="opt" data-value="${o}">${o}</button>`).join("")}
@@ -2293,7 +2733,7 @@ function renderSubTabs(sections) {
 
   el.innerHTML = sections.map(s => {
     const active = current >= s.start && current < s.start + s.len;
-    return `<button class="sub-tab${active ? " active" : ""}" data-start="${s.start}">${s.label}</button>`;
+    return `<button class="sub-tab${active ? " active" : ""}" style="--c:${sectionColor(s.label)}" data-start="${s.start}">${s.label}</button>`;
   }).join("");
   el.querySelectorAll(".sub-tab").forEach(btn => {
     btn.onclick = () => {
@@ -2308,6 +2748,40 @@ function openSection(start) {
   render();
 }
 
+// Each kind of part keeps the same color everywhere (tabs, progress line).
+const SECTION_COLORS = {
+  "Regular Questions": "#6c5ce7", "Word Order": "#f08c00", "Choose Translation": "#0e9fc0",
+  "Hebrew → English": "#1fa463", "English → Hebrew": "#d6409f", "Speaking": "#e5484d",
+  "Dialogue": "#8b5cf6", "Free Chat": "#c99400", "Voice Chat": "#0f9d8a"
+};
+function sectionColor(label) { return SECTION_COLORS[label] || "var(--accent)"; }
+
+// The stage key ("What – מה (דבר) · Who – ...") as colorful word cards.
+const LEGEND_COLORS = ["#6c5ce7", "#e5484d", "#1fa463", "#f08c00", "#0e9fc0", "#d6409f", "#8b5cf6", "#c99400"];
+function renderLegend(html) {
+  if (!html) return "";
+  let words = 0;
+  const items = html.split(/\s*&nbsp;·&nbsp;\s*/).map((item, i) => {
+    const m = item.match(/^<strong>([\s\S]*?)<\/strong>\s*–\s*([\s\S]*)$/);
+    if (!m) return `<div class="legend-tip">💡 ${item}</div>`;
+    words++;
+    const note = m[2].match(/^([^()]*?)\s*\(([^()]*)\)\s*$/);
+    const text = note ? `<b>${note[1]}</b><small>${note[2]}</small>` : `<span>${m[2]}</span>`;
+    return `<div class="legend-item" style="--c:${LEGEND_COLORS[i % LEGEND_COLORS.length]}">` +
+      `<span class="legend-word" dir="ltr">${m[1]}</span><span class="legend-text">${text}</span></div>`;
+  });
+  let open = true;
+  try { open = localStorage.getItem("legendOpen") !== "0"; } catch (e) {}
+  return `<details class="legend-box" ${open ? "open" : ""} ontoggle="saveLegendOpen(this.open)">` +
+    `<summary class="legend-title">${words ? "📖 מילון קטן" : "💡 איך זה עובד"}<span class="legend-toggle" aria-hidden="true"></span></summary>` +
+    `<div class="legend-grid">${items.join("")}</div></details>`;
+}
+
+// Open/closed is remembered, so a folded legend stays folded on the next question and stage.
+function saveLegendOpen(open) {
+  try { localStorage.setItem("legendOpen", open ? "1" : "0"); } catch (e) {}
+}
+
 function renderSectionNav(el, sections) {
   let idx = sections.findIndex(s => current >= s.start && current < s.start + s.len);
   if (idx < 0) idx = sections.length; // stage finished
@@ -2316,7 +2790,7 @@ function renderSectionNav(el, sections) {
     for (let i = s.start; i < s.start + s.len; i++) if ((stageIndex + ":" + i) in results) answered++;
     if (k === idx) answered = Math.max(answered, current - s.start);
     const pct = k < idx ? 100 : Math.round((answered / s.len) * 100);
-    return `<div class="sec-seg${k === idx ? " current" : ""}" title="${escapeAttr(s.label)}"><div style="width:${pct}%"></div></div>`;
+    return `<div class="sec-seg${k === idx ? " current" : ""}" style="--c:${sectionColor(s.label)}" title="${escapeAttr(s.label)}"><div style="width:${pct}%"></div></div>`;
   }).join("");
   const label = idx < sections.length ? sections[idx].label : "Stage complete";
   const count = idx < sections.length ? `חלק ${idx + 1} מתוך ${sections.length}` : "";
@@ -2324,7 +2798,7 @@ function renderSectionNav(el, sections) {
     <div class="sec-nav">
       <button class="sec-arrow" data-go="-1" aria-label="Previous part" title="Previous part" ${idx === 0 ? "disabled" : ""}>←</button>
       <div class="sec-track">
-        <div class="sec-head"><strong>${escapeHtml(label)}</strong><span dir="rtl">${count}</span></div>
+        <div class="sec-head"><strong style="--c:${idx < sections.length ? sectionColor(label) : "var(--correct)"}">${escapeHtml(label)}</strong><span dir="rtl">${count}</span></div>
         <div class="sec-segs">${segs}</div>
       </div>
       <button class="sec-arrow" data-go="1" aria-label="Next part" title="Next part" ${idx >= sections.length - 1 ? "disabled" : ""}>→</button>
@@ -2514,15 +2988,15 @@ function renderTranslateQuestion(q) {
     const isCorrect = q.answers.some(a => normalizeAnswer(a) === userVal);
     input.disabled = true;
     input.classList.add(isCorrect ? "correct" : "wrong");
-    document.getElementById("hint").innerHTML = isCorrect
-      ? `Correct! <strong>${q.display}</strong>`
-      : `Not quite — a correct answer is: <strong>${q.display}</strong>`;
-
     if (isCorrect) playCorrectSound();
     else playWrongSound();
     award(isCorrect ? 1 : 0);
+    const displayDir = q.direction === "toHebrew" ? "rtl" : "ltr";
+    showFeedback(isCorrect, isCorrect ? `<strong dir="${displayDir}">${q.display}</strong>`
+      : `תשובה נכונה: <strong dir="${displayDir}">${q.display}</strong>`);
 
     btn.textContent = "Next →";
+    btn.classList.remove("check");
     const go = advance;
     btn.onclick = go;
     if (isCorrect) startAutoNext(btn, go);
@@ -2716,15 +3190,13 @@ function renderDialogueQuestion(q, stage, logKey) {
 
     btn.disabled = false;
     input.classList.add(result.ok ? "correct" : "wrong");
-    document.getElementById("hint").innerHTML = result.ok
-      ? "Looks good!"
-      : `Grammar note: ${result.note}`;
-
     if (result.ok) playCorrectSound();
     else playWrongSound();
     award(result.ok ? 1 : 0);
+    showFeedback(result.ok, result.ok ? "" : `💬 ${result.note}`);
 
     btn.textContent = "Next →";
+    btn.classList.remove("check");
     const go = () => {
       log.push({ who: "you", text: formatUserLine(raw, !!q.theyAsk) });
       if (reply) log.push({ who: "them", text: reply });
@@ -3045,13 +3517,11 @@ function renderOrderQuestion(q) {
 
     const sentence = q.answer.join(" ");
     const proper = sentence.charAt(0).toUpperCase() + sentence.slice(1) + q.punct;
-    document.getElementById("hint").innerHTML = isCorrect
-      ? `Correct! <strong>${proper}</strong>`
-      : `Almost — the correct order is: <strong>${proper}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`;
-
     if (isCorrect) playCorrectSound();
     else playWrongSound();
     award(isCorrect ? 1 : 0);
+    showFeedback(isCorrect, isCorrect ? `<strong dir="ltr">${proper}</strong>`
+      : `הסדר הנכון: <strong dir="ltr">${proper}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`);
     const nextBtn = document.getElementById("nextBtn");
     const go = advance;
     nextBtn.classList.add("show");
@@ -3073,13 +3543,11 @@ function selectAnswer(btn, q) {
     else if (b === btn) b.classList.add("wrong");
   });
 
-  document.getElementById("hint").innerHTML = isCorrect
-    ? "Correct!"
-    : `Not quite — the correct answer is "${correctAnswer}".<span class="why">${q.why}</span>`;
-
   if (isCorrect) playCorrectSound();
   else playWrongSound();
   award(isCorrect ? 1 : 0);
+  showFeedback(isCorrect, isCorrect ? ""
+    : `התשובה הנכונה: <strong dir="ltr">${escapeHtml(correctAnswer)}</strong>${q.why ? `<span class="why">${q.why}</span>` : ""}`);
   const nextBtn = document.getElementById("nextBtn");
   const go = advance;
   nextBtn.classList.add("show");
