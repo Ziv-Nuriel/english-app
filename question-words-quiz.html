@@ -2321,19 +2321,22 @@ window.addEventListener("popstate", applyHash);
 document.getElementById("homeBtn").onclick = goHome;
 
 // --- Adaptive pace -----------------------------------------------------------
-// A run of correct, quick answers in a section means it is already known:
+// Enough correct, quick answers in a section means it is already known:
 // the rest of that section is skipped (and credited) and practice moves on.
+// It takes ADAPT_STREAK correct answers; every mistake keeps the count but
+// raises the target by one (3 right, then a miss -> 2 more to reach 5).
 const ADAPT_STREAK = 4;
 const ADAPT_TYPES = ["mc", "order", "pick", "translate", "speak"];
 let questionShownAt = Date.now();
-let adaptStreak = {};   // "stage:sectionStart" -> correct quick answers in a row
+let adaptStreak = {};   // "stage:sectionStart" -> correct quick answers so far
+let adaptMisses = {};   // "stage:sectionStart" -> wrong answers (each adds 1 to the target)
 let adaptJump = null;   // { to, label } once a section is mastered
 
 function adaptTimeLimit(q) {
   switch (q.type || "mc") {
     case "mc": return 10;
     case "pick": return 15;
-    case "order": return 5 + 2 * q.answer.length;
+    case "order": return Infinity; // word order is not timed
     case "translate": return 25;
     case "speak": return 30;
   }
@@ -2355,16 +2358,18 @@ function trackAdaptive(points, answeredBefore) {
   if (!sec) return;
   const key = stageIndex + ":" + sec.start;
   const seconds = (Date.now() - questionShownAt) / 1000;
-  adaptStreak[key] = points > 0 && seconds <= adaptTimeLimit(q) ? (adaptStreak[key] || 0) + 1 : 0;
+  // A slow correct answer neither counts nor raises the target.
+  if (points <= 0) adaptMisses[key] = (adaptMisses[key] || 0) + 1;
+  else if (seconds <= adaptTimeLimit(q)) adaptStreak[key] = (adaptStreak[key] || 0) + 1;
 
   const end = sec.start + sec.len;
-  if (adaptStreak[key] < ADAPT_STREAK || current + 1 >= end) return;
+  if ((adaptStreak[key] || 0) < ADAPT_STREAK + (adaptMisses[key] || 0) || current + 1 >= end) return;
   const next = sections[idx + 1];
   adaptJump = { to: end, label: next ? next.label : null };
   const note = document.createElement("div");
   note.className = "adapt-note";
   note.dir = "rtl";
-  note.innerHTML = `🚀 <strong>${adaptStreak[key]} תשובות נכונות ומהירות ברצף!</strong> נראה שאת/ה שולט/ת בזה — ` +
+  note.innerHTML = `🚀 <strong>${adaptStreak[key]} תשובות נכונות!</strong> נראה שאת/ה שולט/ת בזה — ` +
     (next ? `עוברים לחלק הבא: <strong dir="ltr">${escapeHtml(next.label)}</strong>` : "השלב הושלם");
   const footer = document.querySelector("#quizCard .footer-row");
   if (footer) footer.before(note);
