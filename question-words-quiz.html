@@ -1473,6 +1473,7 @@
   button.retry:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tile-blue-dark); }
   button.retry:focus-visible { outline: 2px solid var(--tile-blue); outline-offset: 2px; }
   button.retry[hidden] { display: none; }
+  .unseen-retry { margin-top: .6rem; text-align: left; }
 </style>
 
 <div class="wrap">
@@ -2491,6 +2492,21 @@ function award(points) {
   saveProgress();
 }
 
+// After a wrong answer: a "Try again" button next to Next that reloads the question.
+function showRetryButton(beside) {
+  if (!beside || !beside.isConnected) return;
+  let btn = document.getElementById("retryBtn");
+  if (!btn) {
+    btn = document.createElement("button");
+    btn.className = "retry";
+    btn.id = "retryBtn";
+    btn.textContent = "↻ Try again";
+    beside.before(btn);
+  }
+  btn.hidden = false;
+  btn.onclick = () => render();
+}
+
 function clearAutoNext() {
   if (autoNextTimer) { clearInterval(autoNextTimer); autoNextTimer = null; }
 }
@@ -3065,6 +3081,7 @@ function renderTranslateQuestion(q) {
     const go = advance;
     btn.onclick = go;
     if (isCorrect) startAutoNext(btn, go);
+    else showRetryButton(btn);
   }
 
   btn.onclick = check;
@@ -3269,6 +3286,7 @@ function renderDialogueQuestion(q, stage, logKey) {
     };
     btn.onclick = go;
     if (result.ok) startAutoNext(btn, go);
+    else showRetryButton(btn);
   }
 
   btn.onclick = check;
@@ -3446,6 +3464,7 @@ function renderSpeakQuestion(q) {
     const go = advance;
     nextBtn.onclick = go;
     if (bestPercent >= SPEAK_PASS) startAutoNext(nextBtn, go);
+    else showRetryButton(nextBtn);
   }
 
   nextBtn.onclick = () => { finish(); advance(); };
@@ -3636,6 +3655,7 @@ function selectAnswer(btn, q) {
   nextBtn.classList.add("show");
   nextBtn.onclick = go;
   if (isCorrect) startAutoNext(nextBtn, go);
+  else showRetryButton(nextBtn);
 }
 
 // --- Unseen ----------------------------------------------------------------
@@ -4387,6 +4407,7 @@ function renderUnseenBody(card) {
           return `<button class="opt${cls}" data-opt="${j}"${done ? " disabled" : ""}>${escapeHtml(o)}</button>`;
         }).join("")}</div>
         <div class="hint">${done ? `<span class="why${picked === q.answer ? "" : " bad"}">${picked === q.answer ? "✓ נכון!" : "✗ לא בדיוק."} ${escapeHtml(q.explanation)}</span>` : ""}</div>
+        ${done && picked !== q.answer ? `<div class="unseen-retry"><button class="retry" data-retry="${i}">↻ Try again</button></div>` : ""}
       </div>`;
     }).join("")}
     ${answered === ex.questions.length ? `<div class="unseen-done">
@@ -4421,6 +4442,15 @@ function renderUnseenBody(card) {
       const same = card.querySelector(`.unseen-q[data-q="${i}"]`);
       if (same) window.scrollBy(0, same.getBoundingClientRect().top - y);
     });
+  });
+  body.querySelectorAll("[data-retry]").forEach(b => b.onclick = () => {
+    const i = Number(b.dataset.retry);
+    const y = b.closest(".unseen-q").getBoundingClientRect().top;
+    unseen.answers[i] = null;
+    saveUnseen();
+    renderUnseenBody(card);
+    const same = card.querySelector(`.unseen-q[data-q="${i}"]`);
+    if (same) window.scrollBy(0, same.getBoundingClientRect().top - y);
   });
   const reset = () => resetUnseen(card);
   document.getElementById("unseenPick").onclick = reset;
