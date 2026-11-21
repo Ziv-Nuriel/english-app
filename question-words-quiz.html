@@ -2180,11 +2180,35 @@ themeBtn.onclick = () => setTheme(document.documentElement.dataset.theme !== "da
 document.getElementById("muteQuick").onclick = () => { settings.muted = false; saveSettings(); };
 applySettings();
 
+// Phones only let a page make sound after a tap, and they pause the page's
+// audio (state "suspended" / "interrupted") after locking the screen, switching
+// apps, a call or using the mic. A paused context stays silent until resumed,
+// so every tap wakes it up again (a silent blip unlocks iOS), and each sound
+// resumes it before playing.
 let audioCtx = null;
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state !== "running") audioCtx.resume().catch(() => {});
+  return audioCtx;
+}
+function unlockAudio() {
+  try {
+    const ctx = getAudioCtx();
+    const src = ctx.createBufferSource();
+    src.buffer = ctx.createBuffer(1, 1, 22050);
+    src.connect(ctx.destination);
+    src.start(0);
+  } catch (e) {}
+}
+["pointerdown", "touchend", "keydown"].forEach(ev => document.addEventListener(ev, unlockAudio, { capture: true, passive: true }));
+document.addEventListener("visibilitychange", () => {
+  if (!document.hidden && audioCtx && audioCtx.state !== "running") audioCtx.resume().catch(() => {});
+});
+
 function playTone(freqStart, freqEnd, duration, type, gainStart) {
   if (settings.muted || !settings.effects) return;
   try {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    getAudioCtx();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = type;
