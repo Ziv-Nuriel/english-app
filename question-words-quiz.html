@@ -1441,6 +1441,20 @@
   .order-build.correct .word-tile.placed { box-shadow: 0 4px 0 var(--correct-dark); }
   .order-build.wrong .word-tile.placed { box-shadow: 0 4px 0 var(--wrong-dark); }
 
+  /* Blue frames on the answer options of every stage, and on choice chips */
+  .opt { border-color: var(--tile-blue); box-shadow: 0 4px 0 var(--tile-blue-dark); }
+  .opt:hover:not(:disabled) {
+    border-color: var(--tile-blue);
+    background: var(--tile-blue-soft);
+    box-shadow: 0 4px 0 var(--tile-blue-dark);
+  }
+  .opt:active:not(:disabled) { box-shadow: 0 1px 0 var(--tile-blue-dark); }
+  .opt.correct { box-shadow: 0 4px 0 var(--correct-dark); }
+  .opt.wrong { box-shadow: 0 4px 0 var(--wrong-dark); }
+  .chip { border-color: var(--tile-blue); }
+  .chip:hover { border-color: var(--tile-blue); color: var(--tile-blue); }
+  .chip.active { border-color: var(--tile-blue); background: var(--tile-blue-soft); color: var(--tile-blue); }
+
   /* "Try again" after a wrong word order */
   button.retry {
     border: 2px solid var(--tile-blue);
@@ -1468,6 +1482,7 @@
       <button class="home-btn" id="homeBtn" title="חזרה למסלול" hidden>🗺 המסלול</button>
       <span class="level" id="levelTag">STAGE 1 / 2</span>
       <button class="icon-btn" id="muteQuick" title="האתר מושתק — לחצו לביטול ההשתקה" aria-label="Unmute" hidden>🔇</button>
+      <button class="icon-btn" id="themeBtn"></button>
       <button class="icon-btn" id="settingsBtn" title="הגדרות" aria-label="Settings" aria-expanded="false">⚙️</button>
     </div>
   </div>
@@ -2110,13 +2125,21 @@ document.getElementById("settingsBtn").onclick = () => {
 document.getElementById("setMuted").onchange = e => { settings.muted = e.target.checked; saveSettings(); };
 document.getElementById("setEffects").onchange = e => { settings.effects = e.target.checked; saveSettings(); };
 // Dark mode: light is the default; the choice is shared by every page of the site.
+// The header button flips it; the Settings checkbox mirrors it.
 const darkBox = document.getElementById("setDark");
-darkBox.checked = document.documentElement.dataset.theme === "dark";
-darkBox.onchange = e => {
-  if (e.target.checked) document.documentElement.dataset.theme = "dark";
+const themeBtn = document.getElementById("themeBtn");
+function setTheme(dark, save) {
+  if (dark) document.documentElement.dataset.theme = "dark";
   else delete document.documentElement.dataset.theme;
-  try { localStorage.setItem("theme", e.target.checked ? "dark" : "light"); } catch (err) {}
-};
+  darkBox.checked = dark;
+  themeBtn.textContent = dark ? "☀️" : "🌙";
+  themeBtn.title = dark ? "מעבר למצב בהיר" : "מעבר למצב כהה";
+  themeBtn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+  if (save) try { localStorage.setItem("theme", dark ? "dark" : "light"); } catch (err) {}
+}
+setTheme(document.documentElement.dataset.theme === "dark", false);
+darkBox.onchange = e => setTheme(e.target.checked, true);
+themeBtn.onclick = () => setTheme(document.documentElement.dataset.theme !== "dark", true);
 document.getElementById("muteQuick").onclick = () => { settings.muted = false; saveSettings(); };
 applySettings();
 
@@ -2607,7 +2630,7 @@ function render() {
       <div class="order-build empty" id="orderBuild"></div>
       <div class="order-bank" id="orderBank"></div>
       <div class="hint" id="hint"></div>
-      <div class="footer-row">${backBtn()}<button class="retry" id="retryBtn" hidden>↻ נסה שוב</button><button class="next" id="nextBtn">Next →</button></div>
+      <div class="footer-row">${backBtn()}<button class="retry" id="retryBtn" hidden>↻ Try again</button><button class="next" id="nextBtn">Next →</button></div>
     `;
     renderOrderQuestion(q);
     return;
