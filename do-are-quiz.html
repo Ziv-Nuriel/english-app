@@ -421,6 +421,16 @@ function playWrongSound() {
   playTone(220, 110, 0.32, "sawtooth", 0.15);
 }
 
+// Word-order drill: a quick rising "pop" when a word goes into the sentence,
+// a softer falling one when it is taken back out.
+function playWordAddSound() {
+  playTone(520, 880, 0.09, "sine", 0.18);
+}
+
+function playWordRemoveSound() {
+  playTone(600, 300, 0.11, "sine", 0.14);
+}
+
 function shuffle(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
@@ -507,12 +517,14 @@ function renderOrderQuestion(q) {
     buildEl.querySelectorAll(".chip").forEach(btn => {
       btn.addEventListener("click", () => {
         placed = placed.filter(p => p.i !== Number(btn.dataset.i));
+        playWordRemoveSound();
         draw();
       });
     });
     bankEl.querySelectorAll(".chip:not(:disabled)").forEach(btn => {
       btn.addEventListener("click", () => {
         placed.push(shuffled.find(s => s.i === Number(btn.dataset.i)));
+        playWordAddSound();
         draw();
         if (placed.length === q.answer.length) checkOrder();
       });
