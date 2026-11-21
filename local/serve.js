@@ -52,7 +52,7 @@ Language:
 - Be warm, easygoing and encouraging.`;
 
 // Builds the locked session setup for one stage + accent.
-function liveSetup(stage, accent) {
+function liveSetup(stage, accent, material = []) {
   const prompt = `${LIVE_BASE_PROMPT}
 
 Accent:
@@ -61,7 +61,9 @@ Accent:
 Today's role-play (stage: ${stage.title}):
 - ${stage.scenario} Stay in this role for the whole conversation.
 - Practice focus: ${stage.focus}
-- Pay special attention to mistakes related to this focus.
+- Pay special attention to mistakes related to this focus.${material.length ? `
+- The learner just practiced these sentences in the app. Reuse their words and structures in what you say, and steer the talk to situations where the learner needs them:
+${material.map(m => `  - ${m}`).join("\n")}` : ""}
 
 How to start:
 - The learner opens the conversation. Wait for them to speak first, then reply to exactly what they said, like a real person, with short, friendly small talk (e.g. if they ask how you are, answer and ask back; if they just say hi, say hi and ask how they are). Do NOT jump straight into your story, your opinions or the practice topic.
@@ -137,7 +139,9 @@ async function handleLiveToken(req, res) {
   const topics = JSON.parse(fs.readFileSync(TOPICS_FILE, "utf8"));
   const stage = (Number.isInteger(choice.stage) && topics.stages[choice.stage]) || topics.stages[0];
   const accent = topics.accents.find(a => a.id === choice.accent) || topics.accents[0];
-  const setup = liveSetup(stage, accent);
+  const material = Array.isArray(choice.material)
+    ? choice.material.filter(m => typeof m === "string").slice(0, 20).map(m => m.slice(0, 160)) : [];
+  const setup = liveSetup(stage, accent, material);
 
   const now = Date.now();
   const response = await fetch(`https://generativelanguage.googleapis.com/${LIVE_API_VERSION}/auth_tokens`, {

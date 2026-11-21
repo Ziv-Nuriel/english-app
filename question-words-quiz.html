@@ -580,6 +580,10 @@
   .chat-mic { background: var(--accent-soft); padding: .7rem .8rem; }
   .chat-mic.listening { background: var(--wrong-bg); border-color: var(--wrong); }
   .chat-send:disabled, .chat-mic:disabled { opacity: .4; cursor: default; }
+  .conv-material { margin: -.25rem 0 1rem; font-size: .85rem; color: var(--ink-soft); direction: rtl; text-align: right; }
+  .conv-material summary { cursor: pointer; }
+  .conv-material ul { margin: .5rem 0 0; padding-left: 1.2rem; text-align: left; color: var(--ink); }
+  .unseen-pick + .conv-scenario { margin-top: 1.1rem; }
   .chat-note {
     align-self: flex-end;
     font-size: .8rem;
@@ -1870,14 +1874,12 @@ const FREE_CHAT_SCENARIOS = [
   "Your friend Tom had a terrible day where nothing went right. Chat with him about it — ask what happened and practice sentences with Didn't / Doesn't.",
   "Chat with your curious friend Alex, who loves asking yes/no questions. Ask Alex anything you want, and when Alex asks you something, answer with correct short answers (Yes, I do / No, I didn't...)."
 ];
-const FREE_CHAT_PASS_MESSAGES = 3;
-const FREE_CHAT_PASS_GRAMMAR = 70;
-
+// The free conversation is no longer a part of each stage: it has its own node
+// on the path (below), where the learner picks which stage's material to talk about.
 stages.forEach((s, i) => {
   s.freeChat = { scenario: FREE_CHAT_SCENARIOS[i] };
-  s.questions.push({ type: "freechat" });
-  s.questions.push({ type: "voicechat" });
 });
+const CONVERSATION_TOPIC_COUNT = stages.length;
 
 // Unseen: an AI-written reading text on a subject the learner picks, with
 // comprehension questions. It's open-ended, so it stays one endless "question".
@@ -1899,6 +1901,17 @@ stages.push({
   unseen: true,
   kind: "podcast",
   questions: [{ type: "unseen" }]
+});
+
+// Free conversation: extra practice outside the stages. The learner picks the
+// material of one stage, then chats (typing or speaking) or talks live.
+stages.push({
+  title: "Free Conversation",
+  sub: "משוחחים באנגלית עם דמות — בכתיבה או בדיבור — על החומר של השלב שבחרתם",
+  legend: "<strong>איך עובדים:</strong> בוחרים את החומר (מילות שאלה, Do/Are...), ואז כותבים או לוחצים על 🎤 ומדברים. הדמות עונה ומשתמשת במשפטים מהתרגול, ובכל הודעה מקבלים משוב על הדקדוק. &nbsp;·&nbsp; <strong>שיחה קולית חיה:</strong> מדברים בזמן אמת, כמו בטלפון.",
+  unseen: true,
+  kind: "conversation",
+  questions: [{ type: "conversation" }]
 });
 
 // The podcast is stage 8 here and also has its own card on the home page:
@@ -1931,7 +1944,9 @@ const AUTO_NEXT_SECONDS = 5;
 
 const STORAGE_KEY = PAGE_MODE === "podcast" ? "podcastPageProgress" : "questionWordsQuizProgress";
 
-const PROGRESS_VERSION = 3;
+const PROGRESS_VERSION = 4;
+// v4 moved the Free Chat + Voice Chat questions off the end of every stage.
+const REMOVED_CHAT_COUNT = 2;
 // v3 removed the 10-question "Speaking" section that sat right before the Dialogue.
 const REMOVED_SPEAK_COUNT = 10;
 
@@ -1939,7 +1954,42 @@ const REMOVED_SPEAK_COUNT = 10;
 function migrateProgress(data) {
   if (data.v >= PROGRESS_VERSION) return;
   if (!(data.v >= 2)) migrateToV2(data);
-  migrateToV3(data);
+  if (!(data.v >= 3)) migrateToV3(data);
+  migrateToV4(data);
+}
+
+// Positions on the removed chat questions become "stage finished"; their points are dropped.
+// (Older versions also had them, so earlier migrations still see the old lengths.)
+function migrateToV4(data) {
+  const len = s => {
+    const st = stages[s];
+    return st && !st.unseen ? st.questions.length : null;
+  };
+  const clamp = (s, i) => {
+    const n = len(s);
+    return n === null || typeof i !== "number" ? i : Math.min(i, n);
+  };
+  const removed = (s, i) => len(s) !== null && i >= len(s);
+  data.current = clamp(data.stageIndex, data.current);
+  if (data.stageProgress && typeof data.stageProgress === "object") {
+    for (const s of Object.keys(data.stageProgress)) data.stageProgress[s] = clamp(Number(s), data.stageProgress[s]);
+  }
+  if (data.sectionProgress && typeof data.sectionProgress === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(data.sectionProgress)) {
+      const [s, i] = k.split(":").map(Number);
+      if (!removed(s, i)) out[k] = clamp(s, v);
+    }
+    data.sectionProgress = out;
+  }
+  if (data.results && typeof data.results === "object") {
+    let lost = 0;
+    for (const [k, v] of Object.entries(data.results)) {
+      const [s, i] = k.split(":").map(Number);
+      if (removed(s, i)) { lost += v || 0; delete data.results[k]; }
+    }
+    if (typeof data.score === "number") data.score = Math.max(0, data.score - lost);
+  }
 }
 
 // Positions inside the removed Speaking section move to where the Dialogue now starts;
@@ -2187,7 +2237,7 @@ let view = "home";
 const PATH_OFFSETS = [0, -55, -80, -55, 0, 55, 80, 55];
 const PATH_ROW = 185;
 const PATH_R = 56;
-const EXTRA_ICONS = { unseen: "📖", podcast: "🎧" };
+const EXTRA_ICONS = { unseen: "📖", podcast: "🎧", conversation: "💬" };
 // Each stage on the path: English examples inside the circle, the general Hebrew name under it.
 const PATH_NAMES = {
   "Question Words Drill": ["What / Where / Why", "מילות שאלה"],
@@ -2197,7 +2247,8 @@ const PATH_NAMES = {
   "Didn't or Doesn't Drill": ["Didn't / Doesn't", "שלילה"],
   "Short Answers (Yes/No)": ["Yes, I do / No, he didn't", "תשובות קצרות"],
   "Unseen": ["Unseen", "הבנת הנקרא"],
-  "Podcast": ["Podcast", "הבנת הנשמע"]
+  "Podcast": ["Podcast", "הבנת הנשמע"],
+  "Free Conversation": ["Free Talk", "שיחה חופשית"]
 };
 
 function stageStats(i) {
@@ -2233,7 +2284,7 @@ function renderHome() {
     if (k > 0) y += PATH_ROW;
     if (k === drills.length && k > 0) {
       y += 40;
-      divider = `<div class="path-divider" style="top:${y - 8}px"><span>תרגול נוסף — טקסטים ופודקאסטים</span></div>`;
+      divider = `<div class="path-divider" style="top:${y - 8}px"><span>תרגול נוסף — טקסטים, פודקאסטים ושיחה</span></div>`;
       y += 50;
     }
     n.x = PATH_OFFSETS[k % PATH_OFFSETS.length];
@@ -2258,7 +2309,7 @@ function renderHome() {
     const ring = !n.done && pct > 0
       ? `<svg class="ring" viewBox="0 0 94 94" aria-hidden="true"><circle cx="47" cy="47" r="45" stroke-dasharray="${(circ * pct).toFixed(1)} ${circ.toFixed(1)}"/></svg>` : "";
     const meta = extra
-      ? (n.total ? `${n.answered} / ${n.total} שאלות` : "נושא לבחירתכם")
+      ? n.s.kind === "conversation" ? "כתיבה או דיבור" : (n.total ? `${n.answered} / ${n.total} שאלות` : "נושא לבחירתכם")
       : n.done ? "✓ הושלם" : `${n.answered} / ${n.total}`;
     const bubble = n === next ? `<span class="path-start">${n.answered ? "המשיכו מכאן" : "התחילו כאן"}</span>` : "";
     return `<div class="path-node ${state}${extra ? " extra" : ""}" style="left:calc(50% + ${n.x}px);top:${n.y - PATH_R}px">
@@ -2311,7 +2362,10 @@ document.getElementById("homeBtn").onclick = goHome;
 // the rest of that section is skipped (and credited) and practice moves on.
 // It takes ADAPT_STREAK correct answers; every mistake keeps the count but
 // raises the target by one (3 right, then a miss -> 2 more to reach 5).
+// Translation (Hebrew <-> English) is easier on the learner: 3 correct answers
+// in a row are enough, at any speed; a mistake starts the count again.
 const ADAPT_STREAK = 4;
+const ADAPT_TRANSLATE_STREAK = 3;
 const ADAPT_TYPES = ["mc", "order", "pick", "translate", "speak"];
 let questionShownAt = Date.now();
 let adaptStreak = {};   // "stage:sectionStart" -> correct quick answers so far
@@ -2344,18 +2398,24 @@ function trackAdaptive(points, answeredBefore) {
   if (!sec) return;
   const key = stageIndex + ":" + sec.start;
   const seconds = (Date.now() - questionShownAt) / 1000;
-  // A slow correct answer neither counts nor raises the target.
-  if (points <= 0) adaptMisses[key] = (adaptMisses[key] || 0) + 1;
-  else if (seconds <= adaptTimeLimit(q)) adaptStreak[key] = (adaptStreak[key] || 0) + 1;
+  const isTranslate = q.type === "translate";
+  if (isTranslate) {
+    adaptStreak[key] = points > 0 ? (adaptStreak[key] || 0) + 1 : 0;
+  } else {
+    // A slow correct answer neither counts nor raises the target.
+    if (points <= 0) adaptMisses[key] = (adaptMisses[key] || 0) + 1;
+    else if (seconds <= adaptTimeLimit(q)) adaptStreak[key] = (adaptStreak[key] || 0) + 1;
+  }
 
   const end = sec.start + sec.len;
-  if ((adaptStreak[key] || 0) < ADAPT_STREAK + (adaptMisses[key] || 0) || current + 1 >= end) return;
+  const needed = isTranslate ? ADAPT_TRANSLATE_STREAK : ADAPT_STREAK + (adaptMisses[key] || 0);
+  if ((adaptStreak[key] || 0) < needed || current + 1 >= end) return;
   const next = sections[idx + 1];
   adaptJump = { to: end, label: next ? next.label : null };
   const note = document.createElement("div");
   note.className = "adapt-note";
   note.dir = "rtl";
-  note.innerHTML = `🚀 <strong>${adaptStreak[key]} תשובות נכונות!</strong> נראה שאת/ה שולט/ת בזה — ` +
+  note.innerHTML = `🚀 <strong>${adaptStreak[key]} תשובות נכונות${isTranslate ? " ברצף" : ""}!</strong> נראה שאת/ה שולט/ת בזה — ` +
     (next ? `עוברים לחלק הבא: <strong dir="ltr">${escapeHtml(next.label)}</strong>` : "השלב הושלם");
   const footer = document.querySelector("#quizCard .footer-row");
   if (footer) footer.before(note);
@@ -2580,7 +2640,8 @@ function render() {
   paintStreak(false);
 
   if (stage.unseen) {
-    renderUnseen(card);
+    if (stage.kind === "conversation") renderConversation(card);
+    else renderUnseen(card);
     return;
   }
 
@@ -2678,39 +2739,6 @@ function render() {
     return;
   }
 
-  if (q.type === "freechat") {
-    card.innerHTML = `
-      <div class="dialogue-scenario">${stage.freeChat.scenario}</div>
-      <div class="dialogue-cue"><strong>צ'אט חופשי:</strong> שאלו כל שאלה שבא לכם באנגלית — הדמות תענה לפי מה ששאלתם, ותקבלו משוב על הדקדוק בכל הודעה.</div>
-      <div class="dialogue-log" id="chatLog"></div>
-      <div class="chat-input-row">
-        <input type="text" class="translate-input" id="chatInput" dir="ltr" autocomplete="off" spellcheck="false" maxlength="300" placeholder="Ask anything in English..." />
-        <button class="chat-mic" id="chatMic" title="Speak instead of typing" aria-label="Speak instead of typing">🎤</button>
-        <button class="chat-send" id="chatSend">Send</button>
-      </div>
-      <div class="hint" id="hint"></div>
-      <div class="footer-row chat-footer">${backBtn()}<span id="chatStats"></span><button class="next show" id="nextBtn">Finish chat →</button></div>
-    `;
-    renderFreeChat(stage);
-    return;
-  }
-
-  if (q.type === "voicechat") {
-    card.innerHTML = `
-      <div class="dialogue-scenario">${stage.freeChat.scenario}</div>
-      <div class="dialogue-cue"><strong>שיחה קולית:</strong> מדברים באנגלית בזמן אמת עם הדמות — היא מדברת לאט וברור, מכוונת לנושא של השלב ומתקנת טעויות בעדינות. אפשר לקטוע אותה באמצע משפט. עד 10 דקות לשיחה, מומלץ עם אוזניות.</div>
-      <div id="voiceChat"></div>
-    `;
-    VoiceChat.mount(document.getElementById("voiceChat"), {
-      stage: stageIndex,
-      onFinish(talkedSeconds) {
-        award(talkedSeconds >= 60 ? 1 : 0);
-        advance();
-      },
-    });
-    return;
-  }
-
   if (q.type === "speak") {
     card.innerHTML = `
       <div class="order-label speak-head"><span>🎤 Say it out loud in English</span><span id="speakAvg"></span></div>
@@ -2743,7 +2771,10 @@ function render() {
       <div class="dialogue-scenario">${scenarioText}</div>
       <div class="dialogue-log">${renderDialogueLog(log.concat(liveTurn))}</div>
       <div class="dialogue-cue"><strong>${q.theyAsk ? "מה לענות:" : "מה להגיד:"}</strong> ${q.instruction}</div>
-      <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Answer in English..." : "Type your question in English..."}" />
+      <div class="chat-input-row">
+        <input type="text" class="translate-input" id="translateInput" dir="ltr" autocomplete="off" spellcheck="false" placeholder="${q.theyAsk ? "Write or say your answer in English..." : "Write or say your question in English..."}" />
+        <button class="chat-mic" id="dialogueMic" title="אפשר להגיד במקום לכתוב" aria-label="Speak instead of typing">🎤</button>
+      </div>
       <div class="hint" id="hint"></div>
       <div class="footer-row">${backBtn()}<button class="next show check" id="checkBtn">✔ Check</button></div>
     `;
@@ -2775,9 +2806,7 @@ function getSections(stage) {
   const pickCount = typeof stage.pickCount === "number" ? stage.pickCount : 0;
   const storyCount = typeof stage.storyCount === "number" ? stage.storyCount : 0;
   const speakCount = typeof stage.speakCount === "number" ? stage.speakCount : 0;
-  const freeCount = stage.questions.filter(q => q.type === "freechat").length;
-  const voiceCount = stage.questions.filter(q => q.type === "voicechat").length;
-  const translateCount = stage.questions.length - mcCount - orderCount - pickCount - speakCount - storyCount - freeCount - voiceCount;
+  const translateCount = stage.questions.length - mcCount - orderCount - pickCount - speakCount - storyCount;
 
   const sections = [];
   let pos = 0;
@@ -2793,8 +2822,6 @@ function getSections(stage) {
   }
   if (speakCount > 0) { sections.push({ label: "Speaking", start: pos, len: speakCount }); pos += speakCount; }
   if (storyCount > 0) { sections.push({ label: "Dialogue", start: pos, len: storyCount }); pos += storyCount; }
-  if (freeCount > 0) { sections.push({ label: "Free Chat", start: pos, len: freeCount }); pos += freeCount; }
-  if (voiceCount > 0) { sections.push({ label: "Voice Chat", start: pos, len: voiceCount }); pos += voiceCount; }
   return sections;
 }
 
@@ -3180,8 +3207,135 @@ function escapeHtml(s) {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-function renderFreeChat(stage) {
-  const logKey = String(stageIndex);
+// English sentences the learner met in a stage, so the conversation can reuse them.
+function stageMaterial(stage) {
+  const cap = t => t.charAt(0).toUpperCase() + t.slice(1);
+  const out = [];
+  stage.questions.forEach(q => {
+    let t = null;
+    if (!q.type && q.sentence) t = q.sentence.replace("___", q.answer);
+    else if (q.type === "order") t = cap(q.answer.join(" ")) + (q.punct || ".");
+    else if (q.type === "pick") t = q.answer;
+    else if (q.type === "translate") t = q.direction === "toHebrew" ? q.prompt : q.display;
+    else if (q.type === "dialogue") t = q.display || q.theyAsk;
+    if (t) t = t.replace(/<[^>]*>/g, "");
+    if (t && !out.includes(t)) out.push(t);
+  });
+  return out;
+}
+
+// Picks up to n sentences spread over the whole stage (all kinds of questions).
+function sampleMaterial(stage, n) {
+  const all = stageMaterial(stage);
+  if (all.length <= n) return all;
+  return Array.from({ length: n }, (_, k) => all[Math.floor(k * all.length / n)]);
+}
+
+// The mic button fills the text box with what was said (English).
+function attachMic(micBtn, input) {
+  if (!SpeechRecognitionCtor) { micBtn.style.display = "none"; return; }
+  let rec = null;
+  micBtn.onclick = () => {
+    if (rec) { rec.stop(); return; }
+    rec = new SpeechRecognitionCtor();
+    rec.lang = "en-US";
+    rec.interimResults = false;
+    rec.onresult = e => {
+      input.value = e.results[0][0].transcript;
+      input.focus();
+    };
+    rec.onerror = e => {
+      const hint = document.getElementById("hint");
+      if (hint && (e.error === "not-allowed" || e.error === "service-not-allowed"))
+        hint.textContent = "צריך לאשר גישה למיקרופון בדפדפן כדי לדבר.";
+    };
+    rec.onend = () => { rec = null; micBtn.classList.remove("listening"); };
+    try { rec.start(); micBtn.classList.add("listening"); } catch (e) { rec = null; }
+  };
+}
+
+const CONV_PREFS_KEY = "conversationPrefs";
+function loadConvPrefs() {
+  let p = {};
+  try { p = JSON.parse(localStorage.getItem(CONV_PREFS_KEY) || "{}") || {}; } catch (e) {}
+  if (!(Number.isInteger(p.topic) && p.topic >= 0 && p.topic < CONVERSATION_TOPIC_COUNT)) {
+    // Default: the latest stage the learner has practiced.
+    let last = 0;
+    for (let i = 0; i < CONVERSATION_TOPIC_COUNT; i++) {
+      if ((stageProgress[i] || 0) > 0 || Object.keys(results).some(k => k.split(":")[0] === String(i))) last = i;
+    }
+    p.topic = last;
+  }
+  if (p.mode !== "voice") p.mode = "chat";
+  return p;
+}
+function saveConvPrefs(p) {
+  try { localStorage.setItem(CONV_PREFS_KEY, JSON.stringify(p)); } catch (e) {}
+}
+
+function renderConversation(card) {
+  const prefs = loadConvPrefs();
+  const topic = stages[prefs.topic];
+  const chip = (label, attrs, active) => `<button class="chip${active ? " active" : ""}" ${attrs}>${escapeHtml(label)}</button>`;
+  const topicChips = stages.slice(0, CONVERSATION_TOPIC_COUNT).map((s, i) => {
+    const [en, he] = PATH_NAMES[s.title] || [s.title, s.title];
+    return chip(`${he} · ${en}`, `data-topic="${i}"`, i === prefs.topic);
+  }).join("");
+  const material = sampleMaterial(topic, 6);
+  const head = `
+    <div class="unseen-pick">
+      <div class="unseen-label">על איזה חומר מתרגלים?</div>
+      <div class="chips">${topicChips}</div>
+      <div class="unseen-label">איך משוחחים?</div>
+      <div class="chips">
+        ${chip("💬 כותבים או מדברים", `data-mode="chat"`, prefs.mode === "chat")}
+        ${chip("🎙 שיחה קולית חיה", `data-mode="voice"`, prefs.mode === "voice")}
+      </div>
+    </div>
+    <div class="dialogue-scenario conv-scenario">${topic.freeChat.scenario}</div>
+    <details class="conv-material"><summary>משפטים מהתרגול שכדאי להשתמש בהם</summary>
+      <ul dir="ltr">${material.map(m => `<li>${escapeHtml(m)}</li>`).join("")}</ul>
+    </details>`;
+
+  if (prefs.mode === "voice") {
+    card.innerHTML = `${head}
+      <div class="dialogue-cue"><strong>שיחה קולית:</strong> מדברים באנגלית בזמן אמת עם הדמות — היא מדברת לאט וברור, משתמשת בחומר שבחרתם ומתקנת טעויות בעדינות. אפשר לקטוע אותה באמצע משפט. עד 10 דקות לשיחה, מומלץ עם אוזניות.</div>
+      <div id="voiceChat"></div>`;
+    VoiceChat.mount(document.getElementById("voiceChat"), {
+      stage: prefs.topic,
+      material: sampleMaterial(topic, 15),
+      onFinish() {}
+    });
+  } else {
+    card.innerHTML = `${head}
+      <div class="dialogue-cue"><strong>כותבים או מדברים:</strong> הקלידו באנגלית, או לחצו על 🎤 ותגידו את המשפט — ואז Send. הדמות תענה לפי מה שאמרתם, ותקבלו משוב על הדקדוק בכל הודעה.</div>
+      <div class="dialogue-log" id="chatLog"></div>
+      <div class="chat-input-row">
+        <input type="text" class="translate-input" id="chatInput" dir="ltr" autocomplete="off" spellcheck="false" maxlength="300" placeholder="Type, or tap 🎤 and speak..." />
+        <button class="chat-mic" id="chatMic" title="Speak instead of typing" aria-label="Speak instead of typing">🎤</button>
+        <button class="chat-send" id="chatSend">Send</button>
+      </div>
+      <div class="hint" id="hint"></div>
+      <div class="footer-row chat-footer"><span id="chatStats"></span><button class="back" id="chatReset">↻ שיחה חדשה</button></div>`;
+    renderFreeChat(topic, prefs.topic);
+  }
+
+  card.querySelectorAll("[data-topic]").forEach(b => b.onclick = () => {
+    prefs.topic = Number(b.dataset.topic);
+    saveConvPrefs(prefs);
+    renderConversation(card);
+  });
+  card.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+    if (prefs.mode === b.dataset.mode) return;
+    VoiceChat.stop();
+    prefs.mode = b.dataset.mode;
+    saveConvPrefs(prefs);
+    renderConversation(card);
+  });
+}
+
+function renderFreeChat(stage, topicIndex) {
+  const logKey = String(topicIndex);
   const log = freeChatLogs[logKey] || (freeChatLogs[logKey] = []);
   const logEl = document.getElementById("chatLog");
   const input = document.getElementById("chatInput");
@@ -3189,7 +3343,9 @@ function renderFreeChat(stage) {
   const micBtn = document.getElementById("chatMic");
   const hint = document.getElementById("hint");
   const stats = document.getElementById("chatStats");
-  const nextBtn = document.getElementById("nextBtn");
+  const scenario = stage.freeChat.scenario +
+    "\nThe student is practicing the material of this lesson. Use these sentences, their words and structures in your replies, and steer the chat to situations where the student needs them:\n" +
+    sampleMaterial(stage, 15).map(m => "- " + m).join("\n");
   let busy = false;
 
   function grammarPercent() {
@@ -3202,13 +3358,13 @@ function renderFreeChat(stage) {
     logEl.innerHTML = renderFreeChatLog(log);
     const sent = log.filter(m => m.who === "you").length;
     const g = grammarPercent();
-    stats.textContent = sent ? `Messages: ${sent} · Grammar: ${g}%` : "";
+    stats.textContent = sent ? `Messages: ${sent}` + (g === null ? "" : ` · Grammar: ${g}%`) : "";
     logEl.lastElementChild && logEl.lastElementChild.scrollIntoView({ block: "nearest" });
   }
 
   if (!DIALOGUE_API_URL) {
     input.disabled = sendBtn.disabled = micBtn.disabled = true;
-    hint.innerHTML = `<span class="why">הצ'אט החופשי צריך חיבור לשרת ה-AI (Cloudflare Worker), והוא עדיין לא מוגדר.</span>`;
+    hint.innerHTML = `<span class="why">השיחה צריכה חיבור לשרת ה-AI (Cloudflare Worker), והוא עדיין לא מוגדר.</span>`;
   }
 
   async function send() {
@@ -3223,13 +3379,14 @@ function renderFreeChat(stage) {
     draw();
     hint.textContent = "…";
 
-    const ai = await getDialogueResponse(stage, history, text, { scenario: stage.freeChat.scenario, mode: "free" });
+    const ai = await getDialogueResponse(stage, history, text, { scenario, mode: "free" });
     busy = false;
-    input.disabled = sendBtn.disabled = false;
-    input.focus();
     if (!ai) {
       log.pop();
+      if (!sendBtn.isConnected) return; // left the page while waiting
+      input.disabled = sendBtn.disabled = false;
       input.value = text;
+      input.focus();
       draw();
       hint.innerHTML = `<span class="why">לא הצלחתי לקבל תשובה מהשרת — בדקו את החיבור לאינטרנט ונסו שוב.</span>`;
       return;
@@ -3237,6 +3394,9 @@ function renderFreeChat(stage) {
     entry.ok = ai.ok;
     entry.note = ai.note;
     log.push({ who: "them", text: ai.reply });
+    if (!sendBtn.isConnected) return;
+    input.disabled = sendBtn.disabled = false;
+    input.focus();
     if (ai.ok) playCorrectSound(); else playWrongSound();
     hint.textContent = "";
     draw();
@@ -3244,27 +3404,13 @@ function renderFreeChat(stage) {
 
   sendBtn.onclick = send;
   input.addEventListener("keydown", e => { if (e.key === "Enter") send(); });
-
-  if (SpeechRecognitionCtor) {
-    let rec = null;
-    micBtn.onclick = () => {
-      if (rec) { rec.stop(); return; }
-      rec = new SpeechRecognitionCtor();
-      rec.lang = "en-US";
-      rec.interimResults = false;
-      rec.onresult = e => { input.value = e.results[0][0].transcript; input.focus(); };
-      rec.onend = () => { rec = null; micBtn.classList.remove("listening"); };
-      try { rec.start(); micBtn.classList.add("listening"); } catch (e) { rec = null; }
-    };
-  } else {
-    micBtn.style.display = "none";
-  }
-
-  nextBtn.onclick = () => {
-    const sent = log.filter(m => m.who === "you" && m.ok !== undefined).length;
-    const g = grammarPercent();
-    award(sent >= FREE_CHAT_PASS_MESSAGES && g >= FREE_CHAT_PASS_GRAMMAR ? 1 : 0);
-    advance();
+  attachMic(micBtn, input);
+  document.getElementById("chatReset").onclick = () => {
+    if (busy) return;
+    log.length = 0;
+    hint.textContent = "";
+    draw();
+    input.focus();
   };
 
   draw();
@@ -3320,6 +3466,7 @@ function renderDialogueQuestion(q, stage, logKey) {
   input.addEventListener("keydown", e => {
     if (e.key === "Enter") check();
   });
+  attachMic(document.getElementById("dialogueMic"), input);
   input.focus();
 }
 

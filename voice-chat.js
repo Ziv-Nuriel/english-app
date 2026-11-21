@@ -571,7 +571,7 @@ registerProcessor("pcm-capture", PcmCapture);`;
         res = await fetch("api/live-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ stage: ui.opts.stage, accent: prefs.accent }),
+          body: JSON.stringify({ stage: ui.opts.stage, accent: prefs.accent, material: ui.opts.material || [] }),
         });
       } catch (e) {
         throw new Error("שיחה קולית עובדת רק דרך השרת המקומי (open.vbs)");
