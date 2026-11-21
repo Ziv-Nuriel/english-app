@@ -1,9 +1,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Do or Are Drill</title>
+<script>
+  // Light is the default; "dark" is an opt-in saved in Settings (shared by all pages).
+  try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+</script>
 <style>
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
     --paper: #f6f3ec;
     --ink: #2b2a28;
     --ink-soft: #6b6558;
@@ -17,23 +21,8 @@
     --wrong: #b3432b;
     --wrong-bg: #fbe8e3;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #1c1b18;
-      --ink: #ece7dc;
-      --ink-soft: #a49c8a;
-      --rule: #3a382f;
-      --card: #23221e;
-      --accent: #6bc2cb;
-      --accent-soft: #1e3336;
-      --highlight: #e8b23d;
-      --correct: #7bc99a;
-      --correct-bg: #1c3324;
-      --wrong: #e08a6c;
-      --wrong-bg: #3a2019;
-    }
-  }
   :root[data-theme="dark"] {
+    color-scheme: dark;
     --paper: #1c1b18;
     --ink: #ece7dc;
     --ink-soft: #a49c8a;

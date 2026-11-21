@@ -4,9 +4,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  // Light is the default; "dark" is an opt-in saved in Settings (shared by all pages).
+  try { if (localStorage.getItem("theme") === "dark") document.documentElement.dataset.theme = "dark"; } catch (e) {}
+</script>
 <style>
   :root {
-    color-scheme: light dark;
+    color-scheme: light;
     --font-body: "Rubik", "Segoe UI", Arial, sans-serif;
     --font-display: "Rubik", "Segoe UI", Arial, sans-serif;
     --paper: #fff7ec;
@@ -27,30 +31,12 @@
     --wrong-bg: #ffe5e3;
     --blob1: #ffe1f0;
     --blob2: #dff3ff;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #17152a;
-      --ink: #f1eefc;
-      --ink-soft: #a7a1c4;
-      --rule: #34304f;
-      --card: #221f3a;
-      --accent: #8f86ff;
-      --accent-dark: #5d53d6;
-      --accent-soft: #2d2858;
-      --highlight: #ffbe3d;
-      --hl-soft: #3d3220;
-      --correct: #4cd38c;
-      --correct-dark: #2a9a5e;
-      --correct-bg: #183a2a;
-      --wrong: #ff7a7f;
-      --wrong-dark: #c4464c;
-      --wrong-bg: #45222a;
-      --blob1: #2e1f45;
-      --blob2: #1b2d48;
-    }
+    --tile-blue: #2f80ed;
+    --tile-blue-dark: #1f5fbf;
+    --tile-blue-soft: #e4efff;
   }
   :root[data-theme="dark"] {
+    color-scheme: dark;
     --paper: #17152a;
     --ink: #f1eefc;
     --ink-soft: #a7a1c4;
@@ -69,6 +55,9 @@
     --wrong-bg: #45222a;
     --blob1: #2e1f45;
     --blob2: #1b2d48;
+    --tile-blue: #5aa9ff;
+    --tile-blue-dark: #2f6fc4;
+    --tile-blue-soft: #1c2c48;
   }
   :root[data-theme="light"] {
     --paper: #fff7ec;
@@ -89,6 +78,9 @@
     --wrong-bg: #ffe5e3;
     --blob1: #ffe1f0;
     --blob2: #dff3ff;
+    --tile-blue: #2f80ed;
+    --tile-blue-dark: #1f5fbf;
+    --tile-blue-soft: #e4efff;
   }
   * { box-sizing: border-box; }
   body {
@@ -1436,6 +1428,37 @@
     .bar-fill, button.next { transition: none; }
     .mic-btn.listening { animation: none; }
   }
+
+  /* Word-order drill: blue frames around the word tiles */
+  .word-tile { border-color: var(--tile-blue); box-shadow: 0 4px 0 var(--tile-blue-dark); }
+  .word-tile:hover:not(:disabled) {
+    border-color: var(--tile-blue);
+    background: var(--tile-blue-soft);
+    box-shadow: 0 4px 0 var(--tile-blue-dark);
+  }
+  .word-tile:active:not(:disabled) { box-shadow: 0 1px 0 var(--tile-blue-dark); }
+  .word-tile.placed { border-color: var(--tile-blue); color: var(--tile-blue); box-shadow: 0 4px 0 var(--tile-blue-dark); }
+  .order-build.correct .word-tile.placed { box-shadow: 0 4px 0 var(--correct-dark); }
+  .order-build.wrong .word-tile.placed { box-shadow: 0 4px 0 var(--wrong-dark); }
+
+  /* "Try again" after a wrong word order */
+  button.retry {
+    border: 2px solid var(--tile-blue);
+    background: var(--card);
+    color: var(--tile-blue);
+    border-radius: 16px;
+    padding: .8rem 1.4rem;
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 0 var(--tile-blue-dark);
+    transition: transform .1s, box-shadow .1s, background .15s;
+  }
+  button.retry:hover { background: var(--tile-blue-soft); }
+  button.retry:active { transform: translateY(3px); box-shadow: 0 1px 0 var(--tile-blue-dark); }
+  button.retry:focus-visible { outline: 2px solid var(--tile-blue); outline-offset: 2px; }
+  button.retry[hidden] { display: none; }
 </style>
 
 <div class="wrap">
@@ -1451,6 +1474,7 @@
   <div class="settings-panel" id="settingsPanel" hidden>
     <label><input type="checkbox" id="setMuted"> השתקת האתר — בלי צלילים ובלי הקראה</label>
     <label><input type="checkbox" id="setEffects"> צלילי נכון / לא נכון</label>
+    <label><input type="checkbox" id="setDark"> 🌙 מצב כהה</label>
     <small>השיחה הקולית בזמן אמת לא מושפעת מההשתקה.</small>
   </div>
   <div id="homeView" hidden></div>
@@ -2085,6 +2109,14 @@ document.getElementById("settingsBtn").onclick = () => {
 };
 document.getElementById("setMuted").onchange = e => { settings.muted = e.target.checked; saveSettings(); };
 document.getElementById("setEffects").onchange = e => { settings.effects = e.target.checked; saveSettings(); };
+// Dark mode: light is the default; the choice is shared by every page of the site.
+const darkBox = document.getElementById("setDark");
+darkBox.checked = document.documentElement.dataset.theme === "dark";
+darkBox.onchange = e => {
+  if (e.target.checked) document.documentElement.dataset.theme = "dark";
+  else delete document.documentElement.dataset.theme;
+  try { localStorage.setItem("theme", e.target.checked ? "dark" : "light"); } catch (err) {}
+};
 document.getElementById("muteQuick").onclick = () => { settings.muted = false; saveSettings(); };
 applySettings();
 
@@ -2575,7 +2607,7 @@ function render() {
       <div class="order-build empty" id="orderBuild"></div>
       <div class="order-bank" id="orderBank"></div>
       <div class="hint" id="hint"></div>
-      <div class="footer-row">${backBtn()}<button class="next" id="nextBtn">Next →</button></div>
+      <div class="footer-row">${backBtn()}<button class="retry" id="retryBtn" hidden>↻ נסה שוב</button><button class="next" id="nextBtn">Next →</button></div>
     `;
     renderOrderQuestion(q);
     return;
@@ -3539,6 +3571,22 @@ function renderOrderQuestion(q) {
     nextBtn.classList.add("show");
     nextBtn.onclick = go;
     if (isCorrect) startAutoNext(nextBtn, go);
+    else showRetry();
+  }
+
+  // After a wrong order: clear the sentence and let the learner build it again.
+  function showRetry() {
+    const retryBtn = document.getElementById("retryBtn");
+    retryBtn.hidden = false;
+    retryBtn.onclick = () => {
+      placed = [];
+      retryBtn.hidden = true;
+      document.getElementById("orderBuild").classList.remove("correct", "wrong");
+      document.getElementById("hint").innerHTML = "";
+      document.getElementById("nextBtn").classList.remove("show");
+      playWordRemoveSound();
+      draw();
+    };
   }
 
   draw();
